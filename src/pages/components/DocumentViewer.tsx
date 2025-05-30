@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   FileText, 
   Edit, 
@@ -25,7 +26,12 @@ import {
   AlignCenter,
   AlignRight,
   List,
-  ListOrdered
+  ListOrdered,
+  Wand2,
+  Sparkles,
+  RefreshCw,
+  Copy,
+  Plus
 } from "lucide-react";
 
 interface DocumentViewerProps {
@@ -48,11 +54,57 @@ export const DocumentViewer = ({ document, onClose }: DocumentViewerProps) => {
   const [content, setContent] = useState(document.content || "");
   const [zoom, setZoom] = useState(100);
   const [activeTab, setActiveTab] = useState("view");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState("");
+  const [aiContentType, setAiContentType] = useState("paragraph");
 
   const handleSave = () => {
     console.log("Saving document:", { id: document.id, content });
     setIsEditing(false);
     // Here you would save to backend
+  };
+
+  const handleGenerateContent = async () => {
+    setIsGenerating(true);
+    
+    // Simulate AI content generation
+    setTimeout(() => {
+      let generated = "";
+      
+      switch (aiContentType) {
+        case "paragraph":
+          generated = `This is AI-generated content based on your prompt: "${aiPrompt}". Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.`;
+          break;
+        case "bullet-points":
+          generated = `• Key point about ${aiPrompt}\n• Important consideration regarding the topic\n• Additional insight that provides value\n• Conclusion or next steps`;
+          break;
+        case "heading":
+          generated = `# ${aiPrompt.charAt(0).toUpperCase() + aiPrompt.slice(1)}`;
+          break;
+        case "summary":
+          generated = `**Summary**: This section provides a comprehensive overview of ${aiPrompt}, highlighting the main points and key takeaways for readers to understand the core concepts.`;
+          break;
+        default:
+          generated = `Generated content for: ${aiPrompt}`;
+      }
+      
+      setGeneratedContent(generated);
+      setIsGenerating(false);
+    }, 2000);
+  };
+
+  const insertGeneratedContent = () => {
+    const newContent = content + "\n\n" + generatedContent;
+    setContent(newContent);
+    setGeneratedContent("");
+    setAiPrompt("");
+  };
+
+  const replaceWithGeneratedContent = () => {
+    setContent(generatedContent);
+    setGeneratedContent("");
+    setAiPrompt("");
   };
 
   const renderDocumentPreview = () => {
@@ -153,6 +205,11 @@ export const DocumentViewer = ({ document, onClose }: DocumentViewerProps) => {
             <Button variant="ghost" size="sm">
               <ListOrdered className="h-4 w-4" />
             </Button>
+            <Separator orientation="vertical" className="h-6 mx-2" />
+            <Button variant="ghost" size="sm" onClick={() => setActiveTab("ai")}>
+              <Wand2 className="h-4 w-4" />
+              AI Assistant
+            </Button>
           </div>
         )}
 
@@ -167,9 +224,10 @@ export const DocumentViewer = ({ document, onClose }: DocumentViewerProps) => {
           {/* Sidebar */}
           <div className="w-80 border-l bg-gray-50 p-4 overflow-auto">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="view">View</TabsTrigger>
                 <TabsTrigger value="edit">Edit</TabsTrigger>
+                <TabsTrigger value="ai">AI</TabsTrigger>
               </TabsList>
               
               <TabsContent value="view" className="mt-4 space-y-4">
@@ -212,6 +270,142 @@ export const DocumentViewer = ({ document, onClose }: DocumentViewerProps) => {
                       <label className="text-xs text-gray-500">Description</label>
                       <Textarea placeholder="Add description..." className="mt-1" rows={3} />
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="ai" className="mt-4 space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Sparkles className="h-4 w-4" />
+                      AI Content Generator
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <label className="text-xs text-gray-500">Content Type</label>
+                      <Select value={aiContentType} onValueChange={setAiContentType}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="paragraph">Paragraph</SelectItem>
+                          <SelectItem value="bullet-points">Bullet Points</SelectItem>
+                          <SelectItem value="heading">Heading</SelectItem>
+                          <SelectItem value="summary">Summary</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <label className="text-xs text-gray-500">Describe what you want to generate</label>
+                      <Textarea
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        placeholder="e.g., Write a paragraph about project management best practices..."
+                        className="mt-1"
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <Button 
+                      onClick={handleGenerateContent}
+                      disabled={!aiPrompt.trim() || isGenerating}
+                      className="w-full"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="h-4 w-4 mr-2" />
+                          Generate Content
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {generatedContent && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Generated Content</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="bg-white border rounded-lg p-3 text-sm">
+                        <div className="whitespace-pre-wrap">{generatedContent}</div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={insertGeneratedContent}>
+                          <Plus className="h-4 w-4 mr-1" />
+                          Insert
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={replaceWithGeneratedContent}>
+                          Replace All
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => navigator.clipboard.writeText(generatedContent)}>
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={handleGenerateContent}
+                        className="w-full"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Regenerate
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => {
+                        setAiPrompt("Improve the writing style and clarity of this document");
+                        setAiContentType("paragraph");
+                      }}
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Improve Writing
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => {
+                        setAiPrompt("Create a summary of the main points");
+                        setAiContentType("summary");
+                      }}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Summarize
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => {
+                        setAiPrompt("Expand on this topic with more details");
+                        setAiContentType("paragraph");
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Expand Content
+                    </Button>
                   </CardContent>
                 </Card>
               </TabsContent>
