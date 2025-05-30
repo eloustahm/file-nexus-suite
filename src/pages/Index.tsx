@@ -31,10 +31,14 @@ import { DocumentGrid } from "./components/DocumentGrid";
 import { DocumentUpload } from "./components/DocumentUpload";
 import { UserProfile } from "./components/UserProfile";
 import { Dashboard } from "./components/Dashboard";
+import { DocumentChat } from "./components/DocumentChat";
+import { DocumentGenerator } from "./components/DocumentGenerator";
+
+type ViewMode = "grid" | "list";
 
 const Index = () => {
   const [activeView, setActiveView] = useState("dashboard");
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [user] = useState({
     name: "John Doe",
@@ -92,6 +96,10 @@ const Index = () => {
             <DocumentGrid viewMode={viewMode} searchQuery={searchQuery} />
           </div>
         );
+      case "chat":
+        return <DocumentChat />;
+      case "generate":
+        return <DocumentGenerator />;
       case "profile":
         return <UserProfile user={user} />;
       default:
