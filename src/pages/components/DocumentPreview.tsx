@@ -11,8 +11,11 @@ import {
   User,
   FileText,
   Eye,
-  X
+  X,
+  ExternalLink
 } from "lucide-react";
+import { useState } from "react";
+import { DocumentViewer } from "./DocumentViewer";
 
 interface DocumentPreviewProps {
   document: {
@@ -29,6 +32,8 @@ interface DocumentPreviewProps {
 }
 
 export const DocumentPreview = ({ document, onClose }: DocumentPreviewProps) => {
+  const [showFullViewer, setShowFullViewer] = useState(false);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "draft": return "bg-yellow-100 text-yellow-800";
@@ -38,6 +43,21 @@ export const DocumentPreview = ({ document, onClose }: DocumentPreviewProps) => 
       default: return "bg-gray-100 text-gray-800";
     }
   };
+
+  // Add mock content based on document type
+  const documentWithContent = {
+    ...document,
+    content: getDefaultContent(document.type)
+  };
+
+  if (showFullViewer) {
+    return (
+      <DocumentViewer 
+        document={documentWithContent} 
+        onClose={() => setShowFullViewer(false)} 
+      />
+    );
+  }
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -70,9 +90,13 @@ export const DocumentPreview = ({ document, onClose }: DocumentPreviewProps) => 
               <div className="text-center">
                 <div className="text-6xl mb-4">{document.icon}</div>
                 <p className="text-gray-600 mb-4">Document Preview</p>
-                <p className="text-sm text-gray-500">
-                  Preview functionality will be available with document editing integration
+                <p className="text-sm text-gray-500 mb-6">
+                  Click "Open in Editor" to view and edit the full document
                 </p>
+                <Button onClick={() => setShowFullViewer(true)}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open in Editor
+                </Button>
               </div>
             </div>
           </div>
@@ -104,7 +128,7 @@ export const DocumentPreview = ({ document, onClose }: DocumentPreviewProps) => 
             <div>
               <h3 className="font-medium text-gray-900 mb-3">Actions</h3>
               <div className="space-y-2">
-                <Button className="w-full justify-start">
+                <Button className="w-full justify-start" onClick={() => setShowFullViewer(true)}>
                   <Eye className="h-4 w-4 mr-2" />
                   Open in Editor
                 </Button>
@@ -144,3 +168,35 @@ export const DocumentPreview = ({ document, onClose }: DocumentPreviewProps) => 
     </Dialog>
   );
 };
+
+// Helper function to generate default content based on document type
+function getDefaultContent(type: string): string {
+  const lowerType = type.toLowerCase();
+  
+  if (lowerType.includes("word") || lowerType.includes("docx")) {
+    return `# Document Title
+
+This is a sample Word document with some content. You can edit this text and format it as needed.
+
+## Section 1
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+## Section 2
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Click the Edit button to start making changes to this document.`;
+  } else if (lowerType.includes("excel") || lowerType.includes("xlsx")) {
+    return JSON.stringify({
+      'A1': 'Name', 'B1': 'Age', 'C1': 'City',
+      'A2': 'John Doe', 'B2': '30', 'C2': 'New York',
+      'A3': 'Jane Smith', 'B3': '25', 'C3': 'Los Angeles'
+    });
+  } else if (lowerType.includes("powerpoint") || lowerType.includes("pptx")) {
+    return JSON.stringify([
+      { id: 1, title: "Welcome to Our Presentation", content: "This is the first slide of our presentation." },
+      { id: 2, title: "Key Points", content: "• Point 1\n• Point 2\n• Point 3" }
+    ]);
+  } else {
+    return "This is a sample document. Click Edit to modify the content.";
+  }
+}
