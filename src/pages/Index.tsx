@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +20,7 @@ import {
   Share,
   MoreVertical,
   User,
-  Settings,
+  Settings as SettingsIcon,
   LogOut,
   Bell,
   Clock,
