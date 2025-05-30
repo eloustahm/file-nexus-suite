@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   Folder,
   FolderPlus,
   Search,
@@ -25,7 +25,7 @@ export const Folders = () => {
   const folders = [
     {
       id: 1,
-      name: "Marketing Materials",
+      name: "dsad Materials",
       itemCount: 24,
       lastModified: "2 days ago",
       shared: true,
@@ -151,16 +151,16 @@ export const Folders = () => {
             />
           </div>
           <div className="flex border rounded-lg">
-            <Button 
-              variant={viewMode === "grid" ? "default" : "ghost"} 
+            <Button
+              variant={viewMode === "grid" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("grid")}
               className="rounded-r-none"
             >
               <Grid3X3 className="h-4 w-4" />
             </Button>
-            <Button 
-              variant={viewMode === "list" ? "default" : "ghost"} 
+            <Button
+              variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("list")}
               className="rounded-l-none"

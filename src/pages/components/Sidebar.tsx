@@ -1,9 +1,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   LayoutDashboard,
-  FileText, 
+  FileText,
   Folder,
   Users,
   Settings,
@@ -34,6 +34,7 @@ export const Sidebar = ({ activeView, onViewChange, user }: SidebarProps) => {
     { id: "folders", label: "Folders", icon: Folder },
     { id: "shared", label: "Shared with me", icon: Users },
     { id: "settings", label: "Settings", icon: Settings },
+    { id: "login", label: "Login", icon: Settings },
   ];
 
   return (
@@ -73,8 +74,8 @@ export const Sidebar = ({ activeView, onViewChange, user }: SidebarProps) => {
 
       <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200">
         <div className="flex items-center gap-3 mb-3">
-          <img 
-            src={user.avatar} 
+          <img
+            src={user.avatar}
             alt={user.name}
             className="h-10 w-10 rounded-full object-cover"
           />
