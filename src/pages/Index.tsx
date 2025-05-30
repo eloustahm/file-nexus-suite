@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +32,10 @@ import { UserProfile } from "./components/UserProfile";
 import { Dashboard } from "./components/Dashboard";
 import { DocumentChat } from "./components/DocumentChat";
 import { DocumentGenerator } from "./components/DocumentGenerator";
+import { Workflow } from "./components/Workflow";
+import { Settings } from "./components/Settings";
+import { Shared } from "./components/Shared";
+import { Folders } from "./components/Folders";
 
 type ViewMode = "grid" | "list";
 
@@ -100,6 +103,14 @@ const Index = () => {
         return <DocumentChat />;
       case "generate":
         return <DocumentGenerator />;
+      case "workflow":
+        return <Workflow />;
+      case "folders":
+        return <Folders />;
+      case "shared":
+        return <Shared />;
+      case "settings":
+        return <Settings />;
       case "profile":
         return <UserProfile user={user} />;
       default:

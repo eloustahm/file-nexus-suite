@@ -30,6 +30,7 @@ export const Sidebar = ({ activeView, onViewChange, user }: SidebarProps) => {
     { id: "documents", label: "Documents", icon: FileText, badge: "125" },
     { id: "chat", label: "Chat with Documents", icon: MessageSquare },
     { id: "generate", label: "Generate Document", icon: Wand2 },
+    { id: "workflow", label: "Workflow", icon: Settings },
     { id: "folders", label: "Folders", icon: Folder },
     { id: "shared", label: "Shared with me", icon: Users },
     { id: "settings", label: "Settings", icon: Settings },
