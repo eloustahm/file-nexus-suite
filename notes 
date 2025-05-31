@@ -1,0 +1,104 @@
+1. Make the Quick Action Dashboard functional
+2. In User Profile:
+   * Add missing pages like Enable OTP and Privacy Settings
+3. Make Appearance settings dynamic and functional
+4. Improve the Landing Page:
+   * Add a "Watch Demo" section
+   * Enhance visuals and content for better user engagement
+5. Add notifications dropdown in the header
+6. Add a search bar to the header for quick navigation
+7. Fix the "New Document" button in the sidebar:
+   * Add an upload popup for document creation
+8. Document Workflows:
+   * Add Edit functionality for each workflow step
+   * Add Delete functionality for each workflow step
+9. Fix "Advanced Settings" section in Create New Workflow Template
+10. Fix Document edit functionality in Workflow Editor
+11. Fix Action Button 3 in Workflow Editor (currently not showing anything)
+12. Fix Create Workflow button (currently not working)
+13. Fix New Folder button (currently shows nothing):
+    * Add a popup to create a new folder
+14. Show a list of files associated with each folder
+15. Add functionality to delete or archive folders
+16. In Integrations:
+    * Allow users to input and manage their OpenAI API key
+17. Fix Sidebar:
+    * Ensure toggle/collapse behavior works correctly
+    * Highlight the active route accurately
+18. Add additional AI-powered modules (e.g., auto-summarization, AI review, classification)
+19. Add support for sharing folders and documents with role-based permissions
+20. Add activity logs for each document and workflow action
+21. Add user invitation and team collaboration features
+22. Add plan-based usage limits:
+    * Free plan: 5 documents, 3 templates, unlimited folders, 250MB storage
+    * Add 5 more scalable pricing plans with different limits and features
+
+23. Add usage analytics per user (e.g., number of documents used, workflows triggered)
+24. Add file versioning system for documents
+25. Add trash bin for deleted documents and folders with restore option
+26. Add auto-save and draft support for documents
+27. Add two-factor authentication setup page under security
+28. AI Document Tagging
+    Automatically tag documents with relevant keywords using NLP for easier search and categorization.
+
+29. Smart Document Search
+    Implement semantic search powered by vector embeddings (e.g., using OpenAI or local embedding models).
+
+30. AI Suggestions in Workflows
+    Suggest next steps or workflow improvements based on previous document patterns.
+
+31. Real-Time Collaboration
+    Allow multiple users to collaborate on documents live (like Google Docs), with comments and change tracking.
+
+32. Chat with Document
+    Let users ask questions or summarize content from a document using AI chat.
+
+33. Version Comparison Tool
+    Show diffs between document versions visually with highlights.
+
+34. Role-Based Access Control (RBAC)
+    Allow fine-grained permissions for users across documents, folders, workflows, and settings.
+
+35. AI-Powered Data Extraction
+    Extract structured data from contracts, forms, or legal documents automatically.
+
+36. Translation and Localization
+    Add multilingual document translation powered by OpenAI or DeepL API.
+
+37. Automated Template Generator
+    Use AI to create new templates from user instructions or uploaded sample documents.
+
+38. Document Approval Workflow
+    Add steps like "Review", "Approve", or "Reject" to workflows with notifications.
+
+39. Custom Branding for Teams
+    Allow teams to set their logo, domain, and colors (white-labeling).
+
+40. AI Writing Assistant
+    Provide grammar suggestions, rewrite options, or text simplification inside the editor.
+
+41. Integration Marketplace
+    Support integrations with tools like Google Drive, OneDrive, Dropbox, Notion, Slack, etc.
+
+42. Document Signing (e-signature)
+    Enable secure digital signing of documents.
+
+43. In-App Notifications & Reminders
+    Alert users of pending actions, deadlines, or unread items with real-time updates.
+
+44. Mobile Support
+    Build a responsive/mobile app or PWA to access, upload, and manage documents on the go.
+
+45. Scheduled Document Publishing
+    Allow users to set a publish/review/archive schedule for documents.
+
+46. Offline Mode
+    Let users access recent documents offline with local syncing.
+
+47. AI-Powered Insights Panel
+    Summarize document health, readability, keyword density, or sentiment in a sidebar.
+
+48. User Behavior Analytics
+    Track document engagement and workflow drop-off rates to optimize UX.
+
+

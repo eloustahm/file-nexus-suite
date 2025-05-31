@@ -51,9 +51,9 @@ export const AppRoutes = () => {
 
             {/* Authenticated routes */}
             <Route element={
-                 // <ProtectedRoute>
+                 <ProtectedRoute>
                     <AuthenticatedLayout user={mockUser} />
-                // </ProtectedRoute>
+                </ProtectedRoute>
             }>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/documents" element={<Document />} />
