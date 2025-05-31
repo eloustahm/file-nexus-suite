@@ -17,31 +17,54 @@ import {LoginPage} from "@/pages/auth/LoginPage.tsx";
 import {RegisterPage} from "@/pages/auth/RegisterPage.tsx";
 import {ForgotPasswordPage} from "@/pages/auth/ForgotPasswordPage.tsx";
 import {ResetPasswordPage} from "@/pages/auth/ResetPasswordPage.tsx";
+import {ProtectedRoute} from "@/components/ProtectedRoute";
+import {useAuth} from "@/contexts/AuthContext";
 
-export const AppRoutes = ({ user }) => (
-    <Routes>
-        {/* Guest routes */}
-        <Route element={<GuestLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-        </Route>
+export const AppRoutes = () => {
+    const { user } = useAuth();
+    
+    // Mock user for authenticated layout when user is logged in
+    const mockUser = user ? {
+        name: user.user_metadata?.first_name + ' ' + user.user_metadata?.last_name || user.email || 'User',
+        email: user.email || '',
+        role: user.user_metadata?.role || 'User',
+        avatar: user.user_metadata?.avatar_url || "/placeholder.svg",
+    } : {
+        name: "John Doe",
+        email: "john@example.com",
+        role: "Editor",
+        avatar: "/placeholder.svg",
+    };
 
-        {/* Authenticated routes */}
-        <Route element={<AuthenticatedLayout user={user} />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/documents" element={<Document />} />
-            <Route path="/chat" element={<DocumentChat />} />
-            <Route path="/generate" element={<DocumentGenerator />} />
-            <Route path="/workflow" element={<Workflow />} />
-            <Route path="/folders" element={<Folders />} />
-            <Route path="/shared" element={<Shared />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/profile" element={<UserProfile user={user} />} />
-        </Route>
+    return (
+        <Routes>
+            {/* Guest routes */}
+            <Route element={<GuestLayout />}>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+            </Route>
 
-        <Route path="*" element={<NotFound />} />
-    </Routes>
-);
+            {/* Authenticated routes */}
+            <Route element={
+                <ProtectedRoute>
+                    <AuthenticatedLayout user={mockUser} />
+                </ProtectedRoute>
+            }>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/documents" element={<Document />} />
+                <Route path="/chat" element={<DocumentChat />} />
+                <Route path="/generate" element={<DocumentGenerator />} />
+                <Route path="/workflow" element={<Workflow />} />
+                <Route path="/folders" element={<Folders />} />
+                <Route path="/shared" element={<Shared />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/profile" element={<UserProfile user={mockUser} />} />
+            </Route>
+
+            <Route path="*" element={<NotFound />} />
+        </Routes>
+    );
+};

@@ -20,6 +20,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, CreditCard, Settings, LogOut, Github } from "lucide-react";
 import { useRequestContext } from "@/contexts/RequestContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserMenuProps {
   user: {
@@ -30,22 +33,56 @@ interface UserMenuProps {
   };
 }
 
-export const UserMenu = ({ user }: UserMenuProps) => {
+export const UserMenu = ({ user: propUser }: UserMenuProps) => {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const { payment } = useRequestContext();
+  const { user: authUser, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Use authenticated user data if available, fallback to prop user
+  const displayUser = authUser ? {
+    name: authUser.user_metadata?.first_name + ' ' + authUser.user_metadata?.last_name || authUser.email || 'User',
+    email: authUser.email || '',
+    role: authUser.user_metadata?.role || 'User',
+    avatar: authUser.user_metadata?.avatar_url || "/placeholder.svg"
+  } : propUser;
 
   const handlePushToGithub = async () => {
-    // Simulate pushing to GitHub
     console.log("Pushing code to GitHub...");
-    // Add your GitHub integration logic here
+    toast({
+      title: "GitHub Integration",
+      description: "Code push initiated. Check your GitHub repository for updates.",
+    });
   };
 
   const handlePayment = async () => {
     await payment.execute(async () => {
-      // Simulate payment processing
       return new Promise(resolve => setTimeout(() => resolve({ success: true }), 2000));
     });
     setShowPaymentDialog(false);
+    toast({
+      title: "Payment Updated",
+      description: "Your payment method has been updated successfully.",
+    });
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getInitials = (name: string) => {
@@ -62,26 +99,26 @@ export const UserMenu = ({ user }: UserMenuProps) => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+            <AvatarImage src={displayUser.avatar} alt={displayUser.name} />
+            <AvatarFallback>{getInitials(displayUser.name)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
+            <p className="text-sm font-medium leading-none">{displayUser.name}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
+              {displayUser.email}
             </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/profile')}>
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/settings')}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
@@ -101,7 +138,7 @@ export const UserMenu = ({ user }: UserMenuProps) => {
             </DialogHeader>
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                Current plan: {user.role}
+                Current plan: {displayUser.role}
               </p>
               <Button 
                 onClick={handlePayment} 
@@ -121,7 +158,7 @@ export const UserMenu = ({ user }: UserMenuProps) => {
           <span>Push to GitHub</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

@@ -1,22 +1,66 @@
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { FileText, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { loginSchema, LoginData } from "@/lib/validation";
+import { rateLimiter } from "@/lib/security";
+import { useToast } from "@/hooks/use-toast";
 
 export const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const { signIn } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { toast } = useToast();
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const form = useForm<LoginData>({
+        resolver: zodResolver(loginSchema),
+        defaultValues: {
+            email: "",
+            password: "",
+        },
+    });
+
+    const from = location.state?.from?.pathname || "/dashboard";
+
+    const onSubmit = async (data: LoginData) => {
+        // Rate limiting check
+        if (!rateLimiter.isAllowed('login', 5, 15 * 60 * 1000)) {
+            toast({
+                title: "Too many attempts",
+                description: "Please wait 15 minutes before trying again.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         setIsLoading(true);
-        // Handle login logic here
-        setTimeout(() => setIsLoading(false), 2000);
+        try {
+            await signIn(data.email, data.password);
+            toast({
+                title: "Welcome back!",
+                description: "You have been successfully signed in.",
+            });
+            navigate(from, { replace: true });
+        } catch (error: any) {
+            console.error("Login error:", error);
+            toast({
+                title: "Sign in failed",
+                description: error.message || "Please check your credentials and try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -32,62 +76,80 @@ export const LoginPage = () => {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="Enter your email"
-                                required
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="email"
+                                                placeholder="Enter your email"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <div className="relative">
-                                <Input
-                                    id="password"
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="Enter your password"
-                                    required
-                                />
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-0 top-0 h-full px-3"
-                                    onClick={() => setShowPassword(!showPassword)}
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Password</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <Input
+                                                    type={showPassword ? "text" : "password"}
+                                                    placeholder="Enter your password"
+                                                    {...field}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="absolute right-0 top-0 h-full px-3"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                >
+                                                    {showPassword ? (
+                                                        <EyeOff className="h-4 w-4" />
+                                                    ) : (
+                                                        <Eye className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        id="remember"
+                                        type="checkbox"
+                                        className="rounded border-gray-300"
+                                    />
+                                    <label htmlFor="remember" className="text-sm">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <Link
+                                    to="/forgot-password"
+                                    className="text-sm text-blue-600 hover:underline"
                                 >
-                                    {showPassword ? (
-                                        <EyeOff className="h-4 w-4" />
-                                    ) : (
-                                        <Eye className="h-4 w-4" />
-                                    )}
-                                </Button>
+                                    Forgot password?
+                                </Link>
                             </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    id="remember"
-                                    type="checkbox"
-                                    className="rounded border-gray-300"
-                                />
-                                <Label htmlFor="remember" className="text-sm">
-                                    Remember me
-                                </Label>
-                            </div>
-                            <Link
-                                to="/forgot-password"
-                                className="text-sm text-blue-600 hover:underline"
-                            >
-                                Forgot password?
-                            </Link>
-                        </div>
-                        <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? "Signing in..." : "Sign in"}
-                        </Button>
-                    </form>
+                            <Button type="submit" className="w-full" disabled={isLoading}>
+                                {isLoading ? "Signing in..." : "Sign in"}
+                            </Button>
+                        </form>
+                    </Form>
                     
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
