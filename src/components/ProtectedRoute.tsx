@@ -14,6 +14,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   const location = useLocation();
 
   if (loading) {
+
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="space-y-4 w-full max-w-md">
