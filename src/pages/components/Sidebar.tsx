@@ -1,6 +1,6 @@
+
 import {Button} from "@/components/ui/button";
 import {
-    SidebarProvider,
     Sidebar,
     SidebarHeader,
     SidebarContent,
@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuBadge,
     SidebarTrigger,
-    useSidebar, // <-- Import collapse state hook
+    useSidebar,
 } from "@/components/ui/sidebar";
 
 import {useLocation, Link} from "react-router-dom";
@@ -48,17 +48,11 @@ const menuItems = [
 
 export const SidebarMain = ({user}: SidebarProps) => {
     const location = useLocation();
-    const {collapsed} = useSidebar();
-
+    const {state} = useSidebar();
+    const collapsed = state === "collapsed";
 
     return (
-
-        <Sidebar
-            collapsible={'offcanvas'}
-            // className={`fixed left-0 top-0 h-full z-50 bg-white border-r border-gray-200 transition-all overflow-hidden ${
-            //     collapsed ? "w-16" : "w-64"
-            // }`}
-        >
+        <Sidebar collapsible="icon">
             <SidebarHeader className="p-6">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-2">
@@ -67,8 +61,8 @@ export const SidebarMain = ({user}: SidebarProps) => {
                         </div>
                         {!collapsed && (
                             <span className="text-xl font-bold text-gray-900">
-                  DocuFlow
-                </span>
+                                DocuFlow
+                            </span>
                         )}
                     </div>
                     <SidebarTrigger/>
@@ -86,7 +80,6 @@ export const SidebarMain = ({user}: SidebarProps) => {
                 )}
             </SidebarHeader>
 
-            {/* Menu */}
             <SidebarContent className="px-6">
                 <SidebarMenu>
                     {menuItems.map((item) => {
@@ -112,7 +105,6 @@ export const SidebarMain = ({user}: SidebarProps) => {
                 </SidebarMenu>
             </SidebarContent>
 
-            {/* Footer */}
             <SidebarFooter className="p-6 border-t border-gray-200 mt-auto">
                 <div className="flex items-center gap-3 mb-3">
                     <img
@@ -145,6 +137,5 @@ export const SidebarMain = ({user}: SidebarProps) => {
                 )}
             </SidebarFooter>
         </Sidebar>
-
     );
 };
