@@ -1,41 +1,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-  FileText,
-  Upload,
-  Search,
-  Grid3X3,
-  List,
-  Filter,
-  Plus,
-  Folder,
-  Download,
-  Edit,
-  Share,
-  MoreVertical,
-  User,
-  Settings as SettingsIcon,
-  LogOut,
-  Bell,
-  Clock,
-  TrendingUp
-} from "lucide-react";
-import { Sidebar } from "./components/Sidebar";
-import { Document } from "./components/Document/Document";
-import { UserProfile } from "./components/UserProfile";
-import { Dashboard } from "./components/Dashboard";
-import { DocumentChat } from "./components/Document/DocumentChat";
-import { DocumentGenerator } from "./components/Document/DocumentGenerator";
-import { Workflow } from "./components/Workflow";
-import { Settings } from "./components/Settings";
-import { Shared } from "./components/Shared";
-import { Folders } from "./components/Folders";
+import {Bell} from "lucide-react";
+import {SidebarMain} from "./components/Sidebar";
+
 import {AppRoutes} from "@/routes/AppRoutes.tsx";
 
 
@@ -55,8 +23,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
-        <Sidebar activeView={activeView} onViewChange={setActiveView} user={user} />
-        <main className="flex-1 lg:ml-64">
+        {/*<SidebarMain activeView={activeView} onViewChange={setActiveView} user={user} />*/}
+        <main className="flex-1 transition-all duration-300 ml-[--sidebar-width]" style={{ '--sidebar-width': '16rem' }}>
           <header className="bg-white border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -81,7 +49,7 @@ const Index = () => {
           </header>
 
           <div className="p-6">
-            <AppRoutes user={user} />
+
           </div>
         </main>
       </div>

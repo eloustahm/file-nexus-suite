@@ -8,19 +8,26 @@ import {Shared} from "../pages/components/Shared";
 import {Settings} from "../pages/components/Settings";
 import {UserProfile} from "../pages/components/UserProfile";
 import NotFound from "../pages/NotFound";
+import {AuthenticatedLayout} from "@/pages/layouts/AuthenticatedLayout.tsx";
 
 export const AppRoutes = ({ user }) => (
-    console.log(1, user),
+
     <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/documents" element={<Document />} />
-        <Route path="/chat" element={<DocumentChat />} />
-        <Route path="/generate" element={<DocumentGenerator />} />
-        <Route path="/folders" element={<Folders />} />
-        <Route path="/shared" element={<Shared />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/profile" element={<UserProfile user={user} />} />
+        {/*<Route path="/login" element={<LoginPage />} />*/}
+
+            <Route element={<AuthenticatedLayout user={user} />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/documents" element={<Document />} />
+              <Route path="/chat" element={<DocumentChat />} />
+              <Route path="/generate" element={<DocumentGenerator />} />
+              <Route path="/folders" element={<Folders />} />
+              <Route path="/shared" element={<Shared />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/profile" element={<UserProfile user={user} />} />
+            </Route>
+
+
         <Route path="*" element={<NotFound />} />
     </Routes>
 );

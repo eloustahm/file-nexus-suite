@@ -5,8 +5,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import {AppRoutes} from "@/routes/AppRoutes.tsx";
 
 const queryClient = new QueryClient();
+const user = {
+    name: "John Doe",
+    email: "john@example.com",
+    role: "Editor",
+    avatar: "/placeholder.svg",
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -14,9 +21,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="*" element={<Index />} />
-        </Routes>
+          <AppRoutes user={user} />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
