@@ -54,9 +54,11 @@ export const SidebarMain = ({user}: SidebarProps) => {
     return (
 
         <Sidebar
-            className="fixed left-0 top-0 h-full z-50 bg-white border-r border-gray-200 transition-all data-[state=open]:w-64 data-[state=collapsed]:w-16 overflow-hidden"
+            collapsible={'offcanvas'}
+            // className={`fixed left-0 top-0 h-full z-50 bg-white border-r border-gray-200 transition-all overflow-hidden ${
+            //     collapsed ? "w-16" : "w-64"
+            // }`}
         >
-            {/* Header */}
             <SidebarHeader className="p-6">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-2">
@@ -69,7 +71,7 @@ export const SidebarMain = ({user}: SidebarProps) => {
                 </span>
                         )}
                     </div>
-                    {/*<SidebarTrigger/>*/}
+                    <SidebarTrigger/>
                 </div>
 
                 {!collapsed && (

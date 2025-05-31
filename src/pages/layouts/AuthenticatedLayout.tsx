@@ -8,9 +8,9 @@ export const AuthenticatedLayout = ({ user }) => {
 
     return (
         <SidebarProvider>
-            <div className="min-h-screen bg-gray-50 flex">
+            <div className="w-full min-h-screen bg-gray-50 flex">
                 <SidebarMain user={user} />
-                <main className="flex-1">
+                <main className="flex-1 w-full">
                     <header className="bg-white border-b border-gray-200 px-6 py-4">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-semibold text-gray-900">Dashboard</h2>
