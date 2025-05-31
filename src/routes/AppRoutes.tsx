@@ -8,6 +8,7 @@ import {Folders} from "../pages/components/Folders";
 import {Shared} from "../pages/components/Shared";
 import {Settings} from "../pages/components/Settings";
 import {UserProfile} from "../pages/components/UserProfile";
+import {Workflow} from "../pages/components/Workflow";
 import NotFound from "../pages/NotFound";
 import {AuthenticatedLayout} from "@/pages/layouts/AuthenticatedLayout.tsx";
 import {GuestLayout} from "@/pages/layouts/GuestLayout.tsx";
