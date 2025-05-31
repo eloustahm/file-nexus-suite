@@ -1,40 +1,48 @@
 // src/lib/http.ts
 
+import { useQuery, useMutation, useQueryClient, QueryKey } from '@tanstack/react-query';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 /**
- * Type-safe fetch options with support for skipping auth and adding interceptors.
+ * Custom type that extends RequestInit with optional skipAuth flag
  */
 export type FetcherOptions = RequestInit & {
-  skipAuth?: boolean;
+  skipAuth?: boolean; // if true, omits credentials in request
 };
 
-// Optional pre-request interceptor
+/**
+ * Intercepts requests before they are sent
+ * Useful for logging or dynamically modifying headers
+ */
 function requestInterceptor(url: string, options: FetcherOptions): [string, FetcherOptions] {
-  // You could log, add custom headers, tokens, etc. here
   return [url, options];
 }
 
-// Optional response interceptor
+/**
+ * Intercepts and processes the response
+ * Handles common error and success response parsing
+ */
 async function responseInterceptor<T>(response: Response): Promise<T> {
   if (!response.ok) {
     let error: any;
     try {
-      error = await response.json();
+      error = await response.json(); // Attempt to parse JSON error
     } catch {
-      throw new Error(`HTTP error ${response.status}`);
+      throw new Error(`HTTP error ${response.status}`); // Fallback if JSON parsing fails
     }
     throw new Error(error.message || 'Unknown error');
   }
 
-  if (response.status === 204) return null as T;
+  if (response.status === 204) return null as T; // No content response
   return response.json();
 }
 
 /**
- * Unified fetch handler
+ * Central fetch function used by all methods
+ * Applies interceptors and handles credentials/cookies
  */
-export async function api<T = any>(
+async function api<T = any>(
     endpoint: string,
     options: FetcherOptions = {}
 ): Promise<T> {
@@ -42,7 +50,7 @@ export async function api<T = any>(
   const [url, interceptedOptions] = requestInterceptor(finalUrl, options);
 
   const response = await fetch(url, {
-    credentials: options.skipAuth ? 'same-origin' : 'include',
+    credentials: options.skipAuth ? 'same-origin' : 'include', // Include cookies unless skipped
     ...interceptedOptions,
     headers: {
       'Content-Type': 'application/json',
@@ -53,42 +61,64 @@ export async function api<T = any>(
   return responseInterceptor<T>(response);
 }
 
-// Convenience helpers
-export const http = {
-  get: <T>(url: string, options?: FetcherOptions) =>
-      api<T>(url, { method: 'GET', ...options }),
+/**
+ * Hook for performing GET requests using React Query
+ */
+export const useApiQuery = <T = any>(
+    key: QueryKey,
+    endpoint: string,
+    options?: FetcherOptions
+) => {
+  return useQuery<T>({
+    queryKey: key,
+    queryFn: () => api<T>(endpoint, { method: 'GET', ...options }),
+  });
+};
 
-  post: <T>(url: string, data?: any, options?: FetcherOptions) =>
-      api<T>(url, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        ...options,
-      }),
+/**
+ * Hook for performing mutations (POST, PUT, PATCH, DELETE) using React Query
+ */
+export const useApiMutation = <T = any, V = any>(
+    endpoint: string,
+    method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+    options?: FetcherOptions
+) => {
+  const queryClient = useQueryClient();
 
-  put: <T>(url: string, data?: any, options?: FetcherOptions) =>
-      api<T>(url, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-        ...options,
-      }),
+  return useMutation<T, Error, V>({
+    mutationFn: (variables: V) =>
+        api<T>(endpoint, {
+          method,
+          body: JSON.stringify(variables),
+          ...options,
+        }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(); // Invalidate cache to refetch fresh data
+    },
+  });
+};
 
-  patch: <T>(url: string, data?: any, options?: FetcherOptions) =>
-      api<T>(url, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-        ...options,
-      }),
+/**
+ * Hook for uploading files using FormData and React Query
+ */
+export const useUploadMutation = <T = any>(
+    endpoint: string,
+    options?: FetcherOptions
+) => {
+  const queryClient = useQueryClient();
 
-  delete: <T>(url: string, options?: FetcherOptions) =>
-      api<T>(url, { method: 'DELETE', ...options }),
-
-  upload: <T>(url: string, formData: FormData, options?: FetcherOptions) =>
-      api<T>(url, {
-        method: 'POST',
-        body: formData,
-        ...options,
-        headers: {
-          ...options?.headers,
-        },
-      }),
+  return useMutation<T, Error, FormData>({
+    mutationFn: (formData: FormData) =>
+        api<T>(endpoint, {
+          method: 'POST',
+          body: formData,
+          ...options,
+          headers: {
+            ...options?.headers,
+          },
+        }),
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+    },
+  });
 };

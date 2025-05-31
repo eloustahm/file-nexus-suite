@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+
     // Get initial session
     // supabase.auth.getSession().then(({ data: { session } }) => {
     //   setSession(session);
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     //   password,
     // });
     // if (error) throw error;
+
   };
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
