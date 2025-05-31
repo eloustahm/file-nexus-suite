@@ -9,6 +9,7 @@ import {Shared} from "../pages/components/Shared";
 import {Settings} from "../pages/components/Settings";
 import {UserProfile} from "../pages/components/UserProfile";
 import {Workflow} from "../pages/components/Workflow";
+import {PaymentPage} from "../pages/components/PaymentPage";
 import NotFound from "../pages/NotFound";
 import {AuthenticatedLayout} from "@/pages/layouts/AuthenticatedLayout.tsx";
 import {GuestLayout} from "@/pages/layouts/GuestLayout.tsx";
@@ -62,6 +63,7 @@ export const AppRoutes = () => {
                 <Route path="/shared" element={<Shared />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/profile" element={<UserProfile user={mockUser} />} />
+                <Route path="/payment" element={<PaymentPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

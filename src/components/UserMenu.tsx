@@ -9,17 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, CreditCard, Settings, LogOut, Github } from "lucide-react";
-import { useRequestContext } from "@/contexts/RequestContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -34,8 +25,6 @@ interface UserMenuProps {
 }
 
 export const UserMenu = ({ user: propUser }: UserMenuProps) => {
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const { payment } = useRequestContext();
   const { user: authUser, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -53,17 +42,6 @@ export const UserMenu = ({ user: propUser }: UserMenuProps) => {
     toast({
       title: "GitHub Integration",
       description: "Code push initiated. Check your GitHub repository for updates.",
-    });
-  };
-
-  const handlePayment = async () => {
-    await payment.execute(async () => {
-      return new Promise(resolve => setTimeout(() => resolve({ success: true }), 2000));
-    });
-    setShowPaymentDialog(false);
-    toast({
-      title: "Payment Updated",
-      description: "Your payment method has been updated successfully.",
     });
   };
 
@@ -122,37 +100,10 @@ export const UserMenu = ({ user: propUser }: UserMenuProps) => {
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
-        <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-          <DialogTrigger asChild>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-              <CreditCard className="mr-2 h-4 w-4" />
-              <span>Payment</span>
-            </DropdownMenuItem>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Payment Settings</DialogTitle>
-              <DialogDescription>
-                Manage your payment methods and billing information.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Current plan: {displayUser.role}
-              </p>
-              <Button 
-                onClick={handlePayment} 
-                disabled={payment.state.loading}
-                className="w-full"
-              >
-                {payment.state.loading ? "Processing..." : "Update Payment Method"}
-              </Button>
-              {payment.state.error && (
-                <p className="text-sm text-red-600">{payment.state.error}</p>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+        <DropdownMenuItem onClick={() => navigate('/payment')}>
+          <CreditCard className="mr-2 h-4 w-4" />
+          <span>Payment</span>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handlePushToGithub}>
           <Github className="mr-2 h-4 w-4" />
           <span>Push to GitHub</span>
