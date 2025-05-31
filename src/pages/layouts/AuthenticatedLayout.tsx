@@ -4,6 +4,7 @@ import { SidebarMain } from "@/pages/components/Sidebar";
 import { Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
+import { UserMenu } from "@/components/UserMenu";
 
 export const AuthenticatedLayout = ({ user }) => {
     return (
@@ -18,14 +19,7 @@ export const AuthenticatedLayout = ({ user }) => {
                                 <Button variant="ghost" size="icon">
                                     <Bell className="h-5 w-5" />
                                 </Button>
-                                <div className="flex items-center gap-2">
-                                    <img
-                                        src={user.avatar}
-                                        alt={user.name}
-                                        className="h-8 w-8 rounded-full object-cover"
-                                    />
-                                    <span className="text-sm font-medium text-gray-700">{user.name}</span>
-                                </div>
+                                <UserMenu user={user} />
                             </div>
                         </div>
                     </header>
