@@ -31,6 +31,10 @@ import {
     Upload,
     Zap,
     Brain,
+    Share2,
+    Activity,
+    UserPlus,
+    CreditCard,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -51,8 +55,12 @@ const menuItems = [
     {id: "workflow", label: "Workflow", icon: Settings},
     {id: "folders", label: "Folders", icon: Folder},
     {id: "shared", label: "Shared with me", icon: Users},
+    {id: "sharing", label: "Document Sharing", icon: Share2},
+    {id: "activity", label: "Activity Logs", icon: Activity},
+    {id: "team", label: "Team Collaboration", icon: UserPlus},
     {id: "ai-modules", label: "AI Modules", icon: Brain},
     {id: "integrations", label: "Integrations", icon: Zap},
+    {id: "pricing", label: "Pricing Plans", icon: CreditCard},
     {id: "settings", label: "Settings", icon: Settings},
 ];
 

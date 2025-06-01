@@ -12,6 +12,10 @@ import {Workflow} from "../pages/components/Workflow";
 import {PaymentPage} from "../pages/components/PaymentPage";
 import {Integrations} from "../pages/components/Integrations";
 import {AIModules} from "../pages/components/AIModules";
+import {DocumentSharing} from "../pages/components/DocumentSharing";
+import {ActivityLogs} from "../pages/components/ActivityLogs";
+import {TeamCollaboration} from "../pages/components/TeamCollaboration";
+import {PricingPlans} from "../pages/components/PricingPlans";
 import NotFound from "../pages/NotFound";
 import {AuthenticatedLayout} from "@/pages/layouts/AuthenticatedLayout.tsx";
 import {GuestLayout} from "@/pages/layouts/GuestLayout.tsx";
@@ -58,6 +62,10 @@ export const AppRoutes = () => {
                 <Route path="/workflow" element={<Workflow />} />
                 <Route path="/folders" element={<Folders />} />
                 <Route path="/shared" element={<Shared />} />
+                <Route path="/sharing" element={<DocumentSharing />} />
+                <Route path="/activity" element={<ActivityLogs />} />
+                <Route path="/team" element={<TeamCollaboration />} />
+                <Route path="/pricing" element={<PricingPlans />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/integrations" element={<Integrations />} />
                 <Route path="/ai-modules" element={<AIModules />} />
