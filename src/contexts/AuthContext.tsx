@@ -10,6 +10,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   signOut: () => Promise<void>;
+  logout: () => Promise<void>; // Add this line
   resetPassword: (email: string) => Promise<void>;
 }
 
@@ -21,7 +22,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
+    // Simulate loading completion
+    setLoading(false);
     // Get initial session
     // supabase.auth.getSession().then(({ data: { session } }) => {
     //   setSession(session);
@@ -47,7 +49,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     //   password,
     // });
     // if (error) throw error;
-
   };
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
@@ -69,6 +70,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // if (error) throw error;
   };
 
+  const logout = async () => {
+    // Same as signOut for now
+    await signOut();
+  };
+
   const resetPassword = async (email: string) => {
     // const { error } = await supabase.auth.resetPasswordForEmail(email);
     // if (error) throw error;
@@ -83,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signIn,
         signUp,
         signOut,
+        logout,
         resetPassword,
       }}
     >

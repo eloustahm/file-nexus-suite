@@ -29,6 +29,8 @@ import {
     MessageSquare,
     Wand2,
     Upload,
+    Zap,
+    Brain,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -49,6 +51,8 @@ const menuItems = [
     {id: "workflow", label: "Workflow", icon: Settings},
     {id: "folders", label: "Folders", icon: Folder},
     {id: "shared", label: "Shared with me", icon: Users},
+    {id: "ai-modules", label: "AI Modules", icon: Brain},
+    {id: "integrations", label: "Integrations", icon: Zap},
     {id: "settings", label: "Settings", icon: Settings},
 ];
 
@@ -95,7 +99,7 @@ export const SidebarMain = ({user}: SidebarProps) => {
                                 New Document
                             </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="bg-white">
                             <DialogHeader>
                                 <DialogTitle>Upload New Document</DialogTitle>
                                 <DialogDescription>
