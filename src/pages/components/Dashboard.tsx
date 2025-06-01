@@ -1,15 +1,16 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { 
   FileText, 
   Folder, 
   Users, 
-  TrendingUp,
-  Clock,
+  TrendingUp, 
+  Clock, 
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Activity
 } from "lucide-react";
 import { QuickActionsDashboard } from "./QuickActionsDashboard";
 
@@ -17,61 +18,77 @@ export const Dashboard = () => {
   const stats = [
     {
       title: "Total Documents",
-      value: "24",
+      value: "1,234",
       change: "+12%",
       changeType: "positive" as const,
-      icon: FileText,
-      color: "text-blue-600"
+      icon: FileText
     },
     {
       title: "Active Workflows",
-      value: "8",
-      change: "+5%",
+      value: "23",
+      change: "+5%", 
       changeType: "positive" as const,
-      icon: Clock,
-      color: "text-orange-600"
-    },
-    {
-      title: "Shared Folders",
-      value: "12",
-      change: "+8%",
-      changeType: "positive" as const,
-      icon: Folder,
-      color: "text-green-600"
+      icon: Activity
     },
     {
       title: "Team Members",
-      value: "6",
-      change: "0%",
+      value: "12",
+      change: "+2",
       changeType: "neutral" as const,
-      icon: Users,
-      color: "text-purple-600"
+      icon: Users
+    },
+    {
+      title: "Storage Used",
+      value: "2.1 GB",
+      change: "+0.5 GB",
+      changeType: "neutral" as const,
+      icon: Folder
     }
   ];
 
-  const workflowUpdates = [
+  const recentActivity = [
     {
-      name: "Legal Document Review",
-      status: "In Progress",
-      progress: 75,
-      dueDate: "Tomorrow",
-      priority: "high"
+      id: 1,
+      action: "Document uploaded",
+      document: "Project Proposal.pdf",
+      user: "Sarah Wilson",
+      time: "2 minutes ago",
+      status: "completed"
     },
     {
-      name: "Marketing Materials",
-      status: "Completed",
-      progress: 100,
-      dueDate: "Completed",
-      priority: "medium"
+      id: 2,
+      action: "Workflow completed",
+      document: "Legal Review Process",
+      user: "Mike Johnson",
+      time: "1 hour ago", 
+      status: "completed"
     },
     {
-      name: "Contract Analysis",
-      status: "Pending",
-      progress: 25,
-      dueDate: "Next Week",
-      priority: "low"
+      id: 3,
+      action: "Document shared",
+      document: "Marketing Plan.docx",
+      user: "Lisa Chen",
+      time: "3 hours ago",
+      status: "pending"
     }
   ];
+
+  const getChangeColor = (type: string) => {
+    switch (type) {
+      case "positive": return "text-green-600";
+      case "negative": return "text-red-600";
+      default: return "text-gray-600";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed": return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "pending": return <Clock className="h-4 w-4 text-yellow-500" />;
+      case "error": return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default: return <Clock className="h-4 w-4 text-gray-500" />;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -80,82 +97,80 @@ export const Dashboard = () => {
         <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your documents.</p>
       </div>
 
+      {/* Quick Actions */}
+      <QuickActionsDashboard />
+
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
           <Card key={index}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                  <p className={`text-sm ${
-                    stat.changeType === 'positive' ? 'text-green-600' :
-                    stat.changeType === 'negative' ? 'text-red-600' : 'text-gray-500'
-                  }`}>
-                    {stat.change} from last month
-                  </p>
-                </div>
-                <div className={`h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center ${stat.color}`}>
-                  <stat.icon className="h-6 w-6" />
-                </div>
-              </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className={`text-xs ${getChangeColor(stat.changeType)}`}>
+                {stat.change} from last month
+              </p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <QuickActionsDashboard />
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>Latest actions in your workspace</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentActivity.map((activity) => (
+                <div key={activity.id} className="flex items-center space-x-4">
+                  {getStatusIcon(activity.status)}
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium leading-none">{activity.action}</p>
+                    <p className="text-sm text-muted-foreground">{activity.document}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">{activity.user}</p>
+                    <p className="text-xs text-muted-foreground">{activity.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Workflow Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Workflow Status
-          </CardTitle>
-          <CardDescription>Track the progress of your document workflows</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {workflowUpdates.map((workflow, index) => (
-              <div key={index} className="p-4 border rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium">{workflow.name}</h4>
-                  <div className="flex items-center gap-2">
-                    <Badge 
-                      variant={workflow.priority === 'high' ? 'destructive' : 
-                              workflow.priority === 'medium' ? 'default' : 'secondary'}
-                      className="text-xs"
-                    >
-                      {workflow.priority}
-                    </Badge>
-                    <Badge 
-                      variant={workflow.status === 'Completed' ? 'default' :
-                              workflow.status === 'In Progress' ? 'secondary' : 'outline'}
-                      className="text-xs"
-                    >
-                      {workflow.status === 'Completed' && <CheckCircle className="h-3 w-3 mr-1" />}
-                      {workflow.status === 'In Progress' && <Clock className="h-3 w-3 mr-1" />}
-                      {workflow.status === 'Pending' && <AlertCircle className="h-3 w-3 mr-1" />}
-                      {workflow.status}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Progress</span>
-                    <span>{workflow.progress}%</span>
-                  </div>
-                  <Progress value={workflow.progress} className="h-2" />
-                  <p className="text-sm text-gray-500">Due: {workflow.dueDate}</p>
-                </div>
+        {/* Quick Stats */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Document Overview</CardTitle>
+            <CardDescription>Your document statistics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Documents this week</span>
+                <Badge variant="secondary">+15</Badge>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Pending reviews</span>
+                <Badge variant="outline">8</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Completed workflows</span>
+                <Badge className="bg-green-100 text-green-800">12</Badge>
+              </div>
+              <Button className="w-full" variant="outline">
+                View All Documents
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

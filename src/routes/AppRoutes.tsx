@@ -24,19 +24,13 @@ import {useAuth} from "@/contexts/AuthContext";
 export const AppRoutes = () => {
     const { user } = useAuth();
 
-    // Mock user for authenticated layout when user is logged in
-    const mockUser = user ? {
-        name: user.user_metadata?.first_name + ' ' + user.user_metadata?.last_name || user.email || 'User',
-        email: user.email || '',
-        role: user.user_metadata?.role || 'User',
-        avatar: user.user_metadata?.avatar_url || "/placeholder.svg",
-    } : {
+    // Mock user for authenticated layout
+    const mockUser = {
         name: "John Doe",
         email: "john@example.com",
         role: "Editor",
         avatar: "/placeholder.svg",
     };
-
 
     return (
         <Routes>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Workflow as WorkflowIcon,
   Plus,
@@ -19,11 +20,13 @@ import {
   ArrowRight,
   Edit,
   MoreVertical,
-  Settings
+  Settings,
+  Trash2,
+  Save
 } from "lucide-react";
 
 export const Workflow = () => {
-  const [workflows] = useState([
+  const [workflows, setWorkflows] = useState([
     {
       id: 1,
       name: "Document Review Process",
@@ -31,9 +34,9 @@ export const Workflow = () => {
       status: "active",
       documentsCount: 12,
       steps: [
-        { name: "Draft Creation", assignee: "Author", status: "completed" },
-        { name: "Peer Review", assignee: "Team Lead", status: "in-progress" },
-        { name: "Final Approval", assignee: "Manager", status: "pending" }
+        { id: 1, name: "Draft Creation", assignee: "Author", status: "completed" },
+        { id: 2, name: "Peer Review", assignee: "Team Lead", status: "in-progress" },
+        { id: 3, name: "Final Approval", assignee: "Manager", status: "pending" }
       ]
     },
     {
@@ -43,9 +46,9 @@ export const Workflow = () => {
       status: "active",
       documentsCount: 5,
       steps: [
-        { name: "Initial Draft", assignee: "Legal Team", status: "completed" },
-        { name: "Compliance Check", assignee: "Compliance Officer", status: "completed" },
-        { name: "Final Review", assignee: "Legal Director", status: "in-progress" }
+        { id: 1, name: "Initial Draft", assignee: "Legal Team", status: "completed" },
+        { id: 2, name: "Compliance Check", assignee: "Compliance Officer", status: "completed" },
+        { id: 3, name: "Final Review", assignee: "Legal Director", status: "in-progress" }
       ]
     }
   ]);
@@ -83,6 +86,17 @@ export const Workflow = () => {
     }
   ]);
 
+  const [newWorkflow, setNewWorkflow] = useState({
+    name: "",
+    description: "",
+    defaultAssignee: "",
+    steps: []
+  });
+
+  const [editingStep, setEditingStep] = useState(null);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+  const [createWorkflowOpen, setCreateWorkflowOpen] = useState(false);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed": return "bg-green-100 text-green-800";
@@ -111,6 +125,44 @@ export const Workflow = () => {
     }
   };
 
+  const handleDeleteStep = (workflowId: number, stepId: number) => {
+    setWorkflows(workflows.map(workflow => 
+      workflow.id === workflowId 
+        ? { ...workflow, steps: workflow.steps.filter(step => step.id !== stepId) }
+        : workflow
+    ));
+  };
+
+  const handleEditStep = (workflowId: number, stepId: number, newData: any) => {
+    setWorkflows(workflows.map(workflow => 
+      workflow.id === workflowId 
+        ? { 
+            ...workflow, 
+            steps: workflow.steps.map(step => 
+              step.id === stepId ? { ...step, ...newData } : step
+            )
+          }
+        : workflow
+    ));
+    setEditingStep(null);
+  };
+
+  const handleCreateWorkflow = () => {
+    if (newWorkflow.name && newWorkflow.description) {
+      const newId = Math.max(...workflows.map(w => w.id)) + 1;
+      setWorkflows([...workflows, {
+        id: newId,
+        name: newWorkflow.name,
+        description: newWorkflow.description,
+        status: "active",
+        documentsCount: 0,
+        steps: []
+      }]);
+      setNewWorkflow({ name: "", description: "", defaultAssignee: "", steps: [] });
+      setCreateWorkflowOpen(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -118,10 +170,98 @@ export const Workflow = () => {
           <h1 className="text-3xl font-bold text-gray-900">Document Workflows</h1>
           <p className="text-gray-600 mt-1">Manage document approval and review processes</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Workflow
-        </Button>
+        <Dialog open={createWorkflowOpen} onOpenChange={setCreateWorkflowOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Workflow
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-white">
+            <DialogHeader>
+              <DialogTitle>Create New Workflow</DialogTitle>
+              <DialogDescription>Design a new workflow for document processing</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Workflow Name</label>
+                <Input 
+                  placeholder="Enter workflow name" 
+                  value={newWorkflow.name}
+                  onChange={(e) => setNewWorkflow({...newWorkflow, name: e.target.value})}
+                  className="mt-1" 
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Description</label>
+                <Textarea 
+                  placeholder="Describe the workflow purpose" 
+                  value={newWorkflow.description}
+                  onChange={(e) => setNewWorkflow({...newWorkflow, description: e.target.value})}
+                  className="mt-1" 
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Default Assignee</label>
+                <Select value={newWorkflow.defaultAssignee} onValueChange={(value) => setNewWorkflow({...newWorkflow, defaultAssignee: value})}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select default assignee" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="team-lead">Team Lead</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleCreateWorkflow}>Create Workflow</Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Advanced Settings
+                </Button>
+              </div>
+              {showAdvancedSettings && (
+                <div className="border-t pt-4 space-y-4">
+                  <h4 className="font-medium">Advanced Configuration</h4>
+                  <div>
+                    <label className="text-sm font-medium">Auto-assign documents</label>
+                    <Select>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select auto-assignment rule" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="round-robin">Round Robin</SelectItem>
+                        <SelectItem value="load-based">Load Based</SelectItem>
+                        <SelectItem value="manual">Manual Only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Deadline (days)</label>
+                    <Input type="number" placeholder="7" className="mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Email notifications</label>
+                    <Select>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select notification frequency" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="immediate">Immediate</SelectItem>
+                        <SelectItem value="daily">Daily Digest</SelectItem>
+                        <SelectItem value="weekly">Weekly Summary</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Tabs defaultValue="active" className="w-full">
@@ -165,7 +305,7 @@ export const Workflow = () => {
                       <div className="flex items-center gap-2 overflow-x-auto pb-2">
                         {workflow.steps.map((step, index) => (
                           <div key={index} className="flex items-center gap-2 flex-shrink-0">
-                            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border relative group ${
                               step.status === 'completed' ? 'bg-green-50 border-green-200' :
                               step.status === 'in-progress' ? 'bg-blue-50 border-blue-200' :
                               'bg-gray-50 border-gray-200'
@@ -174,6 +314,24 @@ export const Workflow = () => {
                               <div>
                                 <p className="text-xs font-medium">{step.name}</p>
                                 <p className="text-xs text-gray-500">{step.assignee}</p>
+                              </div>
+                              <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-6 w-6"
+                                  onClick={() => setEditingStep({ workflowId: workflow.id, stepId: step.id, ...step })}
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-6 w-6 text-red-500 hover:text-red-700"
+                                  onClick={() => handleDeleteStep(workflow.id, step.id)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
                               </div>
                             </div>
                             {index < workflow.steps.length - 1 && (
@@ -226,6 +384,9 @@ export const Workflow = () => {
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon">
+                          <Play className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </div>
@@ -258,7 +419,7 @@ export const Workflow = () => {
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select default assignee" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="team-lead">Team Lead</SelectItem>
                     <SelectItem value="manager">Manager</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
@@ -267,7 +428,10 @@ export const Workflow = () => {
               </div>
               <div className="flex gap-2">
                 <Button>Save Template</Button>
-                <Button variant="outline">
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+                >
                   <Settings className="h-4 w-4 mr-2" />
                   Advanced Settings
                 </Button>
@@ -276,6 +440,67 @@ export const Workflow = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Step Dialog */}
+      {editingStep && (
+        <Dialog open={!!editingStep} onOpenChange={() => setEditingStep(null)}>
+          <DialogContent className="bg-white">
+            <DialogHeader>
+              <DialogTitle>Edit Workflow Step</DialogTitle>
+              <DialogDescription>Modify the step details</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Step Name</label>
+                <Input 
+                  value={editingStep.name}
+                  onChange={(e) => setEditingStep({...editingStep, name: e.target.value})}
+                  className="mt-1" 
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Assignee</label>
+                <Input 
+                  value={editingStep.assignee}
+                  onChange={(e) => setEditingStep({...editingStep, assignee: e.target.value})}
+                  className="mt-1" 
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Status</label>
+                <Select 
+                  value={editingStep.status} 
+                  onValueChange={(value) => setEditingStep({...editingStep, status: value})}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => handleEditStep(editingStep.workflowId, editingStep.stepId, {
+                    name: editingStep.name,
+                    assignee: editingStep.assignee,
+                    status: editingStep.status
+                  })}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+                <Button variant="outline" onClick={() => setEditingStep(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
