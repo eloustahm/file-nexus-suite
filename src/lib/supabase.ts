@@ -7,7 +7,9 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 if (!supabaseUrl || !supabaseKey) {
   console.warn('Supabase environment variables are missing. Please connect your Supabase project.');
   // Create a dummy client to prevent build errors
-  export const supabase = createClient('https://dummy.supabase.co', 'dummy-key');
+  const supabase = createClient('https://dummy.supabase.co', 'dummy-key');
+  export { supabase };
 } else {
-  export const supabase = createClient(supabaseUrl, supabaseKey);
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  export { supabase };
 }
