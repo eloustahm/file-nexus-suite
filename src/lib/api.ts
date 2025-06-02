@@ -1,124 +1,149 @@
-// src/lib/http.ts
-
+import axios, { AxiosRequestConfig } from 'axios';
 import { useQuery, useMutation, useQueryClient, QueryKey } from '@tanstack/react-query';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 /**
- * Custom type that extends RequestInit with optional skipAuth flag
+ * Axios instance with session & CSRF support
  */
-export type FetcherOptions = RequestInit & {
-  skipAuth?: boolean; // if true, omits credentials in request
+export const axiosInstance = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+    withXSRFToken: true,
+    xsrfCookieName: "XSRF-TOKEN",
+    xsrfHeaderName: "X-XSRF-TOKEN",
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+/**
+ * Centralized error handler
+ */
+function handleAxiosError(error: any): never {
+    const message =
+        error.response?.data?.message || error.message || 'Unexpected error occurred';
+    const customError = new Error(message) as Error & { details?: any };
+    customError.details = error.response?.data;
+    throw customError;
+}
+
+/**
+ * HTTP methods using Axios
+ */
+export const http = {
+    get: async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+        try {
+            const res = await axiosInstance.get<T>(url, config);
+            return res.data;
+        } catch (err) {
+            handleAxiosError(err);
+        }
+    },
+    post: async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+        try {
+            const res = await axiosInstance.post<T>(url, data, config);
+            return res.data;
+        } catch (err) {
+            handleAxiosError(err);
+        }
+    },
+    put: async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+        try {
+            const res = await axiosInstance.put<T>(url, data, config);
+            return res.data;
+        } catch (err) {
+            handleAxiosError(err);
+        }
+    },
+    patch: async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+        try {
+            const res = await axiosInstance.patch<T>(url, data, config);
+            return res.data;
+        } catch (err) {
+            handleAxiosError(err);
+        }
+    },
+    delete: async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+        try {
+            const res = await axiosInstance.delete<T>(url, config);
+            return res.data;
+        } catch (err) {
+            handleAxiosError(err);
+        }
+    },
+    upload: async <T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> => {
+        try {
+            const res = await axiosInstance.post<T>(url, formData, {
+                ...config,
+                headers: {
+                    ...config?.headers,
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return res.data;
+        } catch (err) {
+            handleAxiosError(err);
+        }
+    },
 };
 
 /**
- * Intercepts requests before they are sent
- * Useful for logging or dynamically modifying headers
- */
-function requestInterceptor(url: string, options: FetcherOptions): [string, FetcherOptions] {
-  return [url, options];
-}
-
-/**
- * Intercepts and processes the response
- * Handles common error and success response parsing
- */
-async function responseInterceptor<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    let error: any;
-    try {
-      error = await response.json(); // Attempt to parse JSON error
-    } catch {
-      throw new Error(`HTTP error ${response.status}`); // Fallback if JSON parsing fails
-    }
-    throw new Error(error.message || 'Unknown error');
-  }
-
-  if (response.status === 204) return null as T; // No content response
-  return response.json();
-}
-
-/**
- * Central fetch function used by all methods
- * Applies interceptors and handles credentials/cookies
- */
-async function api<T = any>(
-    endpoint: string,
-    options: FetcherOptions = {}
-): Promise<T> {
-  const finalUrl = `${API_BASE_URL}${endpoint}`;
-  const [url, interceptedOptions] = requestInterceptor(finalUrl, options);
-
-  const response = await fetch(url, {
-    credentials: options.skipAuth ? 'same-origin' : 'include', // Include cookies unless skipped
-    ...interceptedOptions,
-    headers: {
-      'Content-Type': 'application/json',
-      ...interceptedOptions.headers,
-    },
-  });
-
-  return responseInterceptor<T>(response);
-}
-
-/**
- * Hook for performing GET requests using React Query
+ * Hook for GET requests
  */
 export const useApiQuery = <T = any>(
     key: QueryKey,
-    endpoint: string,
-    options?: FetcherOptions
+    url: string,
+    config?: AxiosRequestConfig
 ) => {
-  return useQuery<T>({
-    queryKey: key,
-    queryFn: () => api<T>(endpoint, { method: 'GET', ...options }),
-  });
+    return useQuery<T>({
+        queryKey: key,
+        queryFn: () => http.get<T>(url, config),
+    });
 };
 
 /**
- * Hook for performing mutations (POST, PUT, PATCH, DELETE) using React Query
+ * Hook for POST/PUT/PATCH/DELETE requests
  */
 export const useApiMutation = <T = any, V = any>(
-    endpoint: string,
+    url: string,
     method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-    options?: FetcherOptions
+    config?: AxiosRequestConfig
 ) => {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-  return useMutation<T, Error, V>({
-    mutationFn: (variables: V) =>
-        api<T>(endpoint, {
-          method,
-          body: JSON.stringify(variables),
-          ...options,
-        }),
-    onSuccess: () => {
-      queryClient.invalidateQueries(); // Invalidate cache to refetch fresh data
-    },
-  });
+    return useMutation<T, Error, V>({
+        mutationFn: (variables: V) => {
+            switch (method) {
+                case 'POST':
+                    return http.post<T>(url, variables, config);
+                case 'PUT':
+                    return http.put<T>(url, variables, config);
+                case 'PATCH':
+                    return http.patch<T>(url, variables, config);
+                case 'DELETE':
+                    return http.delete<T>(url, config);
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries();
+        },
+    });
 };
 
 /**
- * Hook for uploading files using FormData and React Query
+ * Hook for file uploads
  */
 export const useUploadMutation = <T = any>(
-    endpoint: string,
-    options?: FetcherOptions
+    url: string,
+    config?: AxiosRequestConfig
 ) => {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-  return useMutation<T, Error, FormData>({
-    mutationFn: (formData: FormData) =>
-        api<T>(endpoint, {
-          method: 'POST',
-          body: formData,
-          ...options,
-          headers: {
-            ...options?.headers,
-          },
-        }),
-    onSuccess: () => {
-      queryClient.invalidateQueries();
-    },
-  });
+    return useMutation<T, Error, FormData>({
+        mutationFn: (formData: FormData) => http.upload<T>(url, formData, config),
+        onSuccess: () => {
+            queryClient.invalidateQueries();
+        },
+    });
 };

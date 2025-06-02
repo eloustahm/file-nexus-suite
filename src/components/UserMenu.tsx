@@ -25,11 +25,11 @@ interface UserMenuProps {
 
 export const UserMenu = ({ user }: UserMenuProps) => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut();
       navigate("/login");
     } catch (error) {
       console.error("Error logging out:", error);
