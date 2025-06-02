@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MessageSquare, X } from "lucide-react";
 import { ChatMessage, Document } from './types/chatTypes';
-import { useChatAgents } from './hooks/useChatAgents';
-import { useChatHistory } from './hooks/useChatHistory';
+import { useChatAgents } from '@/hooks/useChatAgents';
+import { useChatHistory } from '@/hooks/useChatHistory';
 import { AgentSelector } from './components/AgentSelector';
 import { ChatHistoryPanel } from './components/ChatHistoryPanel';
 import { DocumentSelector } from './components/DocumentSelector';
@@ -65,7 +65,7 @@ export const DocumentChat = () => {
     if (selectedDocuments.length > 0) {
       const historyKey = selectedDocuments.sort().join(',');
       const existingHistory = chatHistories.find(h => h.documentId === historyKey);
-      
+
       if (existingHistory) {
         setCurrentMessages(existingHistory.messages);
         setSelectedHistory(historyKey);
@@ -86,8 +86,8 @@ export const DocumentChat = () => {
   }, [selectedDocuments, selectedAgent]);
 
   const handleDocumentToggle = (docName: string) => {
-    setSelectedDocuments(prev => 
-      prev.includes(docName) 
+    setSelectedDocuments(prev =>
+      prev.includes(docName)
         ? prev.filter(name => name !== docName)
         : [...prev, docName]
     );
@@ -109,7 +109,7 @@ export const DocumentChat = () => {
     const agent = agents.find(a => a.id === agentId);
     if (agent) {
       setSelectedAgent(agent);
-      
+
       // Add agent switch message
       const switchMessage: ChatMessage = {
         id: Date.now(),
@@ -119,7 +119,7 @@ export const DocumentChat = () => {
         documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
         agentPersonality: agent.personality
       };
-      
+
       setCurrentMessages(prev => [...prev, switchMessage]);
     }
   };
@@ -143,7 +143,7 @@ export const DocumentChat = () => {
     // Simulate AI response with agent personality
     setTimeout(() => {
       const aiResponse = getAgentResponse(message, selectedAgent, selectedDocuments);
-      
+
       const aiMessage: ChatMessage = {
         id: Date.now() + 1,
         type: 'ai',
@@ -152,11 +152,11 @@ export const DocumentChat = () => {
         documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
         agentPersonality: selectedAgent.personality
       };
-      
+
       const finalMessages = [...updatedMessages, aiMessage];
       setCurrentMessages(finalMessages);
       setIsAgentTyping(false);
-      
+
       // Save to history
       saveToHistory(finalMessages, selectedDocuments);
     }, 1500);
@@ -176,7 +176,7 @@ export const DocumentChat = () => {
     <div className="h-[calc(100vh-200px)] flex gap-6">
       {/* Document Selection Panel */}
       <div className="w-80 space-y-4">
-        <AgentSelector 
+        <AgentSelector
           agents={agents}
           selectedAgent={selectedAgent}
           onAgentChange={handleAgentChange}
@@ -213,8 +213,8 @@ export const DocumentChat = () => {
               {selectedDocuments.map((docName) => (
                 <Badge key={docName} variant="secondary" className="flex items-center gap-1">
                   {docName.length > 20 ? `${docName.substring(0, 20)}...` : docName}
-                  <X 
-                    className="h-3 w-3 cursor-pointer hover:text-red-500" 
+                  <X
+                    className="h-3 w-3 cursor-pointer hover:text-red-500"
                     onClick={() => handleRemoveDocument(docName)}
                   />
                 </Badge>
@@ -222,7 +222,7 @@ export const DocumentChat = () => {
             </div>
           )}
         </CardHeader>
-        
+
         <CardContent className="flex-1 flex flex-col">
           <ChatMessages
             messages={currentMessages}

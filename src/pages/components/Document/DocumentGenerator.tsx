@@ -4,7 +4,7 @@ import { AgentSelector } from "./components/AgentSelector";
 import { TemplateSelector } from "./components/TemplateSelector";
 import { TemplateFieldEditor } from "./components/TemplateFieldEditor";
 import { DocumentPreview } from "./components/DocumentPreview";
-import { useDocumentGeneration } from "./hooks/useDocumentGeneration";
+import { useDocumentGeneration } from "@/hooks/useDocumentGeneration";
 import { agents, templates } from "./data/templates";
 
 export const DocumentGenerator = () => {

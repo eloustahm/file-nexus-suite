@@ -24,7 +24,7 @@ export const AgentSelector = ({ agents, selectedAgent, onAgentChange }: AgentSel
           <div
             key={agent.id}
             className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-              selectedAgent.id === agent.id
+              selectedAgent?.id === agent.id
                 ? 'border-blue-500 bg-blue-50'
                 : 'border-gray-200 hover:bg-gray-50'
             }`}
@@ -33,7 +33,7 @@ export const AgentSelector = ({ agents, selectedAgent, onAgentChange }: AgentSel
             <div className="flex items-center gap-2 mb-1">
               <span className="font-medium">{agent.name}</span>
               <Badge variant="outline" className="text-xs">
-                {agent.type}
+                {agent?.type}
               </Badge>
             </div>
             <p className="text-sm text-gray-600">{agent.description}</p>
