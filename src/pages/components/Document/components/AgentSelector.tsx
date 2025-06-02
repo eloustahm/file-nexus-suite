@@ -7,22 +7,25 @@ import { Agent } from '../types/chatTypes';
 interface AgentSelectorProps {
   agents: Agent[];
   selectedAgent: Agent | null;
-  onAgentChange: (agentId: string) => void;
+  onAgentSelect: (agent: Agent | null) => void;
 }
 
-export const AgentSelector = ({ agents, selectedAgent, onAgentChange }: AgentSelectorProps) => {
+export const AgentSelector = ({ agents, selectedAgent, onAgentSelect }: AgentSelectorProps) => {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Brain className="h-5 w-5" />
-          AI Agent
+          Writing Agent
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <Select value={selectedAgent?.id} onValueChange={onAgentChange}>
+        <Select 
+          value={selectedAgent?.id} 
+          onValueChange={(agentId) => onAgentSelect(agents.find(a => a.id === agentId) || null)}
+        >
           <SelectTrigger>
-            <SelectValue placeholder="Select an agent" />
+            <SelectValue placeholder="Select a writing agent" />
           </SelectTrigger>
           <SelectContent>
             {agents.map((agent) => (
