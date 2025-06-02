@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 
 export const PricingPlans = () => {
   const { toast } = useToast();
-  const [currentPlan] = useState("free");
+  const [selectedPlan, setSelectedPlan] = useState<string>("free");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   
   const plans = [
     {
@@ -181,7 +181,7 @@ export const PricingPlans = () => {
     }
   ];
 
-  const currentPlanData = plans.find(plan => plan.id === currentPlan);
+  const currentPlanData = plans.find(plan => plan.id === selectedPlan);
   const usageData = {
     documents: { used: 3, limit: currentPlanData?.limits.documents || 5 },
     storage: { used: 125, limit: 250 }, // in MB
@@ -190,9 +190,14 @@ export const PricingPlans = () => {
 
   const handleUpgrade = (planId: string) => {
     toast({
-      title: "Plan Upgrade",
-      description: `Upgrading to ${plans.find(p => p.id === planId)?.name} plan...`,
+      title: "Plan Selected",
+      description: `You selected the ${plans.find(p => p.id === planId)?.name} plan`,
     });
+  };
+
+  const formatPrice = (price: number | string) => {
+    if (typeof price === 'string') return price;
+    return billingCycle === "yearly" ? `$${(price * 10).toFixed(0)}` : `$${price}`;
   };
 
   return (
@@ -272,7 +277,7 @@ export const PricingPlans = () => {
               </div>
               <CardTitle className="text-xl">{plan.name}</CardTitle>
               <div className="text-3xl font-bold">
-                {plan.price}
+                {formatPrice(plan.price)}
                 <span className="text-sm font-normal text-gray-600">/{plan.period}</span>
               </div>
             </CardHeader>
@@ -288,10 +293,10 @@ export const PricingPlans = () => {
               <Button 
                 onClick={() => handleUpgrade(plan.id)}
                 className="w-full"
-                variant={plan.id === currentPlan ? "outline" : "default"}
-                disabled={plan.id === currentPlan}
+                variant={plan.id === selectedPlan ? "outline" : "default"}
+                disabled={plan.id === selectedPlan}
               >
-                {plan.id === currentPlan ? "Current Plan" : "Upgrade"}
+                {plan.id === selectedPlan ? "Current Plan" : "Upgrade"}
               </Button>
             </CardContent>
           </Card>

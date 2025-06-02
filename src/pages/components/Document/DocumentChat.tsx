@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Send, 
   FileText, 
@@ -12,7 +13,9 @@ import {
   Bot, 
   User,
   Upload,
-  Search
+  Search,
+  X,
+  Files
 } from "lucide-react";
 
 interface ChatMessage {
@@ -20,17 +23,17 @@ interface ChatMessage {
   type: 'user' | 'ai';
   message: string;
   timestamp: string;
-  documentRef?: string;
+  documentRefs?: string[];
 }
 
 export const DocumentChat = () => {
-  const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 1,
       type: 'ai',
-      message: 'Hello! I can help you analyze and answer questions about your documents. Please select a document to get started.',
+      message: 'Hello! I can help you analyze and answer questions about your documents. Please select one or more documents to get started.',
       timestamp: '10:30 AM'
     }
   ]);
@@ -40,7 +43,29 @@ export const DocumentChat = () => {
     { id: 2, name: "Financial Report Q3.xlsx", type: "Excel Spreadsheet", size: "1.8 MB" },
     { id: 3, name: "Presentation Deck.pptx", type: "PowerPoint", size: "15.2 MB" },
     { id: 4, name: "Contract Terms.pdf", type: "PDF Document", size: "856 KB" },
+    { id: 5, name: "Meeting Notes.docx", type: "Word Document", size: "1.2 MB" },
+    { id: 6, name: "Budget Analysis.xlsx", type: "Excel Spreadsheet", size: "890 KB" },
   ];
+
+  const handleDocumentToggle = (docName: string) => {
+    setSelectedDocuments(prev => 
+      prev.includes(docName) 
+        ? prev.filter(name => name !== docName)
+        : [...prev, docName]
+    );
+  };
+
+  const handleRemoveDocument = (docName: string) => {
+    setSelectedDocuments(prev => prev.filter(name => name !== docName));
+  };
+
+  const handleSelectAll = () => {
+    if (selectedDocuments.length === documents.length) {
+      setSelectedDocuments([]);
+    } else {
+      setSelectedDocuments(documents.map(doc => doc.name));
+    }
+  };
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -50,22 +75,31 @@ export const DocumentChat = () => {
       type: 'user',
       message: message,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      documentRef: selectedDocument || undefined
+      documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined
     };
 
     setMessages(prev => [...prev, newUserMessage]);
 
     // Simulate AI response
     setTimeout(() => {
-      const aiResponse: ChatMessage = {
+      let aiResponse = '';
+      
+      if (selectedDocuments.length === 0) {
+        aiResponse = 'Please select one or more documents first so I can provide specific insights.';
+      } else if (selectedDocuments.length === 1) {
+        aiResponse = `Based on "${selectedDocuments[0]}", here's what I found: ${message.includes('summary') ? 'This document contains key information about project timelines and budget allocations...' : 'I can help you with specific questions about this document.'}`;
+      } else {
+        aiResponse = `Analyzing ${selectedDocuments.length} documents (${selectedDocuments.slice(0, 2).join(', ')}${selectedDocuments.length > 2 ? ` and ${selectedDocuments.length - 2} more` : ''}): ${message.includes('summary') ? 'I found common themes across these documents including budget considerations, project timelines, and strategic objectives...' : 'I can help you find connections and insights across these documents.'}`;
+      }
+
+      const aiMessage: ChatMessage = {
         id: messages.length + 2,
         type: 'ai',
-        message: selectedDocument 
-          ? `Based on the document "${selectedDocument}", here's what I found: ${message.includes('summary') ? 'This document contains key information about project timelines and budget allocations...' : 'I can help you with specific questions about this document. What would you like to know?'}`
-          : 'Please select a document first so I can provide specific insights.',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        message: aiResponse,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined
       };
-      setMessages(prev => [...prev, aiResponse]);
+      setMessages(prev => [...prev, aiMessage]);
     }, 1000);
 
     setMessage("");
@@ -78,9 +112,22 @@ export const DocumentChat = () => {
         <Card className="h-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Select Document
+              <Files className="h-5 w-5" />
+              Select Documents
             </CardTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSelectAll}
+                className="text-xs"
+              >
+                {selectedDocuments.length === documents.length ? 'Deselect All' : 'Select All'}
+              </Button>
+              <span className="text-xs text-gray-500">
+                {selectedDocuments.length} of {documents.length} selected
+              </span>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="relative">
@@ -88,22 +135,26 @@ export const DocumentChat = () => {
               <Input placeholder="Search documents..." className="pl-10" />
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
               {documents.map((doc) => (
                 <div
                   key={doc.id}
                   className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                    selectedDocument === doc.name
+                    selectedDocuments.includes(doc.name)
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:bg-gray-50'
                   }`}
-                  onClick={() => setSelectedDocument(doc.name)}
+                  onClick={() => handleDocumentToggle(doc.name)}
                 >
                   <div className="flex items-center gap-2 mb-1">
+                    <Checkbox 
+                      checked={selectedDocuments.includes(doc.name)}
+                      onChange={() => handleDocumentToggle(doc.name)}
+                    />
                     <FileText className="h-4 w-4 text-gray-400" />
-                    <span className="font-medium text-sm">{doc.name}</span>
+                    <span className="font-medium text-sm flex-1">{doc.name}</span>
                   </div>
-                  <div className="text-xs text-gray-500">{doc.type} • {doc.size}</div>
+                  <div className="text-xs text-gray-500 ml-6">{doc.type} • {doc.size}</div>
                 </div>
               ))}
             </div>
@@ -122,12 +173,20 @@ export const DocumentChat = () => {
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
             Document Chat
-            {selectedDocument && (
-              <Badge variant="secondary" className="ml-2">
-                {selectedDocument}
-              </Badge>
-            )}
           </CardTitle>
+          {selectedDocuments.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {selectedDocuments.map((docName) => (
+                <Badge key={docName} variant="secondary" className="flex items-center gap-1">
+                  {docName.length > 20 ? `${docName.substring(0, 20)}...` : docName}
+                  <X 
+                    className="h-3 w-3 cursor-pointer hover:text-red-500" 
+                    onClick={() => handleRemoveDocument(docName)}
+                  />
+                </Badge>
+              ))}
+            </div>
+          )}
         </CardHeader>
         
         <CardContent className="flex-1 flex flex-col">
@@ -154,7 +213,21 @@ export const DocumentChat = () => {
                       : 'bg-gray-100 text-gray-900'
                   }`}>
                     <p className="text-sm">{msg.message}</p>
-                    <span className={`text-xs ${
+                    {msg.documentRefs && msg.documentRefs.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {msg.documentRefs.map((docRef, index) => (
+                          <Badge 
+                            key={index} 
+                            variant="outline" 
+                            className={`text-xs ${msg.type === 'user' ? 'border-blue-200 text-blue-100' : 'border-gray-300'}`}
+                          >
+                            <FileText className="h-2 w-2 mr-1" />
+                            {docRef.length > 15 ? `${docRef.substring(0, 15)}...` : docRef}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    <span className={`text-xs block mt-1 ${
                       msg.type === 'user' ? 'text-blue-100' : 'text-gray-500'
                     }`}>
                       {msg.timestamp}
@@ -170,16 +243,22 @@ export const DocumentChat = () => {
           {/* Message Input */}
           <div className="flex gap-2">
             <Input
-              placeholder={selectedDocument ? "Ask a question about the document..." : "Select a document first..."}
+              placeholder={
+                selectedDocuments.length === 0 
+                  ? "Select documents first..." 
+                  : selectedDocuments.length === 1
+                  ? "Ask a question about the document..."
+                  : `Ask a question about ${selectedDocuments.length} documents...`
+              }
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              disabled={!selectedDocument}
+              disabled={selectedDocuments.length === 0}
               className="flex-1"
             />
             <Button 
               onClick={handleSendMessage} 
-              disabled={!message.trim() || !selectedDocument}
+              disabled={!message.trim() || selectedDocuments.length === 0}
             >
               <Send className="h-4 w-4" />
             </Button>
