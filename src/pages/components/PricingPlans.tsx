@@ -102,7 +102,7 @@ export const PricingPlans = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-7xl mx-auto p-6">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
         <p className="text-xl text-gray-600 mb-8">
@@ -128,7 +128,7 @@ export const PricingPlans = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {plans.map((plan) => (
           <Card 
             key={plan.id} 
@@ -193,41 +193,39 @@ export const PricingPlans = () => {
         ))}
       </div>
 
-      <div className="max-w-4xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center">Frequently Asked Questions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-medium mb-2">Can I change plans later?</h4>
-                <p className="text-sm text-gray-600">
-                  Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-medium mb-2">What payment methods do you accept?</h4>
-                <p className="text-sm text-gray-600">
-                  We accept all major credit cards, PayPal, and bank transfers for enterprise plans.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-medium mb-2">Is there a free trial?</h4>
-                <p className="text-sm text-gray-600">
-                  Yes, all plans come with a 14-day free trial. No credit card required to start.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-medium mb-2">What happens to my data if I cancel?</h4>
-                <p className="text-sm text-gray-600">
-                  You can export all your data before cancellation. We keep your data for 30 days after cancellation.
-                </p>
-              </div>
+      <Card className="max-w-4xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-center">Frequently Asked Questions</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-medium mb-2">Can I change plans later?</h4>
+              <p className="text-sm text-gray-600">
+                Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div>
+              <h4 className="font-medium mb-2">What payment methods do you accept?</h4>
+              <p className="text-sm text-gray-600">
+                We accept all major credit cards, PayPal, and bank transfers for enterprise plans.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2">Is there a free trial?</h4>
+              <p className="text-sm text-gray-600">
+                Yes, all plans come with a 14-day free trial. No credit card required to start.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2">What happens to my data if I cancel?</h4>
+              <p className="text-sm text-gray-600">
+                You can export all your data before cancellation. We keep your data for 30 days after cancellation.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -6,6 +6,9 @@ import { Dashboard } from '@/pages/components/Dashboard';
 import { Document } from '@/pages/components/Document/Document';
 import { DocumentChat } from '@/pages/components/Document/DocumentChat';
 import { DocumentGenerator } from '@/pages/components/Document/DocumentGenerator';
+import { ChatHistory } from '@/pages/components/ChatHistory';
+import { DocumentGenerationHistory } from '@/pages/components/DocumentGenerationHistory';
+import { SharedDocuments } from '@/pages/components/SharedDocuments';
 import { Folders } from '@/pages/components/Folders';
 import { Shared } from '@/pages/components/Shared';
 import { ActivityLogs } from '@/pages/components/ActivityLogs';
@@ -27,9 +30,12 @@ export const ProtectedRoutes = () => {
         <Route path="/documents/chat" element={<DocumentChat />} />
         <Route path="/documents/generate" element={<DocumentGenerator />} />
         <Route path="/chat" element={<DocumentChat />} />
+        <Route path="/chat-history" element={<ChatHistory />} />
         <Route path="/generate" element={<DocumentGenerator />} />
+        <Route path="/generation-history" element={<DocumentGenerationHistory />} />
         <Route path="/folders" element={<Folders />} />
         <Route path="/shared" element={<Shared />} />
+        <Route path="/shared-documents" element={<SharedDocuments />} />
         <Route path="/sharing" element={<DocumentSharing />} />
         <Route path="/activity" element={<ActivityLogs />} />
         <Route path="/ai-modules" element={<AIModules />} />
