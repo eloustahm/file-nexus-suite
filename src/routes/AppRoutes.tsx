@@ -9,19 +9,16 @@ import { NotFound } from '@/pages/NotFound';
 export const AppRoutes = () => {
   const { user, isAuthenticated, loading, getCurrentUser } = useAuthStore();
 
-  // Only try to get current user once on app load if no user exists
   useEffect(() => {
     const hasTriedAuth = sessionStorage.getItem('auth_attempted');
     if (!user && !loading && !hasTriedAuth) {
       sessionStorage.setItem('auth_attempted', 'true');
       getCurrentUser().catch(() => {
-        // Silently handle auth failure
         console.log('User not authenticated');
       });
     }
-  }, []);
+  }, [user, loading, getCurrentUser]);
 
-  // Show loading spinner while checking authentication
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -32,13 +29,18 @@ export const AppRoutes = () => {
 
   return (
     <Routes>
+      {/* Protected Routes - Show first if authenticated */}
+      {isAuthenticated && (
+        <Route path="/dashboard/*" element={<ProtectedRoutes />} />
+      )}
+      
       {/* Public Routes */}
       <Route path="/*" element={<PublicRoutes isAuthenticated={isAuthenticated} />} />
       
-      {/* Protected Routes */}
-      <Route path="/dashboard/*" element={
-        isAuthenticated ? <ProtectedRoutes /> : <Navigate to="/login" replace />
-      } />
+      {/* Default redirect for authenticated users */}
+      {isAuthenticated && (
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      )}
       
       {/* 404 Route */}
       <Route path="*" element={<NotFound />} />

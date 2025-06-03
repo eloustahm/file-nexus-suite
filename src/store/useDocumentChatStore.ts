@@ -20,14 +20,32 @@ interface Message {
   agentId?: string;
 }
 
+interface ChatHistory {
+  id: string;
+  name: string;
+  lastMessage: string;
+  timestamp: Date;
+  messageCount: number;
+}
+
 interface DocumentChatState {
   selectedAgent: Agent | null;
   messages: Message[];
+  selectedDocuments: string[];
+  currentMessages: Message[];
   isLoading: boolean;
+  isAgentTyping: boolean;
   error: string | null;
+  chatHistories: ChatHistory[];
+  selectedHistory: string | null;
+  loading: boolean;
   
   setSelectedAgent: (agent: Agent | null) => void;
+  setSelectedDocuments: (documents: string[]) => void;
+  addDocument: (document: string) => void;
+  removeDocument: (document: string) => void;
   sendMessage: (content: string, documentId?: string) => Promise<void>;
+  loadChatHistory: (historyId: string) => void;
   clearMessages: () => void;
   clearError: () => void;
 }
@@ -35,18 +53,55 @@ interface DocumentChatState {
 export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
   selectedAgent: null,
   messages: [],
+  selectedDocuments: [],
+  currentMessages: [],
   isLoading: false,
+  isAgentTyping: false,
   error: null,
+  chatHistories: [
+    {
+      id: '1',
+      name: 'Contract Analysis',
+      lastMessage: 'The contract terms look favorable...',
+      timestamp: new Date(Date.now() - 86400000),
+      messageCount: 15
+    },
+    {
+      id: '2',
+      name: 'Financial Report Review',
+      lastMessage: 'Q3 revenue increased by 23%...',
+      timestamp: new Date(Date.now() - 172800000),
+      messageCount: 8
+    }
+  ],
+  selectedHistory: null,
+  loading: false,
 
   setSelectedAgent: (agent) => {
     set({ selectedAgent: agent });
+  },
+
+  setSelectedDocuments: (documents) => {
+    set({ selectedDocuments: documents });
+  },
+
+  addDocument: (document) => {
+    set((state) => ({
+      selectedDocuments: [...state.selectedDocuments, document]
+    }));
+  },
+
+  removeDocument: (document) => {
+    set((state) => ({
+      selectedDocuments: state.selectedDocuments.filter(doc => doc !== document)
+    }));
   },
 
   sendMessage: async (content, documentId) => {
     const { selectedAgent } = get();
     
     try {
-      set({ isLoading: true, error: null });
+      set({ isLoading: true, isAgentTyping: true, error: null });
       
       // Add user message
       const userMessage: Message = {
@@ -57,7 +112,8 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
       };
       
       set((state) => ({
-        messages: [...state.messages, userMessage]
+        messages: [...state.messages, userMessage],
+        currentMessages: [...state.currentMessages, userMessage]
       }));
 
       // Simulate AI response
@@ -72,17 +128,39 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
         
         set((state) => ({
           messages: [...state.messages, agentMessage],
-          isLoading: false
+          currentMessages: [...state.currentMessages, agentMessage],
+          isLoading: false,
+          isAgentTyping: false
         }));
       }, 1000);
 
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ error: error.message, isLoading: false, isAgentTyping: false });
     }
   },
 
+  loadChatHistory: (historyId) => {
+    set({ selectedHistory: historyId });
+    // Load messages for this history
+    const mockMessages: Message[] = [
+      {
+        id: '1',
+        content: 'Hello, I need help with this document.',
+        sender: 'user',
+        timestamp: new Date(Date.now() - 3600000)
+      },
+      {
+        id: '2',
+        content: 'I\'d be happy to help you analyze the document.',
+        sender: 'agent',
+        timestamp: new Date(Date.now() - 3500000)
+      }
+    ];
+    set({ currentMessages: mockMessages });
+  },
+
   clearMessages: () => {
-    set({ messages: [] });
+    set({ messages: [], currentMessages: [] });
   },
 
   clearError: () => {

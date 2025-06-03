@@ -1,30 +1,17 @@
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { SidebarMain } from "@/pages/components/Sidebar";
-import { Outlet } from "react-router-dom";
 import { UserMenu } from "@/components/UserMenu";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { useAuthStore } from "@/store/useAuthStore";
 
-interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  avatar?: string;
-}
-
 interface AuthenticatedLayoutProps {
-  user?: User | null;
+  children: React.ReactNode;
 }
 
-export const AuthenticatedLayout = ({ user: propUser }: AuthenticatedLayoutProps) => {
-  const { user: storeUser } = useAuthStore();
-  
-  // Use prop user if provided, otherwise use store user
-  const user = propUser || storeUser;
+export const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
+  const { user } = useAuthStore();
 
   if (!user) {
     return (
@@ -60,7 +47,7 @@ export const AuthenticatedLayout = ({ user: propUser }: AuthenticatedLayoutProps
           </header>
 
           <div className="p-6">
-            <Outlet />
+            {children}
           </div>
         </SidebarInset>
       </div>

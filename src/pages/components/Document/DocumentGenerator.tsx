@@ -6,7 +6,6 @@ import { useDocumentGenerationStore } from '@/store/useDocumentGenerationStore';
 import { useChatAgents } from '@/hooks/useChatAgents';
 import { AgentSelector } from "@/pages/components/Document/components/AgentSelector";
 import { TemplateSelector } from "@/pages/components/Document/components/TemplateSelector";
-import { TemplateFieldEditor } from "@/pages/components/Document/components/TemplateFieldEditor";
 import { DocumentPreview } from "@/pages/components/Document/components/DocumentPreview";
 
 export const DocumentGenerator = () => {
@@ -109,12 +108,21 @@ export const DocumentGenerator = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <TemplateFieldEditor
-                  template={selectedTemplate}
-                  onFieldUpdate={updateFieldValue}
-                  onAddField={addCustomField}
-                  onRemoveField={removeField}
-                />
+                <div className="space-y-4">
+                  {selectedTemplate.fields.map((field) => (
+                    <div key={field.id} className="space-y-2">
+                      <label className="text-sm font-medium">{field.label}</label>
+                      <input
+                        type={field.type}
+                        value={field.value}
+                        onChange={(e) => updateFieldValue(field.id, e.target.value)}
+                        placeholder={field.placeholder}
+                        className="w-full p-2 border rounded-md"
+                        required={field.required}
+                      />
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           )}

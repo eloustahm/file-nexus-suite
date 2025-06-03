@@ -19,6 +19,7 @@ interface TemplateField {
   type: string;
   value: string;
   required?: boolean;
+  placeholder?: string;
 }
 
 interface DocumentTemplate {
@@ -150,12 +151,10 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
         generationProgress: { step: 1, totalSteps: 3, currentTask: 'Preparing template...', completed: false }
       });
 
-      // Simulate progress updates
       setTimeout(() => {
         set({ generationProgress: { step: 2, totalSteps: 3, currentTask: 'Generating content...', completed: false } });
       }, 1000);
 
-      // For now, generate mock content since API might not be available
       const mockContent = `# ${selectedTemplate.name}\n\nGenerated document content based on template.\n\n${selectedTemplate.fields.map(field => `**${field.label}:** ${field.value || 'Not specified'}`).join('\n')}`;
 
       set({ 
@@ -188,7 +187,6 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
   fetchTemplates: async () => {
     try {
       set({ loading: true, error: null });
-      // Mock templates for now
       const templates: DocumentTemplate[] = [
         {
           id: '1',
@@ -196,8 +194,22 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
           description: 'Professional business plan template',
           type: 'business',
           fields: [
-            { id: '1', label: 'Company Name', type: 'text', value: '', required: true },
-            { id: '2', label: 'Industry', type: 'text', value: '', required: true }
+            { 
+              id: '1', 
+              label: 'Company Name', 
+              type: 'text', 
+              value: '', 
+              required: true,
+              placeholder: 'Enter company name'
+            },
+            { 
+              id: '2', 
+              label: 'Industry', 
+              type: 'text', 
+              value: '', 
+              required: true,
+              placeholder: 'Enter industry'
+            }
           ]
         }
       ];
