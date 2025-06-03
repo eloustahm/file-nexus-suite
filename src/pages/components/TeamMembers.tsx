@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,109 +20,91 @@ import {
   User
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'editor' | 'viewer';
-  avatar?: string;
-  joinedAt: Date;
-  lastActive: Date;
-  status: 'active' | 'pending' | 'suspended';
-}
+import { useTeamCollaborationStore } from "@/store/useTeamCollaborationStore";
 
 export const TeamMembers = () => {
-  const [members, setMembers] = useState<TeamMember[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState<'admin' | 'editor' | 'viewer'>('viewer');
   const { toast } = useToast();
 
+  const {
+    members,
+    loading,
+    error,
+    fetchMembers,
+    inviteMember,
+    updateMemberRole,
+    removeMember,
+    clearError
+  } = useTeamCollaborationStore();
+
   useEffect(() => {
-    // Mock data - replace with API call
-    const mockMembers: TeamMember[] = [
-      {
-        id: '1',
-        name: 'Alice Johnson',
-        email: 'alice@company.com',
-        role: 'admin',
-        avatar: '/placeholder.svg',
-        joinedAt: new Date('2024-01-01'),
-        lastActive: new Date(),
-        status: 'active'
-      },
-      {
-        id: '2',
-        name: 'Bob Smith',
-        email: 'bob@company.com',
-        role: 'editor',
-        avatar: '/placeholder.svg',
-        joinedAt: new Date('2024-01-15'),
-        lastActive: new Date(Date.now() - 86400000),
-        status: 'active'
-      },
-      {
-        id: '3',
-        name: 'Carol Davis',
-        email: 'carol@company.com',
-        role: 'viewer',
-        joinedAt: new Date('2024-02-01'),
-        lastActive: new Date(Date.now() - 172800000),
-        status: 'pending'
-      }
-    ];
-    setMembers(mockMembers);
-  }, []);
+    fetchMembers();
+  }, [fetchMembers]);
+
+  useEffect(() => {
+    return () => clearError();
+  }, [clearError]);
 
   const filteredMembers = members.filter(member =>
     member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     member.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleInviteMember = () => {
+  const handleInviteMember = async () => {
     if (!newMemberEmail) return;
 
-    const newMember: TeamMember = {
-      id: Date.now().toString(),
-      name: newMemberEmail.split('@')[0],
-      email: newMemberEmail,
-      role: newMemberRole,
-      joinedAt: new Date(),
-      lastActive: new Date(),
-      status: 'pending'
-    };
-
-    setMembers([...members, newMember]);
-    setNewMemberEmail("");
-    setNewMemberRole('viewer');
-    setIsInviteOpen(false);
-    
-    toast({
-      title: "Invitation sent",
-      description: `Invited ${newMemberEmail} as ${newMemberRole}`,
-    });
+    try {
+      await inviteMember(newMemberEmail, newMemberRole);
+      setNewMemberEmail("");
+      setNewMemberRole('viewer');
+      setIsInviteOpen(false);
+      
+      toast({
+        title: "Invitation sent",
+        description: `Invited ${newMemberEmail} as ${newMemberRole}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send invitation",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleRoleChange = (memberId: string, newRole: 'admin' | 'editor' | 'viewer') => {
-    setMembers(members.map(member =>
-      member.id === memberId ? { ...member, role: newRole } : member
-    ));
-    
-    toast({
-      title: "Role updated",
-      description: "Member role has been updated successfully",
-    });
+  const handleRoleChange = async (memberId: string, newRole: 'admin' | 'editor' | 'viewer') => {
+    try {
+      await updateMemberRole(memberId, newRole);
+      toast({
+        title: "Role updated",
+        description: "Member role has been updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update member role",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleRemoveMember = (memberId: string) => {
-    setMembers(members.filter(member => member.id !== memberId));
-    
-    toast({
-      title: "Member removed",
-      description: "Team member has been removed successfully",
-    });
+  const handleRemoveMember = async (memberId: string) => {
+    try {
+      await removeMember(memberId);
+      toast({
+        title: "Member removed",
+        description: "Team member has been removed successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to remove member",
+        variant: "destructive"
+      });
+    }
   };
 
   const getRoleIcon = (role: string) => {
@@ -151,6 +133,17 @@ export const TeamMembers = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading team members...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card>
@@ -195,8 +188,8 @@ export const TeamMembers = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleInviteMember} className="w-full">
-                  Send Invitation
+                <Button onClick={handleInviteMember} className="w-full" disabled={loading}>
+                  {loading ? "Sending..." : "Send Invitation"}
                 </Button>
               </div>
             </DialogContent>
@@ -204,6 +197,12 @@ export const TeamMembers = () => {
         </div>
       </CardHeader>
       <CardContent>
+        {error && (
+          <div className="text-red-600 text-center py-4 mb-4">
+            <p>Error loading team members: {error}</p>
+          </div>
+        )}
+        
         <div className="space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -267,6 +266,7 @@ export const TeamMembers = () => {
                     size="sm"
                     onClick={() => handleRemoveMember(member.id)}
                     className="text-red-600 hover:text-red-800"
+                    disabled={loading}
                   >
                     <UserMinus className="h-4 w-4" />
                   </Button>

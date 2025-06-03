@@ -8,7 +8,9 @@ interface ActivityLog {
   description: string;
   userId: string;
   userName: string;
+  userAvatar?: string;
   timestamp: string;
+  type: 'document' | 'team' | 'system' | 'chat';
   metadata?: any;
 }
 

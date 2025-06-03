@@ -5,7 +5,7 @@ import { UserProfile } from './UserProfile';
 import { Integrations } from './Integrations';
 import { PaymentPage } from './PaymentPage';
 import { NotificationSettings } from './NotificationSettings';
-import { SecuritySettings as SecuritySettingsPage } from './SecuritySettingsPage';
+import { SecuritySettingsPage } from './SecuritySettingsPage';
 import { TeamMembers } from './TeamMembers';
 import { 
   User, 

@@ -16,9 +16,15 @@ export const useChatHistory = () => {
     
     setChatHistories(prev => {
       const existingIndex = prev.findIndex(h => h.documentId === historyKey);
+      const lastMessage = messages.length > 0 ? messages[messages.length - 1].content : '';
+      
       const newHistory: ChatHistory = {
         id: historyKey,
+        name: documentName,
         title: documentName,
+        lastMessage,
+        timestamp: new Date(),
+        messageCount: messages.length,
         documentId: historyKey,
         documentName,
         messages,
