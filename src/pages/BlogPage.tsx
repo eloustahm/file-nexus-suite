@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, ArrowRight } from "lucide-react";
 
-const BlogPage = () => {
+export const BlogPage = () => {
   const blogPosts = [
     {
       id: 1,
@@ -76,8 +76,8 @@ const BlogPage = () => {
           {blogPosts.map((post) => (
             <Card key={post.id} className="hover:shadow-lg transition-shadow cursor-pointer">
               <div className="aspect-video bg-gray-200 rounded-t-lg">
-                <img 
-                  src={post.image} 
+                <img
+                  src={post.image}
                   alt={post.title}
                   className="w-full h-full object-cover rounded-t-lg"
                 />
@@ -117,4 +117,3 @@ const BlogPage = () => {
   );
 };
 
-export default BlogPage;

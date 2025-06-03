@@ -25,6 +25,7 @@ export const LoginPage = () => {
     setError('');
 
     try {
+      debugger
       await authApi.login({ email, password });
       toast({
         title: "Login successful",
@@ -52,7 +53,7 @@ export const LoginPage = () => {
             </Link>
           </p>
         </div>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Welcome back</CardTitle>
@@ -65,7 +66,7 @@ export const LoginPage = () => {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               <div>
                 <Label htmlFor="email">Email address</Label>
                 <Input

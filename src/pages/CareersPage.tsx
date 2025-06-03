@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, Users, Zap } from "lucide-react";
 
-const CareersPage = () => {
+export const CareersPage = () => {
   const openPositions = [
     {
       title: "Senior Full Stack Engineer",
@@ -73,7 +73,7 @@ const CareersPage = () => {
               Join Our Mission
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Help us revolutionize how businesses manage documents with AI. 
+              Help us revolutionize how businesses manage documents with AI.
               We're looking for passionate individuals who want to make a real impact.
             </p>
           </div>
@@ -160,4 +160,3 @@ const CareersPage = () => {
   );
 };
 
-export default CareersPage;

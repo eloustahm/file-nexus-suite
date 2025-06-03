@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Target, Award, Globe } from "lucide-react";
 
-const AboutPage = () => {
+export const AboutPage = () => {
   const team = [
     {
       name: "Sarah Johnson",
@@ -58,7 +58,7 @@ const AboutPage = () => {
               About DocuFlow AI
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We're on a mission to revolutionize document management through artificial intelligence, 
+              We're on a mission to revolutionize document management through artificial intelligence,
               making it smarter, faster, and more intuitive for businesses of all sizes.
             </p>
           </div>
@@ -71,19 +71,19 @@ const AboutPage = () => {
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
             <p className="text-gray-600 mb-4">
-              Founded in 2023, DocuFlow AI emerged from a simple observation: businesses were drowning 
-              in documents but starving for insights. Our founding team, with decades of combined experience 
+              Founded in 2023, DocuFlow AI emerged from a simple observation: businesses were drowning
+              in documents but starving for insights. Our founding team, with decades of combined experience
               in AI and enterprise software, saw an opportunity to transform how organizations interact with their documents.
             </p>
             <p className="text-gray-600 mb-6">
-              What started as a small project to automate document processing has evolved into a comprehensive 
+              What started as a small project to automate document processing has evolved into a comprehensive
               platform that empowers teams to work smarter, collaborate better, and make faster decisions.
             </p>
             <Button size="lg">Join Our Journey</Button>
           </div>
           <div className="aspect-video bg-gray-200 rounded-lg">
-            <img 
-              src="/placeholder.svg" 
+            <img
+              src="/placeholder.svg"
               alt="Our team at work"
               className="w-full h-full object-cover rounded-lg"
             />
@@ -127,8 +127,8 @@ const AboutPage = () => {
             <Card key={index} className="text-center">
               <CardContent className="p-6">
                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4">
-                  <img 
-                    src={member.image} 
+                  <img
+                    src={member.image}
                     alt={member.name}
                     className="w-full h-full object-cover rounded-full"
                   />
@@ -159,5 +159,3 @@ const AboutPage = () => {
     </div>
   );
 };
-
-export default AboutPage;
