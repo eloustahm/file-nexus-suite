@@ -7,9 +7,12 @@ interface TeamMember {
   email: string;
   firstName: string;
   lastName: string;
+  name: string;
   role: 'admin' | 'editor' | 'viewer';
   status: 'active' | 'pending' | 'inactive';
   joinedAt: string;
+  lastActive?: string;
+  avatar?: string;
 }
 
 interface TeamState {

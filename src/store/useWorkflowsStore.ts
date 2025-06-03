@@ -24,6 +24,8 @@ interface Workflow {
   documentIds: string[];
   priority: 'low' | 'medium' | 'high';
   dueDate?: string;
+  trigger?: string;
+  lastRun?: string;
 }
 
 interface WorkflowsState {

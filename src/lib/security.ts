@@ -1,62 +1,175 @@
 
-import DOMPurify from 'dompurify';
+import CryptoJS from 'crypto-js';
 
-// Sanitize HTML content to prevent XSS
-export const sanitizeHtml = (dirty: string): string => {
-  return DOMPurify.sanitize(dirty, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-    ALLOWED_ATTR: [],
-  });
-};
+// Constants
+const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY || 'default-key-should-be-changed';
+const TOKEN_STORAGE_KEY = 'auth_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 
-// Sanitize plain text
-export const sanitizeText = (text: string): string => {
-  return text.replace(/<[^>]*>/g, '').trim();
-};
+// Token management
+export const tokenManager = {
+  getToken: (): string | null => {
+    return localStorage.getItem(TOKEN_STORAGE_KEY);
+  },
 
-// Validate file upload
-export const validateFileUpload = (file: File): { valid: boolean; error?: string } => {
-  const maxSize = 10 * 1024 * 1024; // 10MB
-  const allowedTypes = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/plain',
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-  ];
+  setToken: (token: string): void => {
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  },
 
-  if (file.size > maxSize) {
-    return { valid: false, error: 'File size must be less than 10MB' };
+  getRefreshToken: (): string | null => {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  },
+
+  setRefreshToken: (token: string): void => {
+    localStorage.setItem(REFRESH_TOKEN_KEY, token);
+  },
+
+  clearTokens: (): void => {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  },
+
+  isTokenExpired: (token: string): boolean => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp * 1000 < Date.now();
+    } catch {
+      return true;
+    }
   }
-
-  if (!allowedTypes.includes(file.type)) {
-    return { valid: false, error: 'File type not allowed' };
-  }
-
-  return { valid: true };
 };
 
-// Rate limiting helper (client-side)
-export class RateLimiter {
-  private attempts: Map<string, number[]> = new Map();
+// Encryption utilities
+export const encryption = {
+  encrypt: (text: string): string => {
+    return CryptoJS.AES.encrypt(text, ENCRYPTION_KEY).toString();
+  },
 
-  public isAllowed(key: string, maxAttempts: number, windowMs: number): boolean {
+  decrypt: (cipherText: string): string => {
+    const bytes = CryptoJS.AES.decrypt(cipherText, ENCRYPTION_KEY);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  }
+};
+
+// Password utilities
+export const passwordUtils = {
+  generateRandomPassword: (length: number = 12): string => {
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return password;
+  },
+
+  checkPasswordStrength: (password: string): { score: number; feedback: string[] } => {
+    const feedback: string[] = [];
+    let score = 0;
+
+    if (password.length >= 8) score += 1;
+    else feedback.push('Use at least 8 characters');
+
+    if (/[a-z]/.test(password)) score += 1;
+    else feedback.push('Include lowercase letters');
+
+    if (/[A-Z]/.test(password)) score += 1;
+    else feedback.push('Include uppercase letters');
+
+    if (/\d/.test(password)) score += 1;
+    else feedback.push('Include numbers');
+
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
+    else feedback.push('Include special characters');
+
+    return { score, feedback };
+  }
+};
+
+// Session management
+export const sessionManager = {
+  startSession: (user: any): void => {
+    const sessionData = {
+      user,
+      startTime: Date.now(),
+      lastActivity: Date.now()
+    };
+    sessionStorage.setItem('user_session', JSON.stringify(sessionData));
+  },
+
+  updateActivity: (): void => {
+    const session = sessionManager.getSession();
+    if (session) {
+      session.lastActivity = Date.now();
+      sessionStorage.setItem('user_session', JSON.stringify(session));
+    }
+  },
+
+  getSession: (): any | null => {
+    const sessionData = sessionStorage.getItem('user_session');
+    return sessionData ? JSON.parse(sessionData) : null;
+  },
+
+  clearSession: (): void => {
+    sessionStorage.removeItem('user_session');
+  },
+
+  isSessionExpired: (maxIdleTime: number = 30 * 60 * 1000): boolean => {
+    const session = sessionManager.getSession();
+    if (!session) return true;
+    return Date.now() - session.lastActivity > maxIdleTime;
+  }
+};
+
+// Input sanitization
+export const sanitizer = {
+  sanitizeInput: (input: string): string => {
+    return input
+      .replace(/[<>]/g, '') // Remove potential HTML tags
+      .replace(/javascript:/gi, '') // Remove javascript: protocols
+      .replace(/on\w+=/gi, '') // Remove event handlers
+      .trim();
+  },
+
+  sanitizeFilename: (filename: string): string => {
+    return filename
+      .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace special chars with underscore
+      .replace(/\.{2,}/g, '.') // Replace multiple dots
+      .substring(0, 255); // Limit length
+  }
+};
+
+// Rate limiting (client-side)
+export const rateLimiter = {
+  attempts: new Map<string, { count: number; lastAttempt: number }>(),
+
+  canAttempt: (key: string, maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000): boolean => {
     const now = Date.now();
-    const attempts = this.attempts.get(key) || [];
-    
-    // Remove old attempts outside the window
-    const validAttempts = attempts.filter(time => now - time < windowMs);
-    
-    if (validAttempts.length >= maxAttempts) {
+    const record = rateLimiter.attempts.get(key);
+
+    if (!record || now - record.lastAttempt > windowMs) {
+      rateLimiter.attempts.set(key, { count: 1, lastAttempt: now });
+      return true;
+    }
+
+    if (record.count >= maxAttempts) {
       return false;
     }
 
-    validAttempts.push(now);
-    this.attempts.set(key, validAttempts);
+    record.count++;
+    record.lastAttempt = now;
     return true;
-  }
-}
+  },
 
-export const rateLimiter = new RateLimiter();
+  reset: (key: string): void => {
+    rateLimiter.attempts.delete(key);
+  }
+};
+
+export default {
+  tokenManager,
+  encryption,
+  passwordUtils,
+  sessionManager,
+  sanitizer,
+  rateLimiter
+};

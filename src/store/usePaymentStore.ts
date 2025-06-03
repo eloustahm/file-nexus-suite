@@ -38,7 +38,7 @@ interface PaymentState {
   loading: boolean;
   error: string | null;
   fetchPlans: () => Promise<void>;
-  subscribe: (planId: string) => Promise<void>;
+  createSubscription: (planId: string) => Promise<void>;
   cancelSubscription: () => Promise<void>;
   getUsage: () => Promise<void>;
   clearError: () => void;
@@ -63,7 +63,7 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     }
   },
 
-  subscribe: async (planId: string) => {
+  createSubscription: async (planId: string) => {
     try {
       set({ loading: true, error: null });
       const subscription = await paymentApi.createSubscription(planId) as Subscription;

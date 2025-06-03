@@ -4,51 +4,46 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { QrCode, Shield, Smartphone, Key } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { QrCode, Smartphone, Shield, Key } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export const OTPSettings = () => {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [step, setStep] = useState(1);
   const { toast } = useToast();
+  const [otpEnabled, setOtpEnabled] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [backupCodes] = useState([
+    "ABC123DEF", "GHI456JKL", "MNO789PQR", "STU012VWX", "YZA345BCD"
+  ]);
 
-  const secretKey = "JBSWY3DPEHPK3PXP";
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/DocuFlow:user@example.com?secret=${secretKey}&issuer=DocuFlow`;
-
-  const handleEnable2FA = () => {
-    setStep(2);
-  };
-
-  const handleVerify = () => {
-    if (verificationCode.length === 6) {
-      setIsEnabled(true);
-      setStep(3);
+  const handleEnableOTP = () => {
+    if (!verificationCode) {
       toast({
-        title: "2FA Enabled",
-        description: "Two-factor authentication has been successfully enabled.",
-      });
-    } else {
-      toast({
-        title: "Invalid Code",
-        description: "Please enter a valid 6-digit code.",
+        title: "Verification Required",
+        description: "Please enter the verification code from your authenticator app.",
         variant: "destructive",
       });
+      return;
     }
-  };
 
-  const handleDisable2FA = () => {
-    setIsEnabled(false);
-    setStep(1);
+    setOtpEnabled(true);
     toast({
-      title: "2FA Disabled",
-      description: "Two-factor authentication has been disabled.",
+      title: "Two-Factor Authentication Enabled",
+      description: "Your account is now secured with 2FA.",
     });
   };
 
-  if (step === 1 && !isEnabled) {
-    return (
+  const handleDisableOTP = () => {
+    setOtpEnabled(false);
+    toast({
+      title: "Two-Factor Authentication Disabled",
+      description: "2FA has been removed from your account.",
+    });
+  };
+
+  return (
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -59,139 +54,99 @@ export const OTPSettings = () => {
             Add an extra layer of security to your account
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Smartphone className="h-5 w-5 text-blue-600" />
-              <div>
-                <h4 className="font-medium text-blue-900">Enhanced Security</h4>
-                <p className="text-sm text-blue-700">
-                  Protect your account with time-based one-time passwords (TOTP)
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            <h4 className="font-medium">What you'll need:</h4>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 bg-gray-400 rounded-full"></div>
-                An authenticator app (Google Authenticator, Authy, etc.)
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 bg-gray-400 rounded-full"></div>
-                Your mobile device to scan the QR code
-              </li>
-            </ul>
-          </div>
-
-          <Button onClick={handleEnable2FA} className="w-full">
-            <Shield className="h-4 w-4 mr-2" />
-            Enable Two-Factor Authentication
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (step === 2) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Set Up Two-Factor Authentication</CardTitle>
-          <CardDescription>
-            Scan the QR code with your authenticator app
-          </CardDescription>
-        </CardHeader>
         <CardContent className="space-y-6">
-          <div className="text-center space-y-4">
-            <div className="flex justify-center">
-              <img src={qrCodeUrl} alt="QR Code" className="border rounded-lg" />
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Enable 2FA</Label>
+              <p className="text-sm text-gray-500">
+                Require a code from your phone to sign in
+              </p>
             </div>
-            <p className="text-sm text-gray-600">
-              Scan this QR code with your authenticator app
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Or enter this key manually:</Label>
-            <div className="flex items-center gap-2">
-              <Input value={secretKey} readOnly className="font-mono" />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigator.clipboard.writeText(secretKey)}
-              >
-                Copy
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="verification-code">
-              Enter verification code from your app:
-            </Label>
-            <Input
-              id="verification-code"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              placeholder="000000"
-              maxLength={6}
-              className="font-mono text-center text-lg"
+            <Switch
+              checked={otpEnabled}
+              onCheckedChange={otpEnabled ? handleDisableOTP : undefined}
             />
           </div>
 
-          <div className="flex gap-2">
-            <Button onClick={handleVerify} disabled={verificationCode.length !== 6}>
-              Verify & Enable
-            </Button>
-            <Button variant="outline" onClick={() => setStep(1)}>
-              Cancel
-            </Button>
-          </div>
+          {!otpEnabled && (
+            <div className="space-y-4">
+              <Alert>
+                <Smartphone className="h-4 w-4" />
+                <AlertDescription>
+                  Download an authenticator app like Google Authenticator or Authy to get started.
+                </AlertDescription>
+              </Alert>
+
+              <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                <div className="flex items-center gap-3">
+                  <QrCode className="h-12 w-12 text-gray-400" />
+                  <div>
+                    <h4 className="font-medium">Scan QR Code</h4>
+                    <p className="text-sm text-gray-600">
+                      Use your authenticator app to scan this code
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="verification">Verification Code</Label>
+                  <Input
+                    id="verification"
+                    placeholder="Enter 6-digit code"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    maxLength={6}
+                    className="mt-1"
+                  />
+                </div>
+
+                <Button onClick={handleEnableOTP} className="w-full">
+                  Enable Two-Factor Authentication
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {otpEnabled && (
+            <div className="space-y-4">
+              <Alert>
+                <Shield className="h-4 w-4" />
+                <AlertDescription>
+                  Two-factor authentication is currently enabled for your account.
+                </AlertDescription>
+              </Alert>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Key className="h-4 w-4" />
+                    Backup Codes
+                  </CardTitle>
+                  <CardDescription>
+                    Save these codes in a safe place. You can use them to access your account if you lose your phone.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {backupCodes.map((code, index) => (
+                      <div key={index} className="bg-gray-50 p-2 rounded font-mono text-sm">
+                        {code}
+                      </div>
+                    ))}
+                  </div>
+                  <Button variant="outline" className="mt-4">
+                    Generate New Codes
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Button variant="destructive" onClick={handleDisableOTP}>
+                Disable Two-Factor Authentication
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
-          Two-Factor Authentication
-          <Badge className="bg-green-100 text-green-800">Enabled</Badge>
-        </CardTitle>
-        <CardDescription>
-          Your account is protected with two-factor authentication
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center gap-3">
-            <Shield className="h-5 w-5 text-green-600" />
-            <div>
-              <h4 className="font-medium text-green-900">2FA Active</h4>
-              <p className="text-sm text-green-700">
-                Your account is secured with two-factor authentication
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <h4 className="font-medium">Recovery Options:</h4>
-          <Button variant="outline" className="w-full justify-start">
-            <Key className="h-4 w-4 mr-2" />
-            Download Recovery Codes
-          </Button>
-        </div>
-
-        <Button variant="destructive" onClick={handleDisable2FA} className="w-full">
-          Disable Two-Factor Authentication
-        </Button>
-      </CardContent>
-    </Card>
+    </div>
   );
 };

@@ -5,10 +5,12 @@ import { foldersApi } from '@/services/api';
 interface Folder {
   id: string;
   name: string;
+  description?: string;
   parentId?: string;
   createdAt: string;
   updatedAt: string;
   documentCount: number;
+  type?: 'folder' | 'shared';
 }
 
 interface FoldersState {
@@ -17,7 +19,7 @@ interface FoldersState {
   loading: boolean;
   error: string | null;
   fetchFolders: () => Promise<void>;
-  createFolder: (name: string, parentId?: string) => Promise<void>;
+  createFolder: (data: { name: string; description?: string; parentId?: string }) => Promise<void>;
   updateFolder: (id: string, data: Partial<Folder>) => Promise<void>;
   deleteFolder: (id: string) => Promise<void>;
   clearError: () => void;
@@ -41,10 +43,10 @@ export const useFoldersStore = create<FoldersState>((set, get) => ({
     }
   },
 
-  createFolder: async (name: string, parentId?: string) => {
+  createFolder: async (data: { name: string; description?: string; parentId?: string }) => {
     try {
       set({ loading: true, error: null });
-      const folder = await foldersApi.create({ name, parentId }) as Folder;
+      const folder = await foldersApi.create(data) as Folder;
       set(state => ({ folders: [...state.folders, folder] }));
     } catch (error: any) {
       set({ error: error.message });
