@@ -1,128 +1,171 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Activity, 
+  Search, 
+  Filter, 
   FileText, 
-  Edit, 
-  Trash2, 
-  Share2, 
-  Upload, 
+  Users, 
+  Settings, 
+  Upload,
   Download,
-  Search,
-  Filter,
+  Share2,
+  MessageSquare,
   Calendar
 } from "lucide-react";
+import { useActivityStore } from "@/store/useActivityStore";
+
+interface ActivityLog {
+  id: string;
+  action: string;
+  description: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  timestamp: string;
+  type: 'document' | 'team' | 'system' | 'chat';
+  metadata?: any;
+}
 
 export const ActivityLogs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
-  const [filterUser, setFilterUser] = useState("all");
+  const [timeFilter, setTimeFilter] = useState("7d");
+  
+  const { logs, loading, error, fetchLogs, clearError } = useActivityStore();
 
-  const activities = [
+  useEffect(() => {
+    fetchLogs({ type: filterType, timeframe: timeFilter });
+  }, [fetchLogs, filterType, timeFilter]);
+
+  useEffect(() => {
+    return () => clearError();
+  }, [clearError]);
+
+  // Mock data for development
+  const mockLogs: ActivityLog[] = [
     {
-      id: 1,
-      type: "create",
-      action: "Created document",
-      document: "Project Proposal 2024.pdf",
-      user: { name: "John Doe", avatar: "/placeholder.svg" },
-      timestamp: "2024-01-15 10:30 AM",
-      details: "Created new document in Marketing folder"
+      id: '1',
+      action: 'document_uploaded',
+      description: 'Uploaded "Project Proposal.pdf"',
+      userId: 'user1',
+      userName: 'Alice Johnson',
+      userAvatar: '/placeholder.svg',
+      timestamp: new Date().toISOString(),
+      type: 'document'
     },
     {
-      id: 2,
-      type: "edit",
-      action: "Edited document",
-      document: "Team Guidelines.docx",
-      user: { name: "Alice Johnson", avatar: "/placeholder.svg" },
-      timestamp: "2024-01-15 09:45 AM",
-      details: "Updated section 3: Communication protocols"
+      id: '2',
+      action: 'team_invite_sent',
+      description: 'Invited bob@company.com to join the team',
+      userId: 'user1',
+      userName: 'Alice Johnson',
+      userAvatar: '/placeholder.svg',
+      timestamp: new Date(Date.now() - 3600000).toISOString(),
+      type: 'team'
     },
     {
-      id: 3,
-      type: "share",
-      action: "Shared document",
-      document: "Q4 Report.xlsx",
-      user: { name: "Bob Smith", avatar: "/placeholder.svg" },
-      timestamp: "2024-01-15 09:15 AM",
-      details: "Shared with carol@company.com as Editor"
+      id: '3',
+      action: 'document_shared',
+      description: 'Shared "Financial Report Q3.xlsx" with the team',
+      userId: 'user2',
+      userName: 'Bob Smith',
+      userAvatar: '/placeholder.svg',
+      timestamp: new Date(Date.now() - 7200000).toISOString(),
+      type: 'document'
     },
     {
-      id: 4,
-      type: "workflow",
-      action: "Workflow completed",
-      document: "Invoice Template.pdf",
-      user: { name: "Carol Davis", avatar: "/placeholder.svg" },
-      timestamp: "2024-01-15 08:30 AM",
-      details: "Document Review workflow completed successfully"
+      id: '4',
+      action: 'chat_message',
+      description: 'Posted a message in #general channel',
+      userId: 'user3',
+      userName: 'Carol Davis',
+      userAvatar: '/placeholder.svg',
+      timestamp: new Date(Date.now() - 10800000).toISOString(),
+      type: 'chat'
     },
     {
-      id: 5,
-      type: "delete",
-      action: "Deleted document",
-      document: "Old Draft.txt",
-      user: { name: "David Wilson", avatar: "/placeholder.svg" },
-      timestamp: "2024-01-14 05:20 PM",
-      details: "Moved to trash"
-    },
-    {
-      id: 6,
-      type: "upload",
-      action: "Uploaded document",
-      document: "Contract_v2.pdf",
-      user: { name: "Eve Brown", avatar: "/placeholder.svg" },
-      timestamp: "2024-01-14 03:15 PM",
-      details: "Uploaded to Contracts folder"
+      id: '5',
+      action: 'settings_updated',
+      description: 'Updated team security settings',
+      userId: 'user1',
+      userName: 'Alice Johnson',
+      userAvatar: '/placeholder.svg',
+      timestamp: new Date(Date.now() - 14400000).toISOString(),
+      type: 'system'
     }
   ];
 
-  const getActivityIcon = (type: string) => {
+  const displayLogs = logs.length > 0 ? logs : mockLogs;
+
+  const filteredLogs = displayLogs.filter(log => {
+    const matchesSearch = log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         log.userName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === "all" || log.type === filterType;
+    return matchesSearch && matchesType;
+  });
+
+  const getActivityIcon = (type: string, action: string) => {
     switch (type) {
-      case 'create': return <FileText className="h-4 w-4" />;
-      case 'edit': return <Edit className="h-4 w-4" />;
-      case 'delete': return <Trash2 className="h-4 w-4" />;
-      case 'share': return <Share2 className="h-4 w-4" />;
-      case 'upload': return <Upload className="h-4 w-4" />;
-      case 'download': return <Download className="h-4 w-4" />;
-      default: return <Activity className="h-4 w-4" />;
+      case 'document':
+        if (action.includes('upload')) return <Upload className="h-4 w-4" />;
+        if (action.includes('download')) return <Download className="h-4 w-4" />;
+        if (action.includes('share')) return <Share2 className="h-4 w-4" />;
+        return <FileText className="h-4 w-4" />;
+      case 'team':
+        return <Users className="h-4 w-4" />;
+      case 'chat':
+        return <MessageSquare className="h-4 w-4" />;
+      case 'system':
+        return <Settings className="h-4 w-4" />;
+      default:
+        return <Activity className="h-4 w-4" />;
     }
   };
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case 'create': return 'bg-green-100 text-green-800';
-      case 'edit': return 'bg-blue-100 text-blue-800';
-      case 'delete': return 'bg-red-100 text-red-800';
-      case 'share': return 'bg-purple-100 text-purple-800';
-      case 'upload': return 'bg-orange-100 text-orange-800';
-      case 'workflow': return 'bg-indigo-100 text-indigo-800';
+      case 'document': return 'bg-blue-100 text-blue-800';
+      case 'team': return 'bg-green-100 text-green-800';
+      case 'chat': return 'bg-purple-100 text-purple-800';
+      case 'system': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const filteredActivities = activities.filter(activity => {
-    const matchesSearch = activity.document.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         activity.user.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === "all" || activity.type === filterType;
-    const matchesUser = filterUser === "all" || activity.user.name === filterUser;
+  const formatTimeAgo = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
     
-    return matchesSearch && matchesType && matchesUser;
-  });
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    return `${Math.floor(diffInHours / 24)}d ago`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading activity logs...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Activity Logs</h1>
-        <p className="text-gray-600 mt-1">Track all document and workflow activities</p>
+        <p className="text-gray-600 mt-1">Track all activities across your workspace</p>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -146,76 +189,78 @@ export const ActivityLogs = () => {
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent className="bg-white">
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="create">Create</SelectItem>
-                <SelectItem value="edit">Edit</SelectItem>
-                <SelectItem value="delete">Delete</SelectItem>
-                <SelectItem value="share">Share</SelectItem>
-                <SelectItem value="upload">Upload</SelectItem>
-                <SelectItem value="workflow">Workflow</SelectItem>
+                <SelectItem value="all">All Activities</SelectItem>
+                <SelectItem value="document">Documents</SelectItem>
+                <SelectItem value="team">Team</SelectItem>
+                <SelectItem value="chat">Chat</SelectItem>
+                <SelectItem value="system">System</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={filterUser} onValueChange={setFilterUser}>
+            <Select value={timeFilter} onValueChange={setTimeFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by user" />
+                <SelectValue placeholder="Time range" />
               </SelectTrigger>
               <SelectContent className="bg-white">
-                <SelectItem value="all">All Users</SelectItem>
-                <SelectItem value="John Doe">John Doe</SelectItem>
-                <SelectItem value="Alice Johnson">Alice Johnson</SelectItem>
-                <SelectItem value="Bob Smith">Bob Smith</SelectItem>
-                <SelectItem value="Carol Davis">Carol Davis</SelectItem>
+                <SelectItem value="1d">Last 24 hours</SelectItem>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+                <SelectItem value="90d">Last 90 days</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Activity List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            Recent Activities
+            Recent Activity ({filteredLogs.length})
           </CardTitle>
-          <CardDescription>
-            {filteredActivities.length} activities found
-          </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="text-red-600 text-center py-4">
+              <p>Error loading activity logs: {error}</p>
+            </div>
+          )}
+          
           <div className="space-y-4">
-            {filteredActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50">
-                <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>
-                  {getActivityIcon(activity.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-medium text-sm">{activity.action}</p>
-                    <Badge variant="outline" className="text-xs">
-                      {activity.type}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-1">{activity.document}</p>
-                  <p className="text-xs text-gray-500">{activity.details}</p>
-                </div>
-                <div className="flex items-center gap-3 text-right">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={activity.user.avatar} />
-                      <AvatarFallback className="text-xs">
-                        {activity.user.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs text-gray-600">{activity.user.name}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <Calendar className="h-3 w-3" />
-                    {activity.timestamp}
-                  </div>
-                </div>
+            {filteredLogs.length === 0 ? (
+              <div className="text-center py-8">
+                <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No activities found</h3>
+                <p className="text-gray-500">Try adjusting your filters or check back later</p>
               </div>
-            ))}
+            ) : (
+              filteredLogs.map((log) => (
+                <div key={log.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50">
+                  <div className={`p-2 rounded-lg ${getActivityColor(log.type)}`}>
+                    {getActivityIcon(log.type, log.action)}
+                  </div>
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={log.userAvatar} />
+                    <AvatarFallback>
+                      {log.userName.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900">
+                      <span className="font-semibold">{log.userName}</span> {log.description}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge className={getActivityColor(log.type)}>
+                        {log.type}
+                      </Badge>
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Calendar className="h-3 w-3" />
+                        {formatTimeAgo(log.timestamp)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

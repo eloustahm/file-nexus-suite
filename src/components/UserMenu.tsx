@@ -10,9 +10,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Settings, CreditCard, LogOut, Shield } from "lucide-react";
+import { User, Settings, CreditCard, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface UserMenuProps {
   user: {
@@ -25,7 +25,7 @@ interface UserMenuProps {
 
 export const UserMenu = ({ user }: UserMenuProps) => {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut } = useAuthStore();
 
   const handleLogout = async () => {
     try {
@@ -54,15 +54,15 @@ export const UserMenu = ({ user }: UserMenuProps) => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
+        <DropdownMenuItem onClick={() => navigate("/dashboard/profile")} className="cursor-pointer">
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+        <DropdownMenuItem onClick={() => navigate("/dashboard/settings")} className="cursor-pointer">
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/payment")} className="cursor-pointer">
+        <DropdownMenuItem onClick={() => navigate("/dashboard/pricing")} className="cursor-pointer">
           <CreditCard className="mr-2 h-4 w-4" />
           <span>Billing</span>
         </DropdownMenuItem>

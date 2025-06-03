@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, Users, Settings } from "lucide-react";
 import { TeamChat } from "./TeamChat";
+import { TeamMembers } from "./TeamMembers";
+import { TeamSettings } from "./TeamSettings";
 
 export const TeamCollaboration = () => {
   const [activeTab, setActiveTab] = useState("chat");
@@ -36,25 +38,11 @@ export const TeamCollaboration = () => {
         </TabsContent>
 
         <TabsContent value="members" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Members</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Team member management coming soon...</p>
-            </CardContent>
-          </Card>
+          <TeamMembers />
         </TabsContent>
 
         <TabsContent value="settings" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Team settings coming soon...</p>
-            </CardContent>
-          </Card>
+          <TeamSettings />
         </TabsContent>
       </Tabs>
     </div>

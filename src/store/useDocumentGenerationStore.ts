@@ -1,35 +1,6 @@
 
 import { create } from 'zustand';
-import { aiApi } from '@/services/api';
-
-interface Agent {
-  id: string;
-  name: string;
-  icon: string;
-  color: string;
-  type: string;
-  description: string;
-  capabilities: string[];
-  personality?: string;
-}
-
-interface TemplateField {
-  id: string;
-  label: string;
-  type: string;
-  value: string;
-  required?: boolean;
-  placeholder?: string;
-}
-
-interface DocumentTemplate {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-  fields: TemplateField[];
-  content?: string;
-}
+import { Agent, DocumentTemplate, TemplateField } from '@/pages/components/Document/types/generatorTypes';
 
 interface GenerationProgress {
   step: number;

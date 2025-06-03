@@ -1,38 +1,12 @@
 
 import { create } from 'zustand';
-
-interface Agent {
-  id: string;
-  name: string;
-  icon: string;
-  color: string;
-  type: string;
-  description: string;
-  capabilities: string[];
-  personality: string;
-}
-
-interface Message {
-  id: string;
-  content: string;
-  sender: 'user' | 'agent';
-  timestamp: Date;
-  agentId?: string;
-}
-
-interface ChatHistory {
-  id: string;
-  name: string;
-  lastMessage: string;
-  timestamp: Date;
-  messageCount: number;
-}
+import { Agent, Message, ChatHistory, ChatMessage } from '@/pages/components/Document/types/chatTypes';
 
 interface DocumentChatState {
   selectedAgent: Agent | null;
   messages: Message[];
   selectedDocuments: string[];
-  currentMessages: Message[];
+  currentMessages: ChatMessage[];
   isLoading: boolean;
   isAgentTyping: boolean;
   error: string | null;
@@ -62,16 +36,24 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
     {
       id: '1',
       name: 'Contract Analysis',
+      title: 'Contract Analysis',
       lastMessage: 'The contract terms look favorable...',
       timestamp: new Date(Date.now() - 86400000),
-      messageCount: 15
+      messageCount: 15,
+      messages: [],
+      createdAt: new Date(Date.now() - 86400000),
+      updatedAt: new Date(Date.now() - 86400000)
     },
     {
       id: '2',
       name: 'Financial Report Review',
+      title: 'Financial Report Review',
       lastMessage: 'Q3 revenue increased by 23%...',
       timestamp: new Date(Date.now() - 172800000),
-      messageCount: 8
+      messageCount: 8,
+      messages: [],
+      createdAt: new Date(Date.now() - 172800000),
+      updatedAt: new Date(Date.now() - 172800000)
     }
   ],
   selectedHistory: null,
@@ -103,31 +85,29 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
     try {
       set({ isLoading: true, isAgentTyping: true, error: null });
       
-      // Add user message
-      const userMessage: Message = {
+      const userMessage: ChatMessage = {
         id: Date.now().toString(),
         content,
+        role: 'user',
         sender: 'user',
         timestamp: new Date()
       };
       
       set((state) => ({
-        messages: [...state.messages, userMessage],
         currentMessages: [...state.currentMessages, userMessage]
       }));
 
-      // Simulate AI response
       setTimeout(() => {
-        const agentMessage: Message = {
+        const agentMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           content: `I understand you're asking about: "${content}". Let me help you with that.`,
+          role: 'assistant',
           sender: 'agent',
           timestamp: new Date(),
           agentId: selectedAgent?.id
         };
         
         set((state) => ({
-          messages: [...state.messages, agentMessage],
           currentMessages: [...state.currentMessages, agentMessage],
           isLoading: false,
           isAgentTyping: false
@@ -141,17 +121,18 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
 
   loadChatHistory: (historyId) => {
     set({ selectedHistory: historyId });
-    // Load messages for this history
-    const mockMessages: Message[] = [
+    const mockMessages: ChatMessage[] = [
       {
         id: '1',
         content: 'Hello, I need help with this document.',
+        role: 'user',
         sender: 'user',
         timestamp: new Date(Date.now() - 3600000)
       },
       {
         id: '2',
         content: 'I\'d be happy to help you analyze the document.',
+        role: 'assistant',
         sender: 'agent',
         timestamp: new Date(Date.now() - 3500000)
       }

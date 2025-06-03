@@ -1,8 +1,12 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserProfile } from './UserProfile';
 import { Integrations } from './Integrations';
 import { PaymentPage } from './PaymentPage';
+import { NotificationSettings } from './NotificationSettings';
+import { SecuritySettings as SecuritySettingsPage } from './SecuritySettingsPage';
+import { TeamMembers } from './TeamMembers';
 import { 
   User, 
   Zap, 
@@ -64,27 +68,15 @@ export const Settings = () => {
         </TabsContent>
 
         <TabsContent value="notifications" className="mt-6">
-          <div className="text-center py-12">
-            <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Notification Settings</h3>
-            <p className="text-gray-500">Notification preferences coming soon</p>
-          </div>
+          <NotificationSettings />
         </TabsContent>
 
         <TabsContent value="security" className="mt-6">
-          <div className="text-center py-12">
-            <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Security Settings</h3>
-            <p className="text-gray-500">Advanced security options coming soon</p>
-          </div>
+          <SecuritySettingsPage />
         </TabsContent>
 
         <TabsContent value="team" className="mt-6">
-          <div className="text-center py-12">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Team Management</h3>
-            <p className="text-gray-500">Team collaboration features coming soon</p>
-          </div>
+          <TeamMembers />
         </TabsContent>
       </Tabs>
     </div>

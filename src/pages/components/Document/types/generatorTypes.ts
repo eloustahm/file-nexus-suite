@@ -5,6 +5,7 @@ export interface TemplateField {
   placeholder: string;
   value: string;
   type: 'text' | 'textarea' | 'date' | 'number' | 'select';
+  required?: boolean;
   options?: string[];
 }
 
@@ -14,6 +15,7 @@ export interface DocumentTemplate {
   description: string;
   type: string;
   fields: TemplateField[];
+  content?: string;
 }
 
 export interface NewFieldData {

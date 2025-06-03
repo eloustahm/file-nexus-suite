@@ -14,6 +14,9 @@ import { TeamCollaboration } from '@/pages/components/TeamCollaboration';
 import { Workflow } from '@/pages/components/Workflow';
 import { Settings } from '@/pages/components/Settings';
 import { UserProfile } from '@/pages/components/UserProfile';
+import { Integrations } from '@/pages/components/Integrations';
+import { PricingPlans } from '@/pages/components/PricingPlans';
+import { DocumentSharing } from '@/pages/components/DocumentSharing';
 
 export const ProtectedRoutes = () => {
   return (
@@ -27,11 +30,14 @@ export const ProtectedRoutes = () => {
         <Route path="/generate" element={<DocumentGenerator />} />
         <Route path="/folders" element={<Folders />} />
         <Route path="/shared" element={<Shared />} />
+        <Route path="/sharing" element={<DocumentSharing />} />
         <Route path="/activity" element={<ActivityLogs />} />
         <Route path="/ai-modules" element={<AIModules />} />
         <Route path="/team" element={<TeamCollaboration />} />
         <Route path="/workflows" element={<Workflow />} />
         <Route path="/workflow" element={<Workflow />} />
+        <Route path="/integrations" element={<Integrations />} />
+        <Route path="/pricing" element={<PricingPlans />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/profile" element={<UserProfile />} />
       </Routes>
