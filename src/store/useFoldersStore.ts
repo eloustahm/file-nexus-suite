@@ -32,7 +32,7 @@ export const useFoldersStore = create<FoldersState>((set, get) => ({
   fetchFolders: async () => {
     try {
       set({ loading: true, error: null });
-      const folders = await foldersApi.getAll();
+      const folders = await foldersApi.getAll() as Folder[];
       set({ folders });
     } catch (error: any) {
       set({ error: error.message });
@@ -44,7 +44,7 @@ export const useFoldersStore = create<FoldersState>((set, get) => ({
   createFolder: async (name: string, parentId?: string) => {
     try {
       set({ loading: true, error: null });
-      const folder = await foldersApi.create({ name, parentId });
+      const folder = await foldersApi.create({ name, parentId }) as Folder;
       set(state => ({ folders: [...state.folders, folder] }));
     } catch (error: any) {
       set({ error: error.message });
@@ -57,7 +57,7 @@ export const useFoldersStore = create<FoldersState>((set, get) => ({
   updateFolder: async (id: string, data: Partial<Folder>) => {
     try {
       set({ loading: true, error: null });
-      const updatedFolder = await foldersApi.update(id, data);
+      const updatedFolder = await foldersApi.update(id, data) as Folder;
       set(state => ({
         folders: state.folders.map(folder => folder.id === id ? updatedFolder : folder)
       }));

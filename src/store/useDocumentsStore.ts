@@ -37,7 +37,7 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
   fetchDocuments: async () => {
     try {
       set({ loading: true, error: null });
-      const documents = await documentsApi.getAll();
+      const documents = await documentsApi.getAll() as Document[];
       set({ documents });
     } catch (error: any) {
       set({ error: error.message });
@@ -49,7 +49,7 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
   getDocument: async (id: string) => {
     try {
       set({ loading: true, error: null });
-      const document = await documentsApi.getById(id);
+      const document = await documentsApi.getById(id) as Document;
       set({ selectedDocument: document });
     } catch (error: any) {
       set({ error: error.message });
@@ -65,7 +65,7 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
       formData.append('file', file);
       if (folderId) formData.append('folderId', folderId);
       
-      const document = await documentsApi.create(formData);
+      const document = await documentsApi.create(formData) as Document;
       set(state => ({ documents: [...state.documents, document] }));
     } catch (error: any) {
       set({ error: error.message });
@@ -78,7 +78,7 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
   updateDocument: async (id: string, data: Partial<Document>) => {
     try {
       set({ loading: true, error: null });
-      const updatedDocument = await documentsApi.update(id, data);
+      const updatedDocument = await documentsApi.update(id, data) as Document;
       set(state => ({
         documents: state.documents.map(doc => doc.id === id ? updatedDocument : doc),
         selectedDocument: state.selectedDocument?.id === id ? updatedDocument : state.selectedDocument

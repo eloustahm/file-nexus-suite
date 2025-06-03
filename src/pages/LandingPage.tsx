@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -181,6 +180,12 @@ export const LandingPage = () => {
                         </div>
                         <span className="text-xl font-bold text-gray-900">DocuFlow</span>
                     </div>
+                    <nav className="hidden md:flex items-center gap-6">
+                        <Link to="/about" className="text-gray-600 hover:text-gray-900">About</Link>
+                        <Link to="/blog" className="text-gray-600 hover:text-gray-900">Blog</Link>
+                        <Link to="/careers" className="text-gray-600 hover:text-gray-900">Careers</Link>
+                        <a href="#pricing" className="text-gray-600 hover:text-gray-900">Pricing</a>
+                    </nav>
                     <div className="flex items-center gap-4">
                         <Link to="/login">
                             <Button variant="ghost">Sign In</Button>
@@ -317,7 +322,7 @@ export const LandingPage = () => {
             </section>
 
             {/* Pricing Plans Section */}
-            <section className="py-20 bg-gray-50">
+            <section id="pricing" className="py-20 bg-gray-50">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
@@ -446,18 +451,18 @@ export const LandingPage = () => {
                         <div>
                             <h3 className="font-semibold mb-4">Product</h3>
                             <ul className="space-y-2 text-gray-400">
-                                <li><a href="#" className="hover:text-white">Features</a></li>
-                                <li><a href="#" className="hover:text-white">Pricing</a></li>
+                                <li><a href="#features" className="hover:text-white">Features</a></li>
+                                <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
                                 <li><a href="#" className="hover:text-white">API Docs</a></li>
-                                <li><a href="#" className="hover:text-white">Integrations</a></li>
+                                <li><Link to="/integrations" className="hover:text-white">Integrations</Link></li>
                             </ul>
                         </div>
                         <div>
                             <h3 className="font-semibold mb-4">Company</h3>
                             <ul className="space-y-2 text-gray-400">
-                                <li><a href="#" className="hover:text-white">About</a></li>
-                                <li><a href="#" className="hover:text-white">Blog</a></li>
-                                <li><a href="#" className="hover:text-white">Careers</a></li>
+                                <li><Link to="/about" className="hover:text-white">About</Link></li>
+                                <li><Link to="/blog" className="hover:text-white">Blog</Link></li>
+                                <li><Link to="/careers" className="hover:text-white">Careers</Link></li>
                                 <li><a href="#" className="hover:text-white">Contact</a></li>
                             </ul>
                         </div>
