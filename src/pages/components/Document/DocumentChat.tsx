@@ -1,12 +1,11 @@
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MessageSquare, X } from "lucide-react";
-import { ChatMessage, Document, Agent } from './types/chatTypes';
 import { useChatAgents } from '@/hooks/useChatAgents';
-import { useChatHistory } from '@/hooks/useChatHistory';
+import { useDocumentChatStore } from '@/store/useDocumentChatStore';
 import { AgentSelector } from './components/AgentSelector';
 import { ChatHistoryPanel } from './components/ChatHistoryPanel';
 import { DocumentSelector } from './components/DocumentSelector';
@@ -14,28 +13,28 @@ import { ChatMessages } from './components/ChatMessages';
 import { MessageInput } from './components/MessageInput';
 
 export const DocumentChat = () => {
-  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
-  const [message, setMessage] = useState("");
-  const [currentMessages, setCurrentMessages] = useState<ChatMessage[]>([]);
-  const [isAgentTyping, setIsAgentTyping] = useState(false);
-
+  const { agents } = useChatAgents();
+  
   const {
-    agents,
+    selectedDocuments,
+    currentMessages,
     selectedAgent,
-    setSelectedAgent,
-    getAgentSwitchMessage,
-    getAgentResponse
-  } = useChatAgents();
-
-  const {
+    isAgentTyping,
     chatHistories,
     selectedHistory,
-    setSelectedHistory,
-    saveToHistory,
-    loadChatHistory
-  } = useChatHistory();
+    loading,
+    error,
+    setSelectedDocuments,
+    addDocument,
+    removeDocument,
+    setSelectedAgent,
+    sendMessage,
+    loadChatHistory,
+    clearError
+  } = useDocumentChatStore();
 
-  const documents: Document[] = [
+  // Mock documents data
+  const documents = [
     { id: "1", name: "Project Proposal.docx", type: "Word Document", size: "2.4 MB" },
     { id: "2", name: "Financial Report Q3.xlsx", type: "Excel Spreadsheet", size: "1.8 MB" },
     { id: "3", name: "Presentation Deck.pptx", type: "PowerPoint", size: "15.2 MB" },
@@ -48,57 +47,19 @@ export const DocumentChat = () => {
   useEffect(() => {
     if (!selectedAgent && agents.length > 0) {
       setSelectedAgent(agents[0]);
-      setCurrentMessages([
-        {
-          id: "1",
-          content: 'Hello! I\'m your professional assistant. I can help you analyze and answer questions about your documents. Please select one or more documents and I\'ll provide detailed insights.',
-          role: 'assistant',
-          timestamp: new Date(),
-          type: 'ai',
-          message: 'Hello! I\'m your professional assistant. I can help you analyze and answer questions about your documents. Please select one or more documents and I\'ll provide detailed insights.',
-          agentPersonality: 'professional'
-        }
-      ]);
     }
   }, [agents, selectedAgent, setSelectedAgent]);
 
-  // Load chat history when documents are selected
-  useEffect(() => {
-    if (selectedDocuments.length > 0) {
-      const historyKey = selectedDocuments.sort().join(',');
-      const existingHistory = chatHistories.find(h => h.documentId === historyKey);
-
-      if (existingHistory) {
-        setCurrentMessages(existingHistory.messages);
-        setSelectedHistory(historyKey);
-      } else {
-        // Create new chat session
-        const welcomeMessage: ChatMessage = {
-          id: Date.now().toString(),
-          content: `Great! I'm now analyzing ${selectedDocuments.length === 1 ? `"${selectedDocuments[0]}"` : `${selectedDocuments.length} documents`}. What would you like to know about ${selectedDocuments.length === 1 ? 'this document' : 'these documents'}?`,
-          role: 'assistant',
-          timestamp: new Date(),
-          type: 'ai',
-          message: `Great! I'm now analyzing ${selectedDocuments.length === 1 ? `"${selectedDocuments[0]}"` : `${selectedDocuments.length} documents`}. What would you like to know about ${selectedDocuments.length === 1 ? 'this document' : 'these documents'}?`,
-          documentRefs: [...selectedDocuments],
-          agentPersonality: selectedAgent?.personality
-        };
-        setCurrentMessages([welcomeMessage]);
-        setSelectedHistory(historyKey);
-      }
-    }
-  }, [selectedDocuments, selectedAgent, chatHistories, setSelectedHistory]);
-
   const handleDocumentToggle = (docName: string) => {
-    setSelectedDocuments(prev =>
-      prev.includes(docName)
-        ? prev.filter(name => name !== docName)
-        : [...prev, docName]
-    );
+    if (selectedDocuments.includes(docName)) {
+      removeDocument(docName);
+    } else {
+      addDocument(docName);
+    }
   };
 
   const handleRemoveDocument = (docName: string) => {
-    setSelectedDocuments(prev => prev.filter(name => name !== docName));
+    removeDocument(docName);
   };
 
   const handleSelectAll = () => {
@@ -109,75 +70,18 @@ export const DocumentChat = () => {
     }
   };
 
-  const handleAgentChange = (agent: Agent) => {
-    setSelectedAgent(agent);
-
-    // Add agent switch message
-    const switchMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: getAgentSwitchMessage(agent),
-      role: 'assistant',
-      timestamp: new Date(),
-      type: 'ai',
-      message: getAgentSwitchMessage(agent),
-      documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
-      agentPersonality: agent.personality
-    };
-
-    setCurrentMessages(prev => [...prev, switchMessage]);
-  };
-
-  const handleSendMessage = () => {
-    if (!message.trim() || !selectedAgent) return;
-
-    const newUserMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: message,
-      role: 'user',
-      timestamp: new Date(),
-      type: 'user',
-      message: message,
-      documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
-      agentPersonality: selectedAgent.personality
-    };
-
-    const updatedMessages = [...currentMessages, newUserMessage];
-    setCurrentMessages(updatedMessages);
-    setIsAgentTyping(true);
-
-    // Simulate AI response with agent personality
-    setTimeout(() => {
-      const aiResponse = getAgentResponse(message, selectedAgent, selectedDocuments);
-
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: aiResponse,
-        role: 'assistant',
-        timestamp: new Date(),
-        type: 'ai',
-        message: aiResponse,
-        documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
-        agentPersonality: selectedAgent.personality
-      };
-
-      const finalMessages = [...updatedMessages, aiMessage];
-      setCurrentMessages(finalMessages);
-      setIsAgentTyping(false);
-
-      // Save to history
-      saveToHistory(finalMessages, selectedDocuments);
-    }, 1500);
-
-    setMessage("");
+  const handleSendMessage = async (message: string) => {
+    await sendMessage(message);
   };
 
   const handleLoadHistory = (historyId: string) => {
-    const result = loadChatHistory(historyId);
-    if (result) {
-      setCurrentMessages(result.messages);
-      setSelectedDocuments(result.documents);
-    }
+    loadChatHistory(historyId);
   };
+
+  // Clear error when component unmounts
+  useEffect(() => {
+    return () => clearError();
+  }, [clearError]);
 
   return (
     <div className="h-[calc(100vh-200px)] flex gap-6">
@@ -186,7 +90,7 @@ export const DocumentChat = () => {
         <AgentSelector
           agents={agents}
           selectedAgent={selectedAgent}
-          onAgentChange={handleAgentChange}
+          onAgentChange={setSelectedAgent}
         />
 
         <ChatHistoryPanel
@@ -228,6 +132,11 @@ export const DocumentChat = () => {
               ))}
             </div>
           )}
+          {error && (
+            <div className="text-red-600 text-sm bg-red-50 p-2 rounded">
+              {error}
+            </div>
+          )}
         </CardHeader>
 
         <CardContent className="flex-1 flex flex-col">
@@ -240,10 +149,10 @@ export const DocumentChat = () => {
           <Separator className="my-4" />
 
           <MessageInput
-            message={message}
+            message=""
             selectedDocuments={selectedDocuments}
-            isAgentTyping={isAgentTyping}
-            onMessageChange={setMessage}
+            isAgentTyping={isAgentTyping || loading}
+            onMessageChange={() => {}}
             onSendMessage={handleSendMessage}
           />
         </CardContent>

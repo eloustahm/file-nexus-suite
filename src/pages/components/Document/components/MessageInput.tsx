@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
@@ -8,16 +9,30 @@ interface MessageInputProps {
   selectedDocuments: string[];
   isAgentTyping: boolean;
   onMessageChange: (message: string) => void;
-  onSendMessage: () => void;
+  onSendMessage: (message: string) => void;
 }
 
 export const MessageInput = ({ 
-  message, 
   selectedDocuments, 
   isAgentTyping, 
-  onMessageChange, 
   onSendMessage 
 }: MessageInputProps) => {
+  const [message, setMessage] = useState("");
+
+  const handleSend = () => {
+    if (message.trim()) {
+      onSendMessage(message);
+      setMessage("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   return (
     <div className="flex gap-2">
       <Input
@@ -29,13 +44,13 @@ export const MessageInput = ({
             : `Ask a question about ${selectedDocuments.length} documents...`
         }
         value={message}
-        onChange={(e) => onMessageChange(e.target.value)}
-        onKeyPress={(e) => e.key === 'Enter' && onSendMessage()}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyPress={handleKeyPress}
         disabled={selectedDocuments.length === 0 || isAgentTyping}
         className="flex-1"
       />
       <Button 
-        onClick={onSendMessage} 
+        onClick={handleSend} 
         disabled={!message.trim() || selectedDocuments.length === 0 || isAgentTyping}
       >
         <Send className="h-4 w-4" />
