@@ -6,14 +6,28 @@ export interface Agent {
   description: string;
   avatar?: string;
   capabilities: string[];
+  personality: string;
+  icon: string;
+  color: string;
+}
+
+export interface Document {
+  id: string | number;
+  name: string;
+  type: string;
+  size: string;
 }
 
 export interface ChatMessage {
-  id: string;
+  id: string | number;
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
   documentId?: string;
+  type?: 'user' | 'ai';
+  message?: string;
+  documentRefs?: string[];
+  agentPersonality?: string;
 }
 
 export interface ChatHistory {
@@ -23,4 +37,6 @@ export interface ChatHistory {
   documentId?: string;
   createdAt: Date;
   updatedAt: Date;
+  documentName?: string;
+  lastActivity?: string;
 }

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ChatHistory, ChatMessage } from '../types/chatTypes';
+import { ChatHistory, ChatMessage } from '@/pages/components/Document/types/chatTypes';
 
 export const useChatHistory = () => {
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
@@ -17,10 +17,14 @@ export const useChatHistory = () => {
     setChatHistories(prev => {
       const existingIndex = prev.findIndex(h => h.documentId === historyKey);
       const newHistory: ChatHistory = {
+        id: historyKey,
+        title: documentName,
         documentId: historyKey,
         documentName,
         messages,
-        lastActivity: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        lastActivity: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
       
       if (existingIndex >= 0) {

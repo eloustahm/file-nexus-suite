@@ -43,7 +43,7 @@ export const useWorkflowsStore = create<WorkflowsState>((set, get) => ({
   fetchWorkflows: async () => {
     try {
       set({ loading: true, error: null });
-      const workflows = await workflowsApi.getAll();
+      const workflows = await workflowsApi.getAll() as Workflow[];
       set({ workflows });
     } catch (error: any) {
       set({ error: error.message });
@@ -55,7 +55,7 @@ export const useWorkflowsStore = create<WorkflowsState>((set, get) => ({
   getWorkflow: async (id: string) => {
     try {
       set({ loading: true, error: null });
-      const workflow = await workflowsApi.getById(id);
+      const workflow = await workflowsApi.getById(id) as Workflow;
       set({ selectedWorkflow: workflow });
     } catch (error: any) {
       set({ error: error.message });
@@ -67,7 +67,7 @@ export const useWorkflowsStore = create<WorkflowsState>((set, get) => ({
   createWorkflow: async (workflowData: Partial<Workflow>) => {
     try {
       set({ loading: true, error: null });
-      const workflow = await workflowsApi.create(workflowData);
+      const workflow = await workflowsApi.create(workflowData) as Workflow;
       set(state => ({ workflows: [...state.workflows, workflow] }));
     } catch (error: any) {
       set({ error: error.message });
@@ -80,9 +80,11 @@ export const useWorkflowsStore = create<WorkflowsState>((set, get) => ({
   updateWorkflow: async (id: string, data: Partial<Workflow>) => {
     try {
       set({ loading: true, error: null });
-      const updatedWorkflow = await workflowsApi.update(id, data);
+      const updatedWorkflow = await workflowsApi.update(id, data) as Workflow;
       set(state => ({
-        workflows: state.workflows.map(workflow => workflow.id === id ? updatedWorkflow : workflow),
+        workflows: state.workflows.map(workflow => 
+          workflow.id === id ? updatedWorkflow : workflow
+        ),
         selectedWorkflow: state.selectedWorkflow?.id === id ? updatedWorkflow : state.selectedWorkflow
       }));
     } catch (error: any) {

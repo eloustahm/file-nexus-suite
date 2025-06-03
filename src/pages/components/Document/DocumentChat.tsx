@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MessageSquare, X } from "lucide-react";
-import { ChatMessage, Document } from './types/chatTypes';
+import { ChatMessage, Document, Agent } from './types/chatTypes';
 import { useChatAgents } from '@/hooks/useChatAgents';
 import { useChatHistory } from '@/hooks/useChatHistory';
 import { AgentSelector } from './components/AgentSelector';
@@ -36,29 +36,31 @@ export const DocumentChat = () => {
   } = useChatHistory();
 
   const documents: Document[] = [
-    { id: 1, name: "Project Proposal.docx", type: "Word Document", size: "2.4 MB" },
-    { id: 2, name: "Financial Report Q3.xlsx", type: "Excel Spreadsheet", size: "1.8 MB" },
-    { id: 3, name: "Presentation Deck.pptx", type: "PowerPoint", size: "15.2 MB" },
-    { id: 4, name: "Contract Terms.pdf", type: "PDF Document", size: "856 KB" },
-    { id: 5, name: "Meeting Notes.docx", type: "Word Document", size: "1.2 MB" },
-    { id: 6, name: "Budget Analysis.xlsx", type: "Excel Spreadsheet", size: "890 KB" },
+    { id: "1", name: "Project Proposal.docx", type: "Word Document", size: "2.4 MB" },
+    { id: "2", name: "Financial Report Q3.xlsx", type: "Excel Spreadsheet", size: "1.8 MB" },
+    { id: "3", name: "Presentation Deck.pptx", type: "PowerPoint", size: "15.2 MB" },
+    { id: "4", name: "Contract Terms.pdf", type: "PDF Document", size: "856 KB" },
+    { id: "5", name: "Meeting Notes.docx", type: "Word Document", size: "1.2 MB" },
+    { id: "6", name: "Budget Analysis.xlsx", type: "Excel Spreadsheet", size: "890 KB" },
   ];
 
   // Initialize with default agent and welcome message
   useEffect(() => {
-    if (!selectedAgent) {
+    if (!selectedAgent && agents.length > 0) {
       setSelectedAgent(agents[0]);
       setCurrentMessages([
         {
-          id: 1,
+          id: "1",
+          content: 'Hello! I\'m your professional assistant. I can help you analyze and answer questions about your documents. Please select one or more documents and I\'ll provide detailed insights.',
+          role: 'assistant',
+          timestamp: new Date(),
           type: 'ai',
           message: 'Hello! I\'m your professional assistant. I can help you analyze and answer questions about your documents. Please select one or more documents and I\'ll provide detailed insights.',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           agentPersonality: 'professional'
         }
       ]);
     }
-  }, []);
+  }, [agents, selectedAgent, setSelectedAgent]);
 
   // Load chat history when documents are selected
   useEffect(() => {
@@ -72,10 +74,12 @@ export const DocumentChat = () => {
       } else {
         // Create new chat session
         const welcomeMessage: ChatMessage = {
-          id: Date.now(),
+          id: Date.now().toString(),
+          content: `Great! I'm now analyzing ${selectedDocuments.length === 1 ? `"${selectedDocuments[0]}"` : `${selectedDocuments.length} documents`}. What would you like to know about ${selectedDocuments.length === 1 ? 'this document' : 'these documents'}?`,
+          role: 'assistant',
+          timestamp: new Date(),
           type: 'ai',
           message: `Great! I'm now analyzing ${selectedDocuments.length === 1 ? `"${selectedDocuments[0]}"` : `${selectedDocuments.length} documents`}. What would you like to know about ${selectedDocuments.length === 1 ? 'this document' : 'these documents'}?`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           documentRefs: [...selectedDocuments],
           agentPersonality: selectedAgent?.personality
         };
@@ -83,7 +87,7 @@ export const DocumentChat = () => {
         setSelectedHistory(historyKey);
       }
     }
-  }, [selectedDocuments, selectedAgent]);
+  }, [selectedDocuments, selectedAgent, chatHistories, setSelectedHistory]);
 
   const handleDocumentToggle = (docName: string) => {
     setSelectedDocuments(prev =>
@@ -105,33 +109,34 @@ export const DocumentChat = () => {
     }
   };
 
-  const handleAgentChange = (agentId: string) => {
-    const agent = agents.find(a => a.id === agentId);
-    if (agent) {
-      setSelectedAgent(agent);
+  const handleAgentChange = (agent: Agent) => {
+    setSelectedAgent(agent);
 
-      // Add agent switch message
-      const switchMessage: ChatMessage = {
-        id: Date.now(),
-        type: 'ai',
-        message: getAgentSwitchMessage(agent),
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
-        agentPersonality: agent.personality
-      };
+    // Add agent switch message
+    const switchMessage: ChatMessage = {
+      id: Date.now().toString(),
+      content: getAgentSwitchMessage(agent),
+      role: 'assistant',
+      timestamp: new Date(),
+      type: 'ai',
+      message: getAgentSwitchMessage(agent),
+      documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
+      agentPersonality: agent.personality
+    };
 
-      setCurrentMessages(prev => [...prev, switchMessage]);
-    }
+    setCurrentMessages(prev => [...prev, switchMessage]);
   };
 
   const handleSendMessage = () => {
     if (!message.trim() || !selectedAgent) return;
 
     const newUserMessage: ChatMessage = {
-      id: Date.now(),
+      id: Date.now().toString(),
+      content: message,
+      role: 'user',
+      timestamp: new Date(),
       type: 'user',
       message: message,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
       agentPersonality: selectedAgent.personality
     };
@@ -145,10 +150,12 @@ export const DocumentChat = () => {
       const aiResponse = getAgentResponse(message, selectedAgent, selectedDocuments);
 
       const aiMessage: ChatMessage = {
-        id: Date.now() + 1,
+        id: (Date.now() + 1).toString(),
+        content: aiResponse,
+        role: 'assistant',
+        timestamp: new Date(),
         type: 'ai',
         message: aiResponse,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
         agentPersonality: selectedAgent.personality
       };
