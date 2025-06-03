@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 // Layouts
 import { AuthenticatedLayout } from '@/pages/layouts/AuthenticatedLayout';
 import { GuestLayout } from '@/pages/layouts/GuestLayout';
-
+// data
 // Auth Pages
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
