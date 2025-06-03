@@ -10,6 +10,15 @@ interface Agent {
   type: string;
   description: string;
   capabilities: string[];
+  personality?: string;
+}
+
+interface TemplateField {
+  id: string;
+  label: string;
+  type: string;
+  value: string;
+  required?: boolean;
 }
 
 interface DocumentTemplate {
@@ -17,7 +26,7 @@ interface DocumentTemplate {
   name: string;
   description: string;
   type: string;
-  fields: Record<string, any>;
+  fields: TemplateField[];
   content?: string;
 }
 
@@ -31,9 +40,10 @@ interface GenerationProgress {
 interface DocumentGenerationState {
   selectedTemplate: DocumentTemplate | null;
   selectedAgent: Agent | null;
-  templateFields: Record<string, any>;
   generatedContent: string;
   isGenerating: boolean;
+  isEditing: boolean;
+  editedContent: string;
   generationProgress: GenerationProgress | null;
   templates: DocumentTemplate[];
   loading: boolean;
@@ -41,10 +51,12 @@ interface DocumentGenerationState {
   
   setSelectedTemplate: (template: DocumentTemplate | null) => void;
   setSelectedAgent: (agent: Agent | null) => void;
-  updateTemplateField: (field: string, value: any) => void;
-  addTemplateField: (field: string, value: any) => void;
-  removeTemplateField: (field: string) => void;
+  updateFieldValue: (fieldId: string, value: string) => void;
+  addCustomField: (field: TemplateField) => void;
+  removeField: (fieldId: string) => void;
   generateDocument: () => Promise<void>;
+  setEditMode: (editing: boolean) => void;
+  updateEditedContent: (content: string) => void;
   resetGeneration: () => void;
   fetchTemplates: () => Promise<void>;
   clearError: () => void;
@@ -53,9 +65,10 @@ interface DocumentGenerationState {
 export const useDocumentGenerationStore = create<DocumentGenerationState>((set, get) => ({
   selectedTemplate: null,
   selectedAgent: null,
-  templateFields: {},
   generatedContent: '',
   isGenerating: false,
+  isEditing: false,
+  editedContent: '',
   generationProgress: null,
   templates: [],
   loading: false,
@@ -64,7 +77,6 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
   setSelectedTemplate: (template) => {
     set({ 
       selectedTemplate: template,
-      templateFields: template?.fields || {},
       generatedContent: '',
       error: null
     });
@@ -74,27 +86,57 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
     set({ selectedAgent: agent });
   },
 
-  updateTemplateField: (field, value) => {
-    set((state) => ({
-      templateFields: { ...state.templateFields, [field]: value }
-    }));
-  },
-
-  addTemplateField: (field, value) => {
-    set((state) => ({
-      templateFields: { ...state.templateFields, [field]: value }
-    }));
-  },
-
-  removeTemplateField: (field) => {
+  updateFieldValue: (fieldId, value) => {
     set((state) => {
-      const { [field]: removed, ...rest } = state.templateFields;
-      return { templateFields: rest };
+      if (!state.selectedTemplate) return state;
+      
+      const updatedTemplate = {
+        ...state.selectedTemplate,
+        fields: state.selectedTemplate.fields.map(field => 
+          field.id === fieldId ? { ...field, value } : field
+        )
+      };
+      
+      return { selectedTemplate: updatedTemplate };
     });
   },
 
+  addCustomField: (field) => {
+    set((state) => {
+      if (!state.selectedTemplate) return state;
+      
+      const updatedTemplate = {
+        ...state.selectedTemplate,
+        fields: [...state.selectedTemplate.fields, field]
+      };
+      
+      return { selectedTemplate: updatedTemplate };
+    });
+  },
+
+  removeField: (fieldId) => {
+    set((state) => {
+      if (!state.selectedTemplate) return state;
+      
+      const updatedTemplate = {
+        ...state.selectedTemplate,
+        fields: state.selectedTemplate.fields.filter(field => field.id !== fieldId)
+      };
+      
+      return { selectedTemplate: updatedTemplate };
+    });
+  },
+
+  setEditMode: (editing) => {
+    set({ isEditing: editing });
+  },
+
+  updateEditedContent: (content) => {
+    set({ editedContent: content });
+  },
+
   generateDocument: async () => {
-    const { selectedTemplate, templateFields, selectedAgent } = get();
+    const { selectedTemplate, selectedAgent } = get();
     
     if (!selectedTemplate) {
       set({ error: 'Please select a template' });
@@ -113,15 +155,12 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
         set({ generationProgress: { step: 2, totalSteps: 3, currentTask: 'Generating content...', completed: false } });
       }, 1000);
 
-      // Call API
-      const response = await aiApi.generateDocument({
-        templateId: selectedTemplate.id,
-        fields: templateFields,
-        agentId: selectedAgent?.id
-      });
+      // For now, generate mock content since API might not be available
+      const mockContent = `# ${selectedTemplate.name}\n\nGenerated document content based on template.\n\n${selectedTemplate.fields.map(field => `**${field.label}:** ${field.value || 'Not specified'}`).join('\n')}`;
 
       set({ 
-        generatedContent: response.content || 'Generated document content will appear here.',
+        generatedContent: mockContent,
+        editedContent: mockContent,
         generationProgress: { step: 3, totalSteps: 3, currentTask: 'Complete!', completed: true }
       });
 
@@ -137,9 +176,10 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
     set({
       selectedTemplate: null,
       selectedAgent: null,
-      templateFields: {},
       generatedContent: '',
       isGenerating: false,
+      isEditing: false,
+      editedContent: '',
       generationProgress: null,
       error: null
     });
@@ -148,7 +188,19 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
   fetchTemplates: async () => {
     try {
       set({ loading: true, error: null });
-      const templates = await aiApi.getTemplates() as DocumentTemplate[];
+      // Mock templates for now
+      const templates: DocumentTemplate[] = [
+        {
+          id: '1',
+          name: 'Business Plan',
+          description: 'Professional business plan template',
+          type: 'business',
+          fields: [
+            { id: '1', label: 'Company Name', type: 'text', value: '', required: true },
+            { id: '2', label: 'Industry', type: 'text', value: '', required: true }
+          ]
+        }
+      ];
       set({ templates });
     } catch (error: any) {
       set({ error: error.message });

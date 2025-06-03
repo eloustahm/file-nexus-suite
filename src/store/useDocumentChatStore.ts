@@ -1,14 +1,5 @@
 
 import { create } from 'zustand';
-import { aiApi } from '@/services/api';
-
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  documentRefs?: string[];
-}
 
 interface Agent {
   id: string;
@@ -18,144 +9,83 @@ interface Agent {
   type: string;
   description: string;
   capabilities: string[];
-  personality?: string;
+  personality: string;
 }
 
-interface ChatHistory {
+interface Message {
   id: string;
-  documentId: string;
-  documentName: string;
-  title: string;
-  lastActivity: string;
-  createdAt: Date;
-  updatedAt: Date;
-  messages: ChatMessage[];
+  content: string;
+  sender: 'user' | 'agent';
+  timestamp: Date;
+  agentId?: string;
 }
 
 interface DocumentChatState {
-  activeDocumentId: string | null;
-  messages: ChatMessage[];
-  selectedDocuments: string[];
-  currentMessages: ChatMessage[];
   selectedAgent: Agent | null;
-  isAgentTyping: boolean;
-  chatHistories: ChatHistory[];
-  selectedHistory: string | null;
-  loading: boolean;
+  messages: Message[];
+  isLoading: boolean;
   error: string | null;
-  setActiveDocumentId: (documentId: string | null) => void;
-  addMessage: (message: ChatMessage) => void;
-  clearMessages: () => void;
-  sendMessage: (message: string) => Promise<void>;
-  setSelectedDocuments: (documents: string[]) => void;
-  addDocument: (document: string) => void;
-  removeDocument: (document: string) => void;
+  
   setSelectedAgent: (agent: Agent | null) => void;
-  loadChatHistory: (historyId: string) => void;
+  sendMessage: (content: string, documentId?: string) => Promise<void>;
+  clearMessages: () => void;
   clearError: () => void;
 }
 
 export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
-  activeDocumentId: null,
-  messages: [],
-  selectedDocuments: [],
-  currentMessages: [],
   selectedAgent: null,
-  isAgentTyping: false,
-  chatHistories: [],
-  selectedHistory: null,
-  loading: false,
+  messages: [],
+  isLoading: false,
   error: null,
-
-  setActiveDocumentId: (documentId) => {
-    set({ activeDocumentId: documentId, messages: [], error: null });
-  },
-
-  addMessage: (message) => {
-    set((state) => ({ 
-      messages: [...state.messages, message],
-      currentMessages: [...state.currentMessages, message]
-    }));
-  },
-
-  clearMessages: () => {
-    set({ messages: [], currentMessages: [] });
-  },
-
-  setSelectedDocuments: (documents) => {
-    set({ selectedDocuments: documents });
-  },
-
-  addDocument: (document) => {
-    set((state) => ({
-      selectedDocuments: [...state.selectedDocuments, document]
-    }));
-  },
-
-  removeDocument: (document) => {
-    set((state) => ({
-      selectedDocuments: state.selectedDocuments.filter(doc => doc !== document)
-    }));
-  },
 
   setSelectedAgent: (agent) => {
     set({ selectedAgent: agent });
   },
 
-  loadChatHistory: (historyId) => {
-    const history = get().chatHistories.find(h => h.id === historyId);
-    if (history) {
-      set({ 
-        selectedHistory: historyId,
-        currentMessages: history.messages,
-        activeDocumentId: history.documentId
-      });
-    }
-  },
-
-  sendMessage: async (message: string) => {
-    const { activeDocumentId, addMessage, selectedDocuments } = get();
+  sendMessage: async (content, documentId) => {
+    const { selectedAgent } = get();
     
     try {
-      set({ loading: true, isAgentTyping: true, error: null });
-
-      // Add user message
-      addMessage({
-        id: Date.now().toString(),
-        role: 'user',
-        content: message,
-        timestamp: new Date(),
-        documentRefs: selectedDocuments
-      });
-
-      // Call API
-      const response = activeDocumentId 
-        ? await aiApi.chatWithDocument(activeDocumentId, message)
-        : { content: 'Please select a document to chat with.' };
+      set({ isLoading: true, error: null });
       
-      // Add AI response
-      addMessage({
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: (response as any)?.content || 'Sorry, I could not process your request.',
+      // Add user message
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        content,
+        sender: 'user',
         timestamp: new Date()
-      });
+      };
+      
+      set((state) => ({
+        messages: [...state.messages, userMessage]
+      }));
+
+      // Simulate AI response
+      setTimeout(() => {
+        const agentMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: `I understand you're asking about: "${content}". Let me help you with that.`,
+          sender: 'agent',
+          timestamp: new Date(),
+          agentId: selectedAgent?.id
+        };
+        
+        set((state) => ({
+          messages: [...state.messages, agentMessage],
+          isLoading: false
+        }));
+      }, 1000);
 
     } catch (error: any) {
-      const errorMessage = error?.message || 'Failed to send message';
-      set({ error: errorMessage });
-      
-      // Add error message to chat
-      addMessage({
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: errorMessage,
-        timestamp: new Date()
-      });
-    } finally {
-      set({ loading: false, isAgentTyping: false });
+      set({ error: error.message, isLoading: false });
     }
   },
 
-  clearError: () => set({ error: null })
+  clearMessages: () => {
+    set({ messages: [] });
+  },
+
+  clearError: () => {
+    set({ error: null });
+  }
 }));

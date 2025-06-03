@@ -9,12 +9,17 @@ import { NotFound } from '@/pages/NotFound';
 export const AppRoutes = () => {
   const { user, isAuthenticated, loading, getCurrentUser } = useAuthStore();
 
-  // Try to get current user on app load
+  // Only try to get current user once on app load if no user exists
   useEffect(() => {
-    if (!user && !loading) {
-      getCurrentUser();
+    const hasTriedAuth = sessionStorage.getItem('auth_attempted');
+    if (!user && !loading && !hasTriedAuth) {
+      sessionStorage.setItem('auth_attempted', 'true');
+      getCurrentUser().catch(() => {
+        // Silently handle auth failure
+        console.log('User not authenticated');
+      });
     }
-  }, [user, loading, getCurrentUser]);
+  }, []);
 
   // Show loading spinner while checking authentication
   if (loading) {

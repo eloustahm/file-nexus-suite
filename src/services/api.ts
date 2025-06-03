@@ -1,4 +1,3 @@
-
 import { http } from '@/lib/api';
 
 // Auth APIs
@@ -143,8 +142,12 @@ export const aiApi = {
     return http.post(`/api/ai/extract/${documentId}`, { fields });
   },
   
-  generateDocument: async (templateId: string, data: any) => {
-    return http.post('/api/ai/generate', { templateId, data });
+  generateDocument: async (data: { templateId: string; fields: any; agentId?: string }) => {
+    return http.post('/api/ai/generate', data);
+  },
+  
+  getTemplates: async () => {
+    return http.get('/api/ai/templates');
   }
 };
 

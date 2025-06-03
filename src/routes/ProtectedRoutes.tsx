@@ -17,24 +17,28 @@ import { UserProfile } from '@/pages/components/UserProfile';
 
 export const ProtectedRoutes = () => {
   return (
-    <AuthenticatedLayout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/documents" element={<Document />} />
-        <Route path="/documents/chat" element={<DocumentChat />} />
-        <Route path="/documents/generate" element={<DocumentGenerator />} />
-        <Route path="/chat" element={<DocumentChat />} />
-        <Route path="/generate" element={<DocumentGenerator />} />
-        <Route path="/folders" element={<Folders />} />
-        <Route path="/shared" element={<Shared />} />
-        <Route path="/activity" element={<ActivityLogs />} />
-        <Route path="/ai-modules" element={<AIModules />} />
-        <Route path="/team" element={<TeamCollaboration />} />
-        <Route path="/workflows" element={<Workflow />} />
-        <Route path="/workflow" element={<Workflow />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/profile" element={<UserProfile />} />
-      </Routes>
-    </AuthenticatedLayout>
+    <Routes>
+      <Route path="/*" element={
+        <AuthenticatedLayout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/documents" element={<Document />} />
+            <Route path="/documents/chat" element={<DocumentChat />} />
+            <Route path="/documents/generate" element={<DocumentGenerator />} />
+            <Route path="/chat" element={<DocumentChat />} />
+            <Route path="/generate" element={<DocumentGenerator />} />
+            <Route path="/folders" element={<Folders />} />
+            <Route path="/shared" element={<Shared />} />
+            <Route path="/activity" element={<ActivityLogs />} />
+            <Route path="/ai-modules" element={<AIModules />} />
+            <Route path="/team" element={<TeamCollaboration />} />
+            <Route path="/workflows" element={<Workflow />} />
+            <Route path="/workflow" element={<Workflow />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/profile" element={<UserProfile />} />
+          </Routes>
+        </AuthenticatedLayout>
+      } />
+    </Routes>
   );
 };
