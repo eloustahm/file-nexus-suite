@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -34,7 +34,14 @@ import { Workflow } from '@/pages/components/Workflow';
 import { Settings } from '@/pages/components/Settings';
 
 export const AppRoutes = () => {
-  const { user, isAuthenticated, loading } = useAuthStore();
+  const { user, isAuthenticated, loading, getCurrentUser } = useAuthStore();
+
+  // Try to get current user on app load
+  useEffect(() => {
+    if (!user && !loading) {
+      getCurrentUser();
+    }
+  }, [user, loading, getCurrentUser]);
 
   // Show loading spinner while checking authentication
   if (loading) {
@@ -77,22 +84,25 @@ export const AppRoutes = () => {
 
       {/* Protected Routes */}
       {isAuthenticated ? (
-        <Route element={<AuthenticatedLayout user={user} />}>
+        <Route element={<AuthenticatedLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/documents" element={<Document />} />
           <Route path="/documents/chat" element={<DocumentChat />} />
           <Route path="/documents/generate" element={<DocumentGenerator />} />
+          <Route path="/chat" element={<DocumentChat />} />
+          <Route path="/generate" element={<DocumentGenerator />} />
           <Route path="/folders" element={<Folders />} />
           <Route path="/shared" element={<Shared />} />
           <Route path="/activity" element={<ActivityLogs />} />
           <Route path="/ai-modules" element={<AIModules />} />
           <Route path="/team" element={<TeamCollaboration />} />
           <Route path="/workflows" element={<Workflow />} />
+          <Route path="/workflow" element={<Workflow />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
       ) : (
         // Redirect unauthenticated users to login
-        <Route path="/*" element={<Navigate to="/login" replace />} />
+        <Route path="/dashboard" element={<Navigate to="/login" replace />} />
       )}
 
       {/* 404 Route */}

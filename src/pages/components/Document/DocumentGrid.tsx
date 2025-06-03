@@ -15,97 +15,84 @@ import {
 } from "lucide-react";
 import { DocumentPreview } from "./DocumentPreview";
 
+interface Document {
+  id: string;
+  name: string;
+  type: string;
+  size: number | string;
+  createdAt: string;
+  updatedAt: string;
+  folderId?: string;
+  content?: string;
+  tags?: string[];
+  url?: string;
+  status?: 'processing' | 'ready' | 'error';
+}
+
 interface DocumentGridProps {
   viewMode: "grid" | "list";
   searchQuery: string;
+  documents: Document[];
 }
 
-export const DocumentGrid = ({ viewMode, searchQuery }: DocumentGridProps) => {
+export const DocumentGrid = ({ viewMode, searchQuery, documents }: DocumentGridProps) => {
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
   
-  const documents = [
-    {
-      id: 1,
-      name: "Project Proposal Q4.docx",
-      type: "Word Document",
-      size: "2.1 MB",
-      modified: "2 hours ago",
-      author: "John Doe",
-      status: "draft",
-      icon: "📄",
-      thumbnail: "/placeholder.svg"
-    },
-    {
-      id: 2,
-      name: "Financial Report.xlsx",
-      type: "Excel Spreadsheet",
-      size: "1.8 MB",
-      modified: "4 hours ago",
-      author: "Jane Smith",
-      status: "final",
-      icon: "📊",
-      thumbnail: "/placeholder.svg"
-    },
-    {
-      id: 3,
-      name: "Marketing Strategy.pptx",
-      type: "PowerPoint Presentation",
-      size: "5.2 MB",
-      modified: "1 day ago",
-      author: "Mike Johnson",
-      status: "review",
-      icon: "📋",
-      thumbnail: "/placeholder.svg"
-    },
-    {
-      id: 4,
-      name: "Contract Template.pdf",
-      type: "PDF Document",
-      size: "890 KB",
-      modified: "2 days ago",
-      author: "Sarah Wilson",
-      status: "approved",
-      icon: "📕",
-      thumbnail: "/placeholder.svg"
-    },
-    {
-      id: 5,
-      name: "Meeting Notes.docx",
-      type: "Word Document",
-      size: "1.2 MB",
-      modified: "3 days ago",
-      author: "John Doe",
-      status: "draft",
-      icon: "📄",
-      thumbnail: "/placeholder.svg"
-    },
-    {
-      id: 6,
-      name: "Budget Analysis.xlsx",
-      type: "Excel Spreadsheet",
-      size: "3.4 MB",
-      modified: "1 week ago",
-      author: "Alice Brown",
-      status: "final",
-      icon: "📊",
-      thumbnail: "/placeholder.svg"
-    }
-  ];
-
   const filteredDocuments = documents.filter(doc =>
     doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     doc.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getStatusColor = (status: string) => {
+  const formatFileSize = (size: number | string): string => {
+    if (typeof size === 'string') return size;
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
+  };
+
+  const getStatusColor = (status?: string) => {
     switch (status) {
-      case "draft": return "bg-yellow-100 text-yellow-800";
-      case "final": return "bg-green-100 text-green-800";
-      case "review": return "bg-blue-100 text-blue-800";
-      case "approved": return "bg-purple-100 text-purple-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "processing": return "bg-yellow-100 text-yellow-800";
+      case "ready": return "bg-green-100 text-green-800";
+      case "error": return "bg-red-100 text-red-800";
+      default: return "bg-blue-100 text-blue-800";
     }
   };
+
+  const getFileIcon = (type: string) => {
+    if (type.includes('pdf')) return "📄";
+    if (type.includes('word') || type.includes('doc')) return "📝";
+    if (type.includes('excel') || type.includes('sheet')) return "📊";
+    if (type.includes('powerpoint') || type.includes('presentation')) return "📋";
+    return "📄";
+  };
+
+  if (filteredDocuments.length === 0) {
+    return (
+      <Card className="p-8 text-center">
+        <CardContent>
+          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
+          <p className="text-gray-500">
+            {searchQuery ? 'Try adjusting your search terms' : 'Upload your first document to get started'}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (viewMode === "list") {
     return (
@@ -123,23 +110,25 @@ export const DocumentGrid = ({ viewMode, searchQuery }: DocumentGridProps) => {
             <CardContent className="p-4">
               <div className="grid grid-cols-12 gap-4 items-center">
                 <div className="col-span-4 flex items-center gap-3">
-                  <div className="text-2xl">{doc.icon}</div>
+                  <div className="text-2xl">{getFileIcon(doc.type)}</div>
                   <div>
                     <p className="font-medium text-gray-900">{doc.name}</p>
                     <p className="text-sm text-gray-500 flex items-center gap-1">
                       <User className="h-3 w-3" />
-                      {doc.author}
+                      System
                     </p>
                   </div>
                 </div>
                 <div className="col-span-2 text-sm text-gray-600">{doc.type}</div>
                 <div className="col-span-2 text-sm text-gray-600 flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {doc.modified}
+                  {formatDate(doc.updatedAt)}
                 </div>
-                <div className="col-span-2 text-sm text-gray-600">{doc.size}</div>
+                <div className="col-span-2 text-sm text-gray-600">{formatFileSize(doc.size)}</div>
                 <div className="col-span-1">
-                  <Badge className={getStatusColor(doc.status)}>{doc.status}</Badge>
+                  <Badge className={getStatusColor(doc.status)}>
+                    {doc.status || 'ready'}
+                  </Badge>
                 </div>
                 <div className="col-span-1 flex items-center gap-1">
                   <Button variant="ghost" size="icon" onClick={() => setSelectedDocument(doc)}>
@@ -164,27 +153,27 @@ export const DocumentGrid = ({ viewMode, searchQuery }: DocumentGridProps) => {
           <Card key={doc.id} className="group hover:shadow-lg transition-all duration-200 cursor-pointer">
             <CardContent className="p-0">
               <div className="aspect-[4/3] bg-gradient-to-br from-blue-50 to-gray-50 rounded-t-lg flex items-center justify-center">
-                <div className="text-6xl opacity-60">{doc.icon}</div>
+                <div className="text-6xl opacity-60">{getFileIcon(doc.type)}</div>
               </div>
               <div className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-medium text-gray-900 truncate flex-1 mr-2">{doc.name}</h3>
                   <Badge className={`${getStatusColor(doc.status)} text-xs`}>
-                    {doc.status}
+                    {doc.status || 'ready'}
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-500 mb-3">{doc.type}</p>
                 <div className="flex items-center justify-between text-xs text-gray-400">
                   <span className="flex items-center gap-1">
                     <User className="h-3 w-3" />
-                    {doc.author}
+                    System
                   </span>
-                  <span>{doc.size}</span>
+                  <span>{formatFileSize(doc.size)}</span>
                 </div>
                 <div className="flex items-center justify-between mt-3">
                   <span className="text-xs text-gray-500 flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {doc.modified}
+                    {formatDate(doc.updatedAt)}
                   </span>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedDocument(doc)}>
