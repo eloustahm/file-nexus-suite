@@ -1,427 +1,208 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, 
-  MessageSquare, 
-  Wand2, 
-  Users, 
-  ArrowRight, 
-  CheckCircle, 
-  Search,
-  Bot,
-  Shield,
-  Zap,
-  Clock,
-  Database,
-  Upload,
-  Settings,
-  Star,
-  Quote,
-  Github,
-  Twitter,
-  Linkedin,
-  Mail
-} from "lucide-react";
+import { ArrowRight, CheckCircle, Zap, Shield, Users, Bot, FileText, Workflow, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const LandingPage = () => {
-    const keyFeatures = [
+    const features = [
         {
-            icon: MessageSquare,
-            title: "AI Chat with Documents",
-            description: "Ask questions and get instant answers from your documents using advanced AI."
+            icon: <Bot className="h-6 w-6" />,
+            title: "AI-Powered Generation",
+            description: "Create documents instantly with advanced AI that understands your needs."
         },
         {
-            icon: Search,
-            title: "Smart Search",
-            description: "Find exactly what you need with semantic search across all your documents."
+            icon: <Workflow className="h-6 w-6" />,
+            title: "Smart Workflows",
+            description: "Automate your document processes with intelligent workflow management."
         },
         {
-            icon: Bot,
-            title: "Auto-Summarization",
-            description: "Get AI-powered summaries of long documents in seconds."
+            icon: <Shield className="h-6 w-6" />,
+            title: "Enterprise Security",
+            description: "Bank-grade security with end-to-end encryption and compliance standards."
         },
         {
-            icon: Users,
+            icon: <Users className="h-6 w-6" />,
             title: "Team Collaboration",
-            description: "Share, collaborate, and manage workflows with your entire team."
-        },
-        {
-            icon: Shield,
-            title: "Approval Workflows",
-            description: "Set up custom approval processes with automated notifications."
-        },
-        {
-            icon: Wand2,
-            title: "Document Generation",
-            description: "Create professional documents using AI-powered templates."
-        },
-        {
-            icon: Database,
-            title: "Smart Organization",
-            description: "Automatically categorize and tag documents for easy retrieval."
-        },
-        {
-            icon: Zap,
-            title: "Automation",
-            description: "Automate repetitive tasks and streamline your workflow."
-        }
-    ];
-
-    const howItWorks = [
-        {
-            step: "1",
-            title: "Upload Documents",
-            description: "Drag and drop your files or connect to cloud storage platforms.",
-            icon: Upload
-        },
-        {
-            step: "2", 
-            title: "AI Processing",
-            description: "Our AI analyzes, categorizes, and indexes your documents automatically.",
-            icon: Bot
-        },
-        {
-            step: "3",
-            title: "Collaborate & Automate",
-            description: "Chat with documents, create workflows, and collaborate with your team.",
-            icon: Settings
-        }
-    ];
-
-    const useCases = [
-        {
-            title: "Legal Teams",
-            description: "Contract analysis, legal research, and compliance documentation.",
-            features: ["Contract review", "Legal research", "Compliance tracking"]
-        },
-        {
-            title: "HR Departments", 
-            description: "Employee onboarding, policy management, and document workflows.",
-            features: ["Onboarding docs", "Policy updates", "Employee files"]
-        },
-        {
-            title: "Marketing Teams",
-            description: "Campaign assets, brand guidelines, and content collaboration.",
-            features: ["Brand assets", "Campaign docs", "Content review"]
-        },
-        {
-            title: "Localization",
-            description: "Translation workflows, multilingual documentation, and global collaboration.",
-            features: ["Translation tracking", "Global workflows", "Multi-language support"]
-        }
-    ];
-
-    const pricingPlans = [
-        {
-            name: "Free",
-            price: "$0",
-            period: "forever",
-            description: "Perfect for getting started",
-            features: ["5 documents", "3 templates", "250MB storage", "Basic AI features"],
-            popular: false
-        },
-        {
-            name: "Starter",
-            price: "$9",
-            period: "per month",
-            description: "Great for individuals",
-            features: ["50 documents", "15 templates", "5GB storage", "All AI features", "Priority support"],
-            popular: false
-        },
-        {
-            name: "Professional",
-            price: "$29",
-            period: "per month", 
-            description: "Perfect for growing teams",
-            features: ["200 documents", "50 templates", "25GB storage", "Team collaboration", "Advanced workflows"],
-            popular: true
-        },
-        {
-            name: "Business",
-            price: "$59",
-            period: "per month",
-            description: "For larger organizations",
-            features: ["1000 documents", "200 templates", "100GB storage", "SSO integration", "Custom branding"],
-            popular: false
+            description: "Work together seamlessly with real-time collaboration tools."
         }
     ];
 
     const testimonials = [
         {
-            quote: "DocuFlow transformed how our legal team handles contracts. We've reduced review time by 70% and caught more issues than ever before.",
-            author: "Sarah Chen",
-            title: "Legal Director",
-            company: "TechCorp Inc."
+            name: "Sarah Johnson",
+            role: "Operations Manager",
+            company: "TechCorp",
+            content: "DocuFlow transformed our document workflow. We're 3x faster now.",
+            rating: 5
         },
         {
-            quote: "The AI chat feature is incredible. I can ask questions about any document and get instant, accurate answers. It's like having a research assistant 24/7.",
-            author: "Michael Rodriguez",
-            title: "Marketing Manager", 
-            company: "Growth Labs"
-        },
-        {
-            quote: "Setting up approval workflows was so easy, and the automation has saved us countless hours. Our team productivity has increased significantly.",
-            author: "Emily Johnson",
-            title: "Operations Lead",
-            company: "StartupXYZ"
+            name: "Michael Chen",
+            role: "Legal Director",
+            company: "LawFirm Pro",
+            content: "The AI accuracy is incredible. It saves us hours of manual work daily.",
+            rating: 5
         }
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-            {/* Header */}
-            <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <FileText className="h-5 w-5 text-white"/>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+            {/* Navigation */}
+            <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-16">
+                        <div className="flex items-center space-x-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                                <FileText className="h-5 w-5 text-white" />
+                            </div>
+                            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                DocuFlow AI
+              </span>
                         </div>
-                        <span className="text-xl font-bold text-gray-900">DocuFlow</span>
-                    </div>
-                    <nav className="hidden md:flex items-center gap-6">
-                        <Link to="/about" className="text-gray-600 hover:text-gray-900">About</Link>
-                        <Link to="/blog" className="text-gray-600 hover:text-gray-900">Blog</Link>
-                        <Link to="/careers" className="text-gray-600 hover:text-gray-900">Careers</Link>
-                        <a href="#pricing" className="text-gray-600 hover:text-gray-900">Pricing</a>
-                    </nav>
-                    <div className="flex items-center gap-4">
-                        <Link to="/login">
-                            <Button variant="ghost">Sign In</Button>
-                        </Link>
-                        <Link to="/register">
-                            <Button>Get Started Free</Button>
-                        </Link>
+                        <div className="hidden md:flex items-center space-x-8">
+                            <Link to="/about" className="text-gray-600 hover:text-gray-900 transition-colors">About</Link>
+                            <Link to="/blog" className="text-gray-600 hover:text-gray-900 transition-colors">Blog</Link>
+                            <Link to="/careers" className="text-gray-600 hover:text-gray-900 transition-colors">Careers</Link>
+                            <Link to="/login">
+                                <Button variant="outline" className="border-gray-300 hover:border-blue-500">
+                                    Sign In
+                                </Button>
+                            </Link>
+                            <Link to="/register">
+                                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                                    Get Started
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
-            </header>
+            </nav>
 
             {/* Hero Section */}
-            <section className="container mx-auto px-4 py-20 text-center">
-                <h1 className="text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                    Transform Your Document<br />
-                    <span className="text-blue-600">Workflow with AI</span>
-                </h1>
-                <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                    Streamline document management, collaborate with your team, and unlock the power of AI 
-                    to analyze, generate, and optimize your content like never before.
-                </p>
-                <div className="flex justify-center gap-4 mb-12">
-                    <Link to="/register">
-                        <Button size="lg" className="text-lg px-8 py-4">
-                            Try Free for 14 Days
-                            <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-                    </Link>
-                    <Button variant="outline" size="lg" className="text-lg px-8 py-4">
-                        <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center mr-2">
-                            <div className="w-0 h-0 border-l-[6px] border-l-white border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-0.5"></div>
-                        </div>
-                        Watch Demo
-                    </Button>
-                </div>
-                
-                {/* Product Mockup Placeholder */}
-                <div className="max-w-5xl mx-auto">
-                    <div className="bg-white rounded-lg shadow-2xl p-8 border">
-                        <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center">
-                            <div className="text-center">
-                                <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                                <p className="text-gray-500 text-lg">Product Demo Video</p>
-                                <p className="text-gray-400 text-sm">Interactive dashboard preview</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Key Features Section */}
-            <section className="bg-white py-20">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                            Powerful Features for Modern Teams
-                        </h2>
-                        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                            Everything you need to manage documents efficiently and collaborate seamlessly
-                        </p>
-                    </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {keyFeatures.map((feature, index) => (
-                            <Card key={index} className="text-center hover:shadow-lg transition-shadow">
-                                <CardHeader>
-                                    <div className="mx-auto w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                                        <feature.icon className="h-8 w-8 text-blue-600" />
-                                    </div>
-                                    <CardTitle className="text-xl">{feature.title}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <CardDescription className="text-base">{feature.description}</CardDescription>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* How It Works Section */}
-            <section className="py-20 bg-gray-50">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
-                        <p className="text-xl text-gray-600">Get started in three simple steps</p>
-                    </div>
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {howItWorks.map((step, index) => (
-                            <div key={index} className="text-center">
-                                <div className="relative">
-                                    <div className="mx-auto w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-6">
-                                        <step.icon className="h-10 w-10 text-white" />
-                                    </div>
-                                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full border-2 border-blue-600 flex items-center justify-center">
-                                        <span className="text-blue-600 font-bold text-sm">{step.step}</span>
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-4">{step.title}</h3>
-                                <p className="text-gray-600 text-lg">{step.description}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Use Cases Section */}
-            <section className="py-20 bg-white">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Built for Every Team</h2>
-                        <p className="text-xl text-gray-600">See how different teams use DocuFlow</p>
-                    </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {useCases.map((useCase, index) => (
-                            <Card key={index} className="hover:shadow-lg transition-shadow">
-                                <CardHeader>
-                                    <CardTitle className="text-xl">{useCase.title}</CardTitle>
-                                    <CardDescription className="text-base">{useCase.description}</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <ul className="space-y-2">
-                                        {useCase.features.map((feature, idx) => (
-                                            <li key={idx} className="flex items-center gap-2">
-                                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                                <span className="text-sm">{feature}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Pricing Plans Section */}
-            <section id="pricing" className="py-20 bg-gray-50">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
-                        <p className="text-xl text-gray-600">Choose the plan that's right for you</p>
-                    </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {pricingPlans.map((plan, index) => (
-                            <Card key={index} className={`relative ${plan.popular ? 'border-blue-500 shadow-lg scale-105' : ''}`}>
-                                {plan.popular && (
-                                    <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600">
-                                        Most Popular
-                                    </Badge>
-                                )}
-                                <CardHeader className="text-center">
-                                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                                    <div className="mt-4">
-                                        <span className="text-4xl font-bold">{plan.price}</span>
-                                        <span className="text-gray-500">/{plan.period}</span>
-                                    </div>
-                                    <CardDescription className="text-base">{plan.description}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <Link to="/register">
-                                        <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
-                                            Get Started
-                                        </Button>
-                                    </Link>
-                                    <ul className="space-y-2">
-                                        {plan.features.map((feature, idx) => (
-                                            <li key={idx} className="flex items-center gap-2 text-sm">
-                                                <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                                                <span>{feature}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Testimonials Section */}
-            <section className="py-20 bg-white">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">What Our Customers Say</h2>
-                        <p className="text-xl text-gray-600">Trusted by teams around the world</p>
-                    </div>
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {testimonials.map((testimonial, index) => (
-                            <Card key={index} className="p-6">
-                                <CardContent className="p-0">
-                                    <div className="mb-4">
-                                        <Quote className="h-8 w-8 text-blue-600 mb-2" />
-                                        <p className="text-gray-700 text-lg italic">"{testimonial.quote}"</p>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                                            <span className="text-gray-600 font-semibold">
-                                                {testimonial.author.split(' ').map(n => n[0]).join('')}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-gray-900">{testimonial.author}</p>
-                                            <p className="text-sm text-gray-600">{testimonial.title}</p>
-                                            <p className="text-sm text-gray-500">{testimonial.company}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex mt-4">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Final CTA Section */}
-            <section className="py-20 bg-blue-600">
-                <div className="container mx-auto px-4 text-center">
-                    <h2 className="text-4xl font-bold text-white mb-4">
-                        Ready to Transform Your Document Workflow?
-                    </h2>
-                    <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-                        Join thousands of teams already using DocuFlow to streamline their processes and boost productivity.
+            <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto text-center">
+                    <Badge className="mb-6 bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">
+                        <Zap className="h-3 w-3 mr-1" />
+                        AI-Powered Document Management
+                    </Badge>
+                    <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent leading-tight">
+                        Transform Your
+                        <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Document Workflow
+            </span>
+                    </h1>
+                    <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
+                        Harness the power of AI to create, manage, and automate your documents.
+                        Experience the future of productivity with intelligent workflows.
                     </p>
-                    <div className="flex justify-center gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
                         <Link to="/register">
-                            <Button size="lg" variant="secondary" className="text-lg px-8 py-4">
+                            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-4 h-auto shadow-xl hover:shadow-2xl transition-all duration-300">
                                 Start Free Trial
                                 <ArrowRight className="ml-2 h-5 w-5" />
                             </Button>
                         </Link>
-                        <Button size="lg" variant="outline" className="text-lg px-8 py-4 text-white border-white hover:bg-white hover:text-blue-600">
-                            Schedule Demo
+                        <Button variant="outline" size="lg" className="text-lg px-8 py-4 h-auto border-gray-300 hover:border-blue-500 hover:text-blue-600">
+                            Watch Demo
+                        </Button>
+                    </div>
+
+                    {/* Hero Image */}
+                    <div className="relative max-w-6xl mx-auto">
+                        <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent rounded-3xl"></div>
+                        <img
+                            src="https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=2850&q=80"
+                            alt="Modern workspace with AI documents"
+                            className="w-full rounded-3xl shadow-2xl"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* Features Section */}
+            <section className="py-24 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-20">
+                        <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                            Powerful Features
+                        </h2>
+                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                            Everything you need to revolutionize your document management workflow
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {features.map((feature, index) => (
+                            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50">
+                                <CardHeader className="text-center pb-4">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-600">
+                                        {feature.icon}
+                                    </div>
+                                    <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <CardDescription className="text-gray-600 text-center">
+                                        {feature.description}
+                                    </CardDescription>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Testimonials */}
+            <section className="py-24 bg-gradient-to-br from-blue-50 to-indigo-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-20">
+                        <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                            Loved by Teams
+                        </h2>
+                        <p className="text-xl text-gray-600">
+                            See what our customers are saying
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        {testimonials.map((testimonial, index) => (
+                            <Card key={index} className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+                                <CardContent className="p-8">
+                                    <div className="flex mb-4">
+                                        {[...Array(testimonial.rating)].map((_, i) => (
+                                            <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                                        ))}
+                                    </div>
+                                    <p className="text-gray-700 mb-6 text-lg leading-relaxed">
+                                        "{testimonial.content}"
+                                    </p>
+                                    <div>
+                                        <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                                        <p className="text-gray-600">{testimonial.role} at {testimonial.company}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* CTA Section */}
+            <section className="py-24 bg-gradient-to-r from-blue-600 to-indigo-700">
+                <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                        Ready to Transform Your Workflow?
+                    </h2>
+                    <p className="text-xl text-blue-100 mb-12 leading-relaxed">
+                        Join thousands of teams already using DocuFlow AI to streamline their document processes.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <Link to="/register">
+                            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4 h-auto shadow-xl">
+                                Start Free Trial
+                                <ArrowRight className="ml-2 h-5 w-5" />
+                            </Button>
+                        </Link>
+                        <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10 text-lg px-8 py-4 h-auto">
+                            Contact Sales
                         </Button>
                     </div>
                 </div>
@@ -429,57 +210,46 @@ export const LandingPage = () => {
 
             {/* Footer */}
             <footer className="bg-gray-900 text-white py-16">
-                <div className="container mx-auto px-4">
-                    <div className="grid md:grid-cols-4 gap-8 mb-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         <div>
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                                    <FileText className="h-5 w-5 text-white"/>
+                            <div className="flex items-center space-x-2 mb-4">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                                    <FileText className="h-5 w-5 text-white" />
                                 </div>
-                                <span className="text-xl font-bold">DocuFlow</span>
+                                <span className="text-xl font-bold">DocuFlow AI</span>
                             </div>
-                            <p className="text-gray-400 mb-4">
-                                Transform your document workflow with AI-powered automation and collaboration.
+                            <p className="text-gray-400">
+                                The future of document management, powered by AI.
                             </p>
-                            <div className="flex gap-4">
-                                <Twitter className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer" />
-                                <Linkedin className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer" />
-                                <Github className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer" />
-                                <Mail className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer" />
-                            </div>
                         </div>
                         <div>
                             <h3 className="font-semibold mb-4">Product</h3>
                             <ul className="space-y-2 text-gray-400">
-                                <li><a href="#features" className="hover:text-white">Features</a></li>
-                                <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
-                                <li><a href="#" className="hover:text-white">API Docs</a></li>
-                                <li><Link to="/integrations" className="hover:text-white">Integrations</Link></li>
+                                <li><Link to="/features" className="hover:text-white transition-colors">Features</Link></li>
+                                <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+                                <li><Link to="/security" className="hover:text-white transition-colors">Security</Link></li>
                             </ul>
                         </div>
                         <div>
                             <h3 className="font-semibold mb-4">Company</h3>
                             <ul className="space-y-2 text-gray-400">
-                                <li><Link to="/about" className="hover:text-white">About</Link></li>
-                                <li><Link to="/blog" className="hover:text-white">Blog</Link></li>
-                                <li><Link to="/careers" className="hover:text-white">Careers</Link></li>
-                                <li><a href="#" className="hover:text-white">Contact</a></li>
+                                <li><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
+                                <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
+                                <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
                             </ul>
                         </div>
                         <div>
-                            <h3 className="font-semibold mb-4">Legal</h3>
+                            <h3 className="font-semibold mb-4">Support</h3>
                             <ul className="space-y-2 text-gray-400">
-                                <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-                                <li><a href="#" className="hover:text-white">Terms of Service</a></li>
-                                <li><a href="#" className="hover:text-white">Security</a></li>
-                                <li><a href="#" className="hover:text-white">GDPR</a></li>
+                                <li><Link to="/help" className="hover:text-white transition-colors">Help Center</Link></li>
+                                <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+                                <li><Link to="/status" className="hover:text-white transition-colors">Status</Link></li>
                             </ul>
                         </div>
                     </div>
-                    <div className="border-t border-gray-800 pt-8 text-center">
-                        <p className="text-gray-400">
-                            © 2024 DocuFlow. All rights reserved.
-                        </p>
+                    <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+                        <p>&copy; 2024 DocuFlow AI. All rights reserved.</p>
                     </div>
                 </div>
             </footer>
