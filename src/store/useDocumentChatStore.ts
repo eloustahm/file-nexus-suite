@@ -15,12 +15,20 @@ interface Agent {
   name: string;
   icon: string;
   color: string;
+  type: string;
+  description: string;
+  capabilities: string[];
+  personality?: string;
 }
 
 interface ChatHistory {
+  id: string;
   documentId: string;
   documentName: string;
+  title: string;
   lastActivity: string;
+  createdAt: Date;
+  updatedAt: Date;
   messages: ChatMessage[];
 }
 
@@ -95,12 +103,12 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
   },
 
   loadChatHistory: (historyId) => {
-    const history = get().chatHistories.find(h => h.documentId === historyId);
+    const history = get().chatHistories.find(h => h.id === historyId);
     if (history) {
       set({ 
         selectedHistory: historyId,
         currentMessages: history.messages,
-        activeDocumentId: historyId
+        activeDocumentId: history.documentId
       });
     }
   },

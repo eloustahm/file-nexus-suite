@@ -2,168 +2,158 @@
 import { create } from 'zustand';
 import { aiApi } from '@/services/api';
 
-interface GeneratedDocument {
-  id: string;
-  title: string;
-  content: string;
-  templateId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  fields: Record<string, any>;
-}
-
 interface Agent {
   id: string;
   name: string;
   icon: string;
   color: string;
+  type: string;
+  description: string;
+  capabilities: string[];
+}
+
+interface DocumentTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  fields: Record<string, any>;
+  content?: string;
+}
+
+interface GenerationProgress {
+  step: number;
+  totalSteps: number;
+  currentTask: string;
+  completed: boolean;
 }
 
 interface DocumentGenerationState {
-  generatedDocuments: GeneratedDocument[];
-  templates: Template[];
-  selectedTemplate: Template | null;
+  selectedTemplate: DocumentTemplate | null;
   selectedAgent: Agent | null;
+  templateFields: Record<string, any>;
   generatedContent: string;
   isGenerating: boolean;
-  isEditing: boolean;
-  editedContent: string;
+  generationProgress: GenerationProgress | null;
+  templates: DocumentTemplate[];
   loading: boolean;
   error: string | null;
-  generateDocument: (templateId?: string, data?: Record<string, any>) => Promise<GeneratedDocument | undefined>;
-  fetchTemplates: () => Promise<void>;
-  setSelectedTemplate: (template: Template | null) => void;
+  
+  setSelectedTemplate: (template: DocumentTemplate | null) => void;
   setSelectedAgent: (agent: Agent | null) => void;
-  updateFieldValue: (field: string, value: any) => void;
-  addCustomField: (field: string, value: any) => void;
-  removeField: (field: string) => void;
-  setEditMode: (editing: boolean) => void;
-  updateEditedContent: (content: string) => void;
+  updateTemplateField: (field: string, value: any) => void;
+  addTemplateField: (field: string, value: any) => void;
+  removeTemplateField: (field: string) => void;
+  generateDocument: () => Promise<void>;
+  resetGeneration: () => void;
+  fetchTemplates: () => Promise<void>;
   clearError: () => void;
 }
 
 export const useDocumentGenerationStore = create<DocumentGenerationState>((set, get) => ({
-  generatedDocuments: [],
-  templates: [],
   selectedTemplate: null,
   selectedAgent: null,
+  templateFields: {},
   generatedContent: '',
   isGenerating: false,
-  isEditing: false,
-  editedContent: '',
+  generationProgress: null,
+  templates: [],
   loading: false,
   error: null,
 
-  fetchTemplates: async () => {
-    try {
-      set({ loading: true, error: null });
-      // Mock templates for now
-      const mockTemplates: Template[] = [
-        {
-          id: '1',
-          name: 'Business Proposal',
-          description: 'Professional business proposal template',
-          fields: { title: '', company: '', description: '' }
-        },
-        {
-          id: '2',
-          name: 'Legal Contract',
-          description: 'Standard legal contract template',
-          fields: { parties: '', terms: '', duration: '' }
-        }
-      ];
-      set({ templates: mockTemplates });
-    } catch (error: any) {
-      set({ error: error.message });
-    } finally {
-      set({ loading: false });
-    }
-  },
-
   setSelectedTemplate: (template) => {
-    set({ selectedTemplate: template });
+    set({ 
+      selectedTemplate: template,
+      templateFields: template?.fields || {},
+      generatedContent: '',
+      error: null
+    });
   },
 
   setSelectedAgent: (agent) => {
     set({ selectedAgent: agent });
   },
 
-  updateFieldValue: (field, value) => {
+  updateTemplateField: (field, value) => {
     set((state) => ({
-      selectedTemplate: state.selectedTemplate ? {
-        ...state.selectedTemplate,
-        fields: { ...state.selectedTemplate.fields, [field]: value }
-      } : null
+      templateFields: { ...state.templateFields, [field]: value }
     }));
   },
 
-  addCustomField: (field, value) => {
+  addTemplateField: (field, value) => {
     set((state) => ({
-      selectedTemplate: state.selectedTemplate ? {
-        ...state.selectedTemplate,
-        fields: { ...state.selectedTemplate.fields, [field]: value }
-      } : null
+      templateFields: { ...state.templateFields, [field]: value }
     }));
   },
 
-  removeField: (field) => {
+  removeTemplateField: (field) => {
     set((state) => {
-      if (!state.selectedTemplate) return state;
-      const { [field]: removed, ...remainingFields } = state.selectedTemplate.fields;
-      return {
-        selectedTemplate: {
-          ...state.selectedTemplate,
-          fields: remainingFields
-        }
-      };
+      const { [field]: removed, ...rest } = state.templateFields;
+      return { templateFields: rest };
     });
   },
 
-  setEditMode: (editing) => {
-    set({ isEditing: editing });
-  },
+  generateDocument: async () => {
+    const { selectedTemplate, templateFields, selectedAgent } = get();
+    
+    if (!selectedTemplate) {
+      set({ error: 'Please select a template' });
+      return;
+    }
 
-  updateEditedContent: (content) => {
-    set({ editedContent: content, generatedContent: content });
-  },
-
-  generateDocument: async (templateId?: string, data?: Record<string, any>) => {
     try {
-      set({ isGenerating: true, error: null });
-      
-      const { selectedTemplate } = get();
-      const finalTemplateId = templateId || selectedTemplate?.id || '1';
-      const finalData = data || selectedTemplate?.fields || {};
-      
-      const response = await aiApi.generateDocument(finalTemplateId, finalData);
-      
-      const newDocument = {
-        id: Date.now().toString(),
-        title: `Generated Document - ${new Date().toLocaleDateString()}`,
-        content: (response as any)?.content || 'Document generation completed',
-        templateId: finalTemplateId,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      set({ 
+        isGenerating: true, 
+        error: null,
+        generationProgress: { step: 1, totalSteps: 3, currentTask: 'Preparing template...', completed: false }
+      });
 
-      set((state) => ({
-        generatedDocuments: [...state.generatedDocuments, newDocument],
-        generatedContent: newDocument.content,
-        editedContent: newDocument.content,
-        isGenerating: false
-      }));
+      // Simulate progress updates
+      setTimeout(() => {
+        set({ generationProgress: { step: 2, totalSteps: 3, currentTask: 'Generating content...', completed: false } });
+      }, 1000);
 
-      return newDocument;
+      // Call API
+      const response = await aiApi.generateDocument({
+        templateId: selectedTemplate.id,
+        fields: templateFields,
+        agentId: selectedAgent?.id
+      });
+
+      set({ 
+        generatedContent: response.content || 'Generated document content will appear here.',
+        generationProgress: { step: 3, totalSteps: 3, currentTask: 'Complete!', completed: true }
+      });
+
     } catch (error: any) {
-      const errorMessage = error?.message || 'Failed to generate document';
-      set({ error: errorMessage, isGenerating: false });
-      throw new Error(errorMessage);
+      set({ error: error.message });
+    } finally {
+      set({ isGenerating: false });
+      setTimeout(() => set({ generationProgress: null }), 2000);
+    }
+  },
+
+  resetGeneration: () => {
+    set({
+      selectedTemplate: null,
+      selectedAgent: null,
+      templateFields: {},
+      generatedContent: '',
+      isGenerating: false,
+      generationProgress: null,
+      error: null
+    });
+  },
+
+  fetchTemplates: async () => {
+    try {
+      set({ loading: true, error: null });
+      const templates = await aiApi.getTemplates() as DocumentTemplate[];
+      set({ templates });
+    } catch (error: any) {
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
     }
   },
 
