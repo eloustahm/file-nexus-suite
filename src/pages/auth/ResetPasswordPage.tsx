@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export const ResetPasswordPage = () => {
@@ -47,7 +47,7 @@ export const ResetPasswordPage = () => {
     try {
       // TODO: Implement reset password with token API call
       // await authApi.resetPasswordWithToken(token, password);
-      
+
       toast({
         title: "Password reset successful",
         description: "Your password has been updated. Please sign in with your new password.",
@@ -61,76 +61,98 @@ export const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5" />
-              Reset your password
-            </CardTitle>
-            <CardDescription>
-              Enter your new password below
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              
-              <div>
-                <Label htmlFor="password">New password</Label>
-                <div className="relative mt-1">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Enter new password"
-                    minLength={8}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-emerald-50 p-8">
+        <div className="w-full max-w-md space-y-8">
+          {/* Header */}
+          <div className="text-center">
+            <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Shield className="h-8 w-8 text-emerald-600" />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">New password</h2>
+            <p className="text-gray-600">
+              Create a strong password for your account.
+            </p>
+          </div>
+
+          {/* Form Card */}
+          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                    <Alert variant="destructive" className="border-red-200 bg-red-50">
+                      <AlertDescription className="text-red-800">{error}</AlertDescription>
+                    </Alert>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                    New password
+                  </Label>
+                  <div className="relative">
+                    <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        placeholder="Enter new password"
+                        minLength={8}
+                        className="h-12 pr-12 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500/20 transition-all duration-200"
+                    />
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-12 w-12 text-gray-400 hover:text-gray-600"
+                        onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <Label htmlFor="confirmPassword">Confirm new password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  placeholder="Confirm new password"
-                  className="mt-1"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                    Confirm new password
+                  </Label>
+                  <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      placeholder="Confirm new password"
+                      className="h-12 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500/20 transition-all duration-200"
+                  />
+                </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || !token}>
-                {isLoading ? "Updating password..." : "Update password"}
-              </Button>
+                <Button
+                    type="submit"
+                    className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                    disabled={isLoading || !token}
+                >
+                  {isLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Updating password...</span>
+                      </div>
+                  ) : (
+                      <>
+                        <Lock className="h-4 w-4 mr-2" />
+                        Update password
+                      </>
+                  )}
+                </Button>
 
-              <div className="text-center">
-                <Link to="/login" className="text-sm text-blue-600 hover:text-blue-500">
-                  Back to sign in
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                <div className="text-center">
+                  <Link to="/login" className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
+                    Back to sign in
+                  </Link>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
   );
 };
