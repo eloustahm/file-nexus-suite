@@ -2,265 +2,286 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
-  Folder,
-  FileText,
-  Search,
-  MoreVertical,
-  Share,
-  Archive,
+  Folder, 
+  FolderPlus, 
+  MoreVertical, 
+  Search, 
+  Grid, 
+  List,
+  Edit,
   Trash2,
-  Download,
-  Eye,
-  Users,
-  EyeOff
+  Share,
+  FileText
 } from "lucide-react";
-import { NewFolderDialog } from "@/components/NewFolderDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useFoldersStore } from "@/store/useFoldersStore";
 
 export const Folders = () => {
   const { toast } = useToast();
-  const [folders, setFolders] = useState([
-    {
-      id: 1,
-      name: "Project Documents",
-      description: "All project-related documents and files",
-      fileCount: 24,
-      access: "team",
-      createdAt: "2023-12-01",
-      lastModified: "2023-12-20",
-      archived: false,
-      files: [
-        { id: 1, name: "Project Proposal.pdf", size: "2.1 MB", type: "pdf", lastModified: "2 days ago" },
-        { id: 2, name: "Budget Analysis.xlsx", size: "1.5 MB", type: "excel", lastModified: "1 week ago" },
-        { id: 3, name: "Meeting Notes.docx", size: "456 KB", type: "word", lastModified: "3 days ago" }
-      ]
-    },
-    {
-      id: 2,
-      name: "Legal Documents",
-      description: "Contracts, agreements, and legal paperwork",
-      fileCount: 12,
-      access: "private",
-      createdAt: "2023-11-15",
-      lastModified: "2023-12-18",
-      archived: false,
-      files: [
-        { id: 4, name: "Service Agreement.pdf", size: "3.2 MB", type: "pdf", lastModified: "1 day ago" },
-        { id: 5, name: "Privacy Policy.pdf", size: "890 KB", type: "pdf", lastModified: "5 days ago" }
-      ]
-    },
-    {
-      id: 3,
-      name: "Marketing Materials",
-      description: "Brochures, presentations, and marketing assets",
-      fileCount: 18,
-      access: "public",
-      createdAt: "2023-12-10",
-      lastModified: "2023-12-22",
-      archived: false,
-      files: [
-        { id: 6, name: "Brand Guidelines.pdf", size: "5.7 MB", type: "pdf", lastModified: "Today" },
-        { id: 7, name: "Product Catalog.pdf", size: "8.2 MB", type: "pdf", lastModified: "Yesterday" },
-        { id: 8, name: "Marketing Plan 2024.pptx", size: "12.1 MB", type: "powerpoint", lastModified: "1 week ago" }
-      ]
-    }
-  ]);
-
-  const [selectedFolder, setSelectedFolder] = useState<number | null>(null);
+  const { folders, loading, createFolder, deleteFolder } = useFoldersStore();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState("");
-  const [showArchived, setShowArchived] = useState(false);
+  const [newFolderData, setNewFolderData] = useState({
+    name: '',
+    description: ''
+  });
 
-  const getAccessColor = (access: string) => {
-    switch (access) {
-      case "private": return "bg-red-100 text-red-800";
-      case "team": return "bg-blue-100 text-blue-800";
-      case "public": return "bg-green-100 text-green-800";
-      default: return "bg-gray-100 text-gray-800";
+  const handleCreateFolder = async () => {
+    if (!newFolderData.name.trim()) {
+      toast({
+        title: "Name required",
+        description: "Please enter a folder name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await createFolder({
+        name: newFolderData.name,
+        description: newFolderData.description
+      });
+      
+      toast({
+        title: "Folder created",
+        description: `Folder "${newFolderData.name}" created successfully.`,
+      });
+      
+      setNewFolderData({ name: '', description: '' });
+      setIsCreateOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create folder.",
+        variant: "destructive",
+      });
     }
   };
 
-  const getFileIcon = (type: string) => {
-    return "📄"; // Simple emoji, can be replaced with proper icons
+  const handleDeleteFolder = async (folderId: string) => {
+    try {
+      await deleteFolder(folderId);
+      toast({
+        title: "Folder deleted",
+        description: "Folder has been deleted successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete folder.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleCreateFolder = (newFolder: any) => {
-    setFolders([...folders, newFolder]);
-    toast({
-      title: "Folder created",
-      description: `${newFolder.name} has been created successfully.`,
-    });
-  };
-
-  const handleDeleteFolder = (folderId: number) => {
-    setFolders(folders.filter(folder => folder.id !== folderId));
-    toast({
-      title: "Folder deleted",
-      description: "The folder has been permanently deleted.",
-    });
-  };
-
-  const handleArchiveFolder = (folderId: number) => {
-    setFolders(folders.map(folder => 
-      folder.id === folderId 
-        ? { ...folder, archived: !folder.archived }
-        : folder
-    ));
-    const folder = folders.find(f => f.id === folderId);
-    toast({
-      title: folder?.archived ? "Folder unarchived" : "Folder archived",
-      description: folder?.archived 
-        ? "The folder has been moved back to active folders."
-        : "The folder has been archived.",
-    });
-  };
-
-  const filteredFolders = folders.filter(folder => {
-    const matchesSearch = folder.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      folder.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesArchiveFilter = showArchived ? folder.archived : !folder.archived;
-    return matchesSearch && matchesArchiveFilter;
-  });
+  const filteredFolders = folders.filter(folder =>
+    folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Folders</h1>
-          <p className="text-gray-600 mt-1">Organize your documents in folders</p>
+          <p className="text-gray-600 mt-1">Organize your documents with folders</p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant={showArchived ? "default" : "outline"}
-            onClick={() => setShowArchived(!showArchived)}
-          >
-            <Archive className="h-4 w-4 mr-2" />
-            {showArchived ? "Show Active" : "Show Archived"}
-          </Button>
-          <NewFolderDialog onCreateFolder={handleCreateFolder} />
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-        <Input
-          placeholder="Search folders..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
-      {/* Folders Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredFolders.map((folder) => (
-          <Card key={folder.id} className={`hover:shadow-md transition-shadow cursor-pointer ${folder.archived ? 'opacity-60' : ''}`}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Folder className="h-5 w-5 text-blue-500" />
-                  <CardTitle className="text-lg">{folder.name}</CardTitle>
-                  {folder.archived && <Badge variant="secondary">Archived</Badge>}
+        
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search folders..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-64"
+            />
+          </div>
+          
+          <div className="flex items-center border rounded-lg">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <FolderPlus className="h-4 w-4 mr-2" />
+                New Folder
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Folder</DialogTitle>
+                <DialogDescription>
+                  Create a new folder to organize your documents
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="folder-name">Folder Name</Label>
+                  <Input
+                    id="folder-name"
+                    value={newFolderData.name}
+                    onChange={(e) => setNewFolderData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter folder name"
+                    className="mt-1"
+                  />
                 </div>
-                <div className="flex items-center gap-1">
-                  <Badge className={getAccessColor(folder.access)}>
-                    {folder.access}
-                  </Badge>
+                <div>
+                  <Label htmlFor="folder-description">Description (Optional)</Label>
+                  <Textarea
+                    id="folder-description"
+                    value={newFolderData.description}
+                    onChange={(e) => setNewFolderData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Enter folder description"
+                    className="mt-1"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleCreateFolder} disabled={loading}>
+                    {loading ? "Creating..." : "Create Folder"}
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredFolders.map((folder) => (
+            <Card key={folder.id} className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Folder className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <CardTitle className="text-lg truncate">{folder.name}</CardTitle>
+                      {folder.description && (
+                        <CardDescription className="truncate">
+                          {folder.description}
+                        </CardDescription>
+                      )}
+                    </div>
+                  </div>
                   <Button variant="ghost" size="icon">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
-              <CardDescription>{folder.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <span>{folder.fileCount} files</span>
-                  <span>Modified {folder.lastModified}</span>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <FileText className="h-4 w-4" />
+                    <span>{folder.documentCount || 0} documents</span>
+                  </div>
+                  <Badge variant="secondary">{folder.type || 'General'}</Badge>
                 </div>
-
-                {/* Folder Actions */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
-                  >
-                    {selectedFolder === folder.id ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
-                    {selectedFolder === folder.id ? 'Hide' : 'View'} Files
+                <div className="flex items-center gap-2 mt-3">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
                   </Button>
                   <Button variant="outline" size="sm">
-                    <Share className="h-3 w-3 mr-1" />
-                    Share
+                    <Share className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleArchiveFolder(folder.id)}
-                    className="text-orange-600 hover:text-orange-700"
-                  >
-                    <Archive className="h-3 w-3 mr-1" />
-                    {folder.archived ? 'Unarchive' : 'Archive'}
-                  </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => handleDeleteFolder(folder.id)}
                     className="text-red-600 hover:text-red-700"
                   >
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    Delete
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-
-                {/* Files List */}
-                {selectedFolder === folder.id && (
-                  <div className="border-t pt-3 space-y-2">
-                    <h4 className="font-medium text-sm">Files in this folder:</h4>
-                    <div className="max-h-48 overflow-y-auto space-y-2">
-                      {folder.files.map((file) => (
-                        <div key={file.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                          <div className="flex items-center gap-2">
-                            <span>{getFileIcon(file.type)}</span>
-                            <div>
-                              <p className="text-sm font-medium">{file.name}</p>
-                              <p className="text-xs text-gray-500">{file.size} • {file.lastModified}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-6 w-6">
-                              <Download className="h-3 w-3" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6">
-                              <MoreVertical className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>All Folders</CardTitle>
+            <CardDescription>{filteredFolders.length} folders found</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {filteredFolders.map((folder) => (
+                <div key={folder.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Folder className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium">{folder.name}</p>
+                      {folder.description && (
+                        <p className="text-sm text-gray-500">{folder.description}</p>
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="secondary">{folder.documentCount || 0} docs</Badge>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Share className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteFolder(folder.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {filteredFolders.length === 0 && (
-        <div className="text-center py-12">
-          <Folder className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">
-            {showArchived 
-              ? "No archived folders found matching your search."
-              : "No folders found matching your search."
-            }
-          </p>
-        </div>
+      {filteredFolders.length === 0 && !loading && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Folder className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No folders found</h3>
+            <p className="text-gray-500 mb-4">
+              {searchQuery ? "No folders match your search." : "Get started by creating your first folder."}
+            </p>
+            <Button onClick={() => setIsCreateOpen(true)}>
+              <FolderPlus className="h-4 w-4 mr-2" />
+              Create Folder
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

@@ -1,418 +1,233 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import { 
-  Check, 
-  X, 
-  Star, 
-  Crown, 
-  Zap, 
-  Users, 
-  FileText, 
-  Database,
-  Clock,
-  Shield
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-
-interface PricingPlan {
-  id: string;
-  name: string;
-  price: number;
-  billing: 'monthly' | 'yearly';
-  description: string;
-  features: string[];
-  limits: {
-    documents: number | 'unlimited';
-    templates: number | 'unlimited';
-    folders: number | 'unlimited';
-    storage: string;
-    apiCalls: number | 'unlimited';
-    users: number | 'unlimited';
-  };
-  popular?: boolean;
-  icon: any;
-  color: string;
-}
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Check, Star, Zap, Shield } from 'lucide-react';
+import { usePaymentStore } from '@/store/usePaymentStore';
+import { useToast } from '@/hooks/use-toast';
 
 export const PricingPlans = () => {
+  const [isAnnual, setIsAnnual] = useState(false);
+  const { createSubscription, loading } = usePaymentStore();
   const { toast } = useToast();
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [currentPlan, setCurrentPlan] = useState('free');
 
-  // Mock usage data
-  const usage = {
-    documents: 3,
-    templates: 2,
-    folders: 8,
-    storage: 125, // MB
-    apiCalls: 847,
-    users: 1
-  };
-
-  const plans: PricingPlan[] = [
-    {
-      id: 'free',
-      name: 'Free',
-      price: 0,
-      billing: billingCycle,
-      description: 'Perfect for getting started',
-      features: [
-        '5 documents',
-        '3 templates',
-        'Unlimited folders',
-        '250MB storage',
-        'Basic AI modules',
-        'Email support'
-      ],
-      limits: {
-        documents: 5,
-        templates: 3,
-        folders: 'unlimited',
-        storage: '250MB',
-        apiCalls: 1000,
-        users: 1
-      },
-      icon: FileText,
-      color: 'text-gray-600'
-    },
+  const plans = [
     {
       id: 'starter',
       name: 'Starter',
-      price: billingCycle === 'monthly' ? 9 : 90,
-      billing: billingCycle,
-      description: 'Great for individuals and small teams',
+      description: 'Perfect for individuals and small teams',
+      monthlyPrice: 9,
+      annualPrice: 99,
+      icon: Star,
       features: [
-        '50 documents',
-        '15 templates',
-        'Unlimited folders',
+        '100 document uploads per month',
         '5GB storage',
-        'All AI modules',
-        'Priority support',
-        'Document sharing',
-        'Basic analytics'
+        'Basic AI features',
+        'Email support',
+        '3 team members'
       ],
-      limits: {
-        documents: 50,
-        templates: 15,
-        folders: 'unlimited',
-        storage: '5GB',
-        apiCalls: 10000,
-        users: 3
-      },
-      icon: Zap,
-      color: 'text-blue-600'
+      limitations: [
+        'Limited workflow automation',
+        'Basic integrations only'
+      ]
     },
     {
       id: 'professional',
       name: 'Professional',
-      price: billingCycle === 'monthly' ? 29 : 290,
-      billing: billingCycle,
-      description: 'Perfect for growing businesses',
+      description: 'For growing teams and businesses',
+      monthlyPrice: 29,
+      annualPrice: 299,
+      icon: Zap,
       popular: true,
       features: [
-        '200 documents',
-        '50 templates',
-        'Unlimited folders',
-        '25GB storage',
-        'Advanced AI modules',
-        'Team collaboration',
-        'Role-based permissions',
-        'Advanced analytics',
-        'API access',
-        'Custom branding'
-      ],
-      limits: {
-        documents: 200,
-        templates: 50,
-        folders: 'unlimited',
-        storage: '25GB',
-        apiCalls: 50000,
-        users: 10
-      },
-      icon: Star,
-      color: 'text-purple-600'
-    },
-    {
-      id: 'business',
-      name: 'Business',
-      price: billingCycle === 'monthly' ? 59 : 590,
-      billing: billingCycle,
-      description: 'For larger teams and organizations',
-      features: [
-        '1000 documents',
-        '200 templates',
-        'Unlimited folders',
+        'Unlimited document uploads',
         '100GB storage',
-        'All AI features',
-        'Advanced workflows',
-        'SSO integration',
-        'Custom integrations',
-        'Dedicated support',
-        'Training sessions'
+        'Advanced AI features',
+        'Priority support',
+        '15 team members',
+        'Custom workflows',
+        'Advanced integrations',
+        'API access'
       ],
-      limits: {
-        documents: 1000,
-        templates: 200,
-        folders: 'unlimited',
-        storage: '100GB',
-        apiCalls: 200000,
-        users: 50
-      },
-      icon: Users,
-      color: 'text-green-600'
+      limitations: []
     },
     {
       id: 'enterprise',
       name: 'Enterprise',
-      price: billingCycle === 'monthly' ? 149 : 1490,
-      billing: billingCycle,
-      description: 'For large enterprises with custom needs',
-      features: [
-        'Unlimited documents',
-        'Unlimited templates',
-        'Unlimited folders',
-        '1TB storage',
-        'Custom AI models',
-        'White-label solution',
-        'On-premise deployment',
-        'Custom SLAs',
-        '24/7 phone support',
-        'Dedicated success manager'
-      ],
-      limits: {
-        documents: 'unlimited',
-        templates: 'unlimited',
-        folders: 'unlimited',
-        storage: '1TB',
-        apiCalls: 'unlimited',
-        users: 'unlimited'
-      },
-      icon: Crown,
-      color: 'text-orange-600'
-    },
-    {
-      id: 'ultimate',
-      name: 'Ultimate',
-      price: billingCycle === 'monthly' ? 299 : 2990,
-      billing: billingCycle,
-      description: 'Everything plus premium features',
-      features: [
-        'Everything in Enterprise',
-        'AI model training',
-        'Custom workflows',
-        'Advanced security',
-        'Compliance certifications',
-        'Multi-region deployment',
-        'Custom development',
-        'Executive reporting'
-      ],
-      limits: {
-        documents: 'unlimited',
-        templates: 'unlimited',
-        folders: 'unlimited',
-        storage: 'unlimited',
-        apiCalls: 'unlimited',
-        users: 'unlimited'
-      },
+      description: 'For large organizations with custom needs',
+      monthlyPrice: 99,
+      annualPrice: 999,
       icon: Shield,
-      color: 'text-red-600'
+      features: [
+        'Unlimited everything',
+        'Unlimited storage',
+        'Custom AI models',
+        '24/7 dedicated support',
+        'Unlimited team members',
+        'Advanced security',
+        'On-premise deployment',
+        'Custom integrations',
+        'SLA guarantee'
+      ],
+      limitations: []
     }
   ];
 
-  const handlePlanSelect = (planId: string) => {
-    setCurrentPlan(planId);
-    toast({
-      title: "Plan Selected",
-      description: `You've selected the ${plans.find(p => p.id === planId)?.name} plan.`,
-    });
+  const handleSubscribe = async (planId: string) => {
+    try {
+      await createSubscription(planId);
+      toast({
+        title: "Subscription created",
+        description: "Your subscription has been activated successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Subscription failed",
+        description: "There was an error creating your subscription. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const getUsagePercentage = (current: number, limit: number | string) => {
-    if (limit === 'unlimited') return 0;
-    return Math.min((current / Number(limit)) * 100, 100);
+  const getPrice = (plan: typeof plans[0]) => {
+    return isAnnual ? plan.annualPrice : plan.monthlyPrice;
   };
 
-  const currentPlanData = plans.find(p => p.id === currentPlan);
+  const getSavings = (plan: typeof plans[0]) => {
+    const annualTotal = plan.annualPrice;
+    const monthlyTotal = plan.monthlyPrice * 12;
+    return monthlyTotal - annualTotal;
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Choose Your Plan</h1>
-        <p className="text-gray-600 mt-2">Select the perfect plan for your needs</p>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
+        <p className="text-xl text-gray-600 mb-8">
+          Unlock the full potential of AI-powered document management
+        </p>
         
-        {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4 mt-6">
-          <span className={billingCycle === 'monthly' ? 'font-medium' : 'text-gray-500'}>Monthly</span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
-            className="relative"
-          >
-            <div className={`w-12 h-6 rounded-full transition-colors ${billingCycle === 'yearly' ? 'bg-blue-600' : 'bg-gray-300'}`}>
-              <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${billingCycle === 'yearly' ? 'translate-x-6' : 'translate-x-0.5'}`} />
-            </div>
-          </Button>
-          <span className={billingCycle === 'yearly' ? 'font-medium' : 'text-gray-500'}>
-            Yearly 
-            <Badge variant="secondary" className="ml-2">Save 17%</Badge>
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <span className={`text-sm ${!isAnnual ? 'font-medium' : 'text-gray-500'}`}>
+            Monthly
           </span>
+          <Switch
+            checked={isAnnual}
+            onCheckedChange={setIsAnnual}
+          />
+          <span className={`text-sm ${isAnnual ? 'font-medium' : 'text-gray-500'}`}>
+            Annual
+          </span>
+          {isAnnual && (
+            <Badge className="bg-green-100 text-green-800 ml-2">
+              Save up to 20%
+            </Badge>
+          )}
         </div>
       </div>
 
-      {/* Current Usage */}
-      {currentPlanData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Current Usage - {currentPlanData.name} Plan
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium">Documents</span>
-                  <span className="text-sm text-gray-600">
-                    {usage.documents} / {currentPlanData.limits.documents}
-                  </span>
-                </div>
-                <Progress value={getUsagePercentage(usage.documents, currentPlanData.limits.documents)} className="h-2" />
-              </div>
-              
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium">Templates</span>
-                  <span className="text-sm text-gray-600">
-                    {usage.templates} / {currentPlanData.limits.templates}
-                  </span>
-                </div>
-                <Progress value={getUsagePercentage(usage.templates, currentPlanData.limits.templates)} className="h-2" />
-              </div>
-              
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium">Storage</span>
-                  <span className="text-sm text-gray-600">
-                    {usage.storage}MB / {currentPlanData.limits.storage}
-                  </span>
-                </div>
-                <Progress value={getUsagePercentage(usage.storage, 250)} className="h-2" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Pricing Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
         {plans.map((plan) => (
-          <Card key={plan.id} className={`relative ${plan.popular ? 'border-purple-500 shadow-lg scale-105' : ''} ${currentPlan === plan.id ? 'ring-2 ring-blue-500' : ''}`}>
+          <Card 
+            key={plan.id} 
+            className={`relative ${plan.popular ? 'border-blue-500 border-2 shadow-lg' : ''}`}
+          >
             {plan.popular && (
-              <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-600">
-                Most Popular
-              </Badge>
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-blue-500 text-white px-4 py-1">
+                  Most Popular
+                </Badge>
+              </div>
             )}
             
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <plan.icon className={`h-6 w-6 ${plan.color}`} />
-                <CardTitle>{plan.name}</CardTitle>
+            <CardHeader className="text-center pb-6">
+              <div className="mx-auto w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <plan.icon className="h-6 w-6 text-blue-600" />
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold">${plan.price}</span>
-                <span className="text-gray-500">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+              <CardTitle className="text-2xl">{plan.name}</CardTitle>
+              <CardDescription className="text-base">{plan.description}</CardDescription>
+              
+              <div className="mt-6">
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-4xl font-bold text-gray-900">
+                    ${getPrice(plan)}
+                  </span>
+                  <span className="text-gray-500">
+                    /{isAnnual ? 'year' : 'month'}
+                  </span>
+                </div>
+                {isAnnual && (
+                  <p className="text-sm text-green-600 mt-1">
+                    Save ${getSavings(plan)} per year
+                  </p>
+                )}
               </div>
-              <CardDescription>{plan.description}</CardDescription>
             </CardHeader>
             
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              <ul className="space-y-3">
+                {plan.features.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm text-gray-700">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              
               <Button 
                 className="w-full" 
-                variant={currentPlan === plan.id ? "default" : "outline"}
-                onClick={() => handlePlanSelect(plan.id)}
+                variant={plan.popular ? 'default' : 'outline'}
+                onClick={() => handleSubscribe(plan.id)}
+                disabled={loading}
               >
-                {currentPlan === plan.id ? 'Current Plan' : 'Select Plan'}
+                {loading ? 'Processing...' : `Get ${plan.name}`}
               </Button>
               
-              <div className="space-y-2">
-                {plan.features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-2 text-sm">
-                    <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">Limits:</h4>
-                <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                  <div>Documents: {plan.limits.documents}</div>
-                  <div>Templates: {plan.limits.templates}</div>
-                  <div>Storage: {plan.limits.storage}</div>
-                  <div>Users: {plan.limits.users}</div>
-                </div>
-              </div>
+              <p className="text-xs text-gray-500 text-center">
+                No setup fees • Cancel anytime
+              </p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Comparison Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Feature Comparison</CardTitle>
-          <CardDescription>Compare all plans side by side</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Feature</th>
-                  {plans.map(plan => (
-                    <th key={plan.id} className="text-center p-2">{plan.name}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b">
-                  <td className="p-2 font-medium">Documents</td>
-                  {plans.map(plan => (
-                    <td key={plan.id} className="text-center p-2">{plan.limits.documents}</td>
-                  ))}
-                </tr>
-                <tr className="border-b">
-                  <td className="p-2 font-medium">Templates</td>
-                  {plans.map(plan => (
-                    <td key={plan.id} className="text-center p-2">{plan.limits.templates}</td>
-                  ))}
-                </tr>
-                <tr className="border-b">
-                  <td className="p-2 font-medium">Storage</td>
-                  {plans.map(plan => (
-                    <td key={plan.id} className="text-center p-2">{plan.limits.storage}</td>
-                  ))}
-                </tr>
-                <tr className="border-b">
-                  <td className="p-2 font-medium">Team Users</td>
-                  {plans.map(plan => (
-                    <td key={plan.id} className="text-center p-2">{plan.limits.users}</td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="max-w-4xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-center">Frequently Asked Questions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium mb-2">Can I change plans later?</h4>
+                <p className="text-sm text-gray-600">
+                  Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">What payment methods do you accept?</h4>
+                <p className="text-sm text-gray-600">
+                  We accept all major credit cards, PayPal, and bank transfers for enterprise plans.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Is there a free trial?</h4>
+                <p className="text-sm text-gray-600">
+                  Yes, all plans come with a 14-day free trial. No credit card required to start.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">What happens to my data if I cancel?</h4>
+                <p className="text-sm text-gray-600">
+                  You can export all your data before cancellation. We keep your data for 30 days after cancellation.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

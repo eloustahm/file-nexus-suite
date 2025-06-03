@@ -4,301 +4,283 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Brain, 
+  Zap, 
   FileText, 
+  MessageSquare, 
   Search, 
-  CheckCircle, 
-  Star,
-  Zap,
-  Target,
   BarChart3,
-  MessageSquare,
-  Sparkles
+  Settings,
+  Activity,
+  Cpu,
+  Database
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export const AIModules = () => {
   const { toast } = useToast();
-  const [testText, setTestText] = useState("");
-  const [moduleResults, setModuleResults] = useState<any>({});
   const [activeModules, setActiveModules] = useState({
-    summarization: true,
-    classification: true,
-    sentiment: false,
-    keywordExtraction: true,
-    readability: false,
-    factCheck: false,
-    translation: false,
-    writing: true
+    documentAnalysis: true,
+    chatAssistant: true,
+    smartSearch: false,
+    dataExtraction: true,
+    summaryGeneration: true,
+    workflowAutomation: false
   });
 
   const aiModules = [
     {
-      id: 'summarization',
-      name: 'Auto-Summarization',
-      description: 'Automatically generate concise summaries of your documents',
+      id: 'documentAnalysis',
+      name: 'Document Analysis',
+      description: 'AI-powered document classification and content analysis',
       icon: FileText,
-      color: 'bg-blue-100 text-blue-800',
-      features: ['Extractive summarization', 'Abstractive summarization', 'Custom length']
+      usage: 85,
+      status: 'active',
+      features: ['Content Classification', 'Sentiment Analysis', 'Key Entity Recognition']
     },
     {
-      id: 'classification',
-      name: 'Document Classification',
-      description: 'Automatically categorize documents by type, topic, or priority',
-      icon: Target,
-      color: 'bg-green-100 text-green-800',
-      features: ['Content categorization', 'Priority scoring', 'Topic detection']
-    },
-    {
-      id: 'sentiment',
-      name: 'Sentiment Analysis',
-      description: 'Analyze the emotional tone and sentiment of your documents',
-      icon: BarChart3,
-      color: 'bg-purple-100 text-purple-800',
-      features: ['Emotion detection', 'Tone analysis', 'Confidence scoring']
-    },
-    {
-      id: 'keywordExtraction',
-      name: 'Keyword Extraction',
-      description: 'Extract key terms and phrases for better searchability',
-      icon: Search,
-      color: 'bg-orange-100 text-orange-800',
-      features: ['Key phrase extraction', 'Entity recognition', 'Tag generation']
-    },
-    {
-      id: 'readability',
-      name: 'Readability Analysis',
-      description: 'Assess document complexity and reading level',
-      icon: CheckCircle,
-      color: 'bg-indigo-100 text-indigo-800',
-      features: ['Reading level', 'Complexity score', 'Improvement suggestions']
-    },
-    {
-      id: 'factCheck',
-      name: 'AI Fact Checking',
-      description: 'Verify claims and statements in your documents',
-      icon: Star,
-      color: 'bg-red-100 text-red-800',
-      features: ['Claim verification', 'Source checking', 'Accuracy scoring']
-    },
-    {
-      id: 'translation',
-      name: 'Smart Translation',
-      description: 'Translate documents while preserving context and meaning',
+      id: 'chatAssistant',
+      name: 'AI Chat Assistant',
+      description: 'Intelligent document-based question answering',
       icon: MessageSquare,
-      color: 'bg-teal-100 text-teal-800',
-      features: ['Multi-language support', 'Context preservation', 'Batch translation']
+      usage: 72,
+      status: 'active',
+      features: ['Natural Language Queries', 'Context-Aware Responses', 'Multi-Document Search']
     },
     {
-      id: 'writing',
-      name: 'Writing Assistant',
-      description: 'Get AI-powered suggestions to improve your writing',
-      icon: Sparkles,
-      color: 'bg-pink-100 text-pink-800',
-      features: ['Grammar checking', 'Style suggestions', 'Tone adjustment']
+      id: 'smartSearch',
+      name: 'Smart Search',
+      description: 'Semantic search across all your documents',
+      icon: Search,
+      usage: 45,
+      status: 'inactive',
+      features: ['Semantic Matching', 'Fuzzy Search', 'Content Recommendations']
+    },
+    {
+      id: 'dataExtraction',
+      name: 'Data Extraction',
+      description: 'Automatically extract structured data from documents',
+      icon: Database,
+      usage: 63,
+      status: 'active',
+      features: ['Form Data Extraction', 'Table Recognition', 'Invoice Processing']
+    },
+    {
+      id: 'summaryGeneration',
+      name: 'Summary Generation',
+      description: 'Generate concise summaries of long documents',
+      icon: BarChart3,
+      usage: 90,
+      status: 'active',
+      features: ['Executive Summaries', 'Key Points Extraction', 'Multi-Language Support']
+    },
+    {
+      id: 'workflowAutomation',
+      name: 'Workflow Automation',
+      description: 'AI-driven document workflow automation',
+      icon: Zap,
+      usage: 25,
+      status: 'inactive',
+      features: ['Auto-Routing', 'Approval Workflows', 'Task Assignment']
     }
   ];
 
-  const handleModuleToggle = (moduleId: string, enabled: boolean) => {
-    setActiveModules(prev => ({ ...prev, [moduleId]: enabled }));
-    toast({
-      title: enabled ? "Module Enabled" : "Module Disabled",
-      description: `${aiModules.find(m => m.id === moduleId)?.name} has been ${enabled ? 'enabled' : 'disabled'}.`,
-    });
-  };
-
-  const handleTestModule = (moduleId: string) => {
-    if (!testText.trim()) {
-      toast({
-        title: "Test Text Required",
-        description: "Please enter some text to test the AI module.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Simulate AI processing
-    const mockResults = {
-      summarization: "This is a sample summary of the provided text, highlighting the key points and main ideas.",
-      classification: { category: "Technical Document", confidence: 0.85, topics: ["AI", "Machine Learning", "Technology"] },
-      sentiment: { sentiment: "Positive", confidence: 0.78, emotions: ["Interest", "Curiosity"] },
-      keywordExtraction: ["artificial intelligence", "machine learning", "technology", "innovation"],
-      readability: { level: "College Level", score: 12.5, complexity: "Medium" },
-      factCheck: { claims: 2, verified: 1, flagged: 1, accuracy: "75%" },
-      translation: { language: "Spanish", text: "Este es un texto traducido de ejemplo." },
-      writing: { issues: 3, suggestions: ["Consider shorter sentences", "Use active voice", "Add transitions"] }
-    };
-
-    setModuleResults(prev => ({ ...prev, [moduleId]: mockResults[moduleId as keyof typeof mockResults] }));
+  const handleToggleModule = (moduleId: string) => {
+    setActiveModules(prev => ({
+      ...prev,
+      [moduleId]: !prev[moduleId as keyof typeof activeModules]
+    }));
     
+    const module = aiModules.find(m => m.id === moduleId);
     toast({
-      title: "Analysis Complete",
-      description: `${aiModules.find(m => m.id === moduleId)?.name} analysis has been completed.`,
+      title: `${module?.name} ${activeModules[moduleId as keyof typeof activeModules] ? 'Disabled' : 'Enabled'}`,
+      description: `AI module has been ${activeModules[moduleId as keyof typeof activeModules] ? 'deactivated' : 'activated'}.`,
     });
   };
 
-  const renderModuleResult = (moduleId: string, result: any) => {
-    if (!result) return null;
+  const getUsageColor = (usage: number) => {
+    if (usage > 80) return 'text-red-600';
+    if (usage > 60) return 'text-yellow-600';
+    return 'text-green-600';
+  };
 
-    switch (moduleId) {
-      case 'summarization':
-        return <p className="text-sm text-gray-600">{result}</p>;
-      
-      case 'classification':
-        return (
-          <div className="space-y-2">
-            <p className="text-sm"><strong>Category:</strong> {result.category}</p>
-            <p className="text-sm"><strong>Confidence:</strong> {(result.confidence * 100).toFixed(1)}%</p>
-            <div className="flex flex-wrap gap-1">
-              {result.topics.map((topic: string) => (
-                <Badge key={topic} variant="outline" className="text-xs">{topic}</Badge>
-              ))}
-            </div>
-          </div>
-        );
-      
-      case 'sentiment':
-        return (
-          <div className="space-y-2">
-            <p className="text-sm"><strong>Sentiment:</strong> {result.sentiment}</p>
-            <p className="text-sm"><strong>Confidence:</strong> {(result.confidence * 100).toFixed(1)}%</p>
-            <div className="flex flex-wrap gap-1">
-              {result.emotions.map((emotion: string) => (
-                <Badge key={emotion} variant="outline" className="text-xs">{emotion}</Badge>
-              ))}
-            </div>
-          </div>
-        );
-      
-      case 'keywordExtraction':
-        return (
-          <div className="flex flex-wrap gap-1">
-            {result.map((keyword: string) => (
-              <Badge key={keyword} variant="outline" className="text-xs">{keyword}</Badge>
-            ))}
-          </div>
-        );
-      
-      default:
-        return <pre className="text-xs bg-gray-50 p-2 rounded">{JSON.stringify(result, null, 2)}</pre>;
-    }
+  const getStatusColor = (status: string) => {
+    return status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">AI-Powered Modules</h1>
-        <p className="text-gray-600 mt-1">Enhance your documents with artificial intelligence</p>
+        <h1 className="text-3xl font-bold text-gray-900">AI Modules</h1>
+        <p className="text-gray-600 mt-1">Manage and configure your AI-powered features</p>
       </div>
 
-      {/* Test Area */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            Test AI Modules
-          </CardTitle>
-          <CardDescription>
-            Enter some text below to test the AI modules in real-time
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            placeholder="Enter your text here to test AI modules..."
-            value={testText}
-            onChange={(e) => setTestText(e.target.value)}
-            className="min-h-24"
-          />
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="modules">Modules</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
 
-      {/* AI Modules Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {aiModules.map((module) => (
-          <Card key={module.id} className="relative">
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Modules</CardTitle>
+                <Brain className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {Object.values(activeModules).filter(Boolean).length}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  of {aiModules.length} total modules
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">AI Processing</CardTitle>
+                <Cpu className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">2.4k</div>
+                <p className="text-xs text-muted-foreground">
+                  documents processed today
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Efficiency</CardTitle>
+                <Activity className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">94%</div>
+                <p className="text-xs text-muted-foreground">
+                  accuracy rate this month
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
             <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${module.color}`}>
-                    <module.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">{module.name}</CardTitle>
-                    <CardDescription>{module.description}</CardDescription>
-                  </div>
-                </div>
-                <Switch
-                  checked={activeModules[module.id as keyof typeof activeModules]}
-                  onCheckedChange={(checked) => handleModuleToggle(module.id, checked)}
-                />
-              </div>
+              <CardTitle>Recent AI Activity</CardTitle>
+              <CardDescription>Latest AI processing activities</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="font-medium text-sm mb-2">Features:</h4>
-                <div className="space-y-1">
-                  {module.features.map((feature) => (
-                    <div key={feature} className="flex items-center gap-2 text-sm text-gray-600">
-                      <CheckCircle className="h-3 w-3 text-green-500" />
-                      {feature}
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  { action: 'Document analyzed', document: 'Contract_2024.pdf', module: 'Document Analysis', time: '2 min ago' },
+                  { action: 'Summary generated', document: 'Meeting Notes.docx', module: 'Summary Generation', time: '5 min ago' },
+                  { action: 'Data extracted', document: 'Invoice_001.pdf', module: 'Data Extraction', time: '8 min ago' },
+                  { action: 'Chat query answered', document: 'Project Plan.pdf', module: 'AI Chat Assistant', time: '12 min ago' }
+                ].map((activity, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-sm">{activity.action}</p>
+                      <p className="text-sm text-gray-600">{activity.document}</p>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  onClick={() => handleTestModule(module.id)}
-                  disabled={!activeModules[module.id as keyof typeof activeModules] || !testText.trim()}
-                >
-                  <Zap className="h-3 w-3 mr-1" />
-                  Test Module
-                </Button>
-              </div>
-
-              {/* Module Results */}
-              {moduleResults[module.id] && (
-                <div className="border-t pt-3 space-y-2">
-                  <h4 className="font-medium text-sm">Result:</h4>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    {renderModuleResult(module.id, moduleResults[module.id])}
+                    <div className="text-right">
+                      <Badge variant="outline" className="text-xs mb-1">
+                        {activity.module}
+                      </Badge>
+                      <p className="text-xs text-gray-500">{activity.time}</p>
+                    </div>
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        </TabsContent>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Usage & Performance</CardTitle>
-          <CardDescription>Monitor your AI module usage and performance metrics</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-600">1,247</div>
-              <div className="text-sm text-gray-600">Documents Processed</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-green-600">98.2%</div>
-              <div className="text-sm text-gray-600">Accuracy Rate</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-purple-600">2.3s</div>
-              <div className="text-sm text-gray-600">Avg Processing Time</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-orange-600">847</div>
-              <div className="text-sm text-gray-600">API Calls Today</div>
-            </div>
+        <TabsContent value="modules" className="space-y-4">
+          <div className="grid gap-6">
+            {aiModules.map((module) => (
+              <Card key={module.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <module.icon className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          {module.name}
+                          <Badge className={getStatusColor(module.status)}>
+                            {module.status}
+                          </Badge>
+                        </CardTitle>
+                        <CardDescription>{module.description}</CardDescription>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={activeModules[module.id as keyof typeof activeModules]}
+                      onCheckedChange={() => handleToggleModule(module.id)}
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span>Usage this month</span>
+                        <span className={getUsageColor(module.usage)}>
+                          {module.usage}%
+                        </span>
+                      </div>
+                      <Progress value={module.usage} className="h-2" />
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Features:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {module.features.map((feature) => (
+                          <Badge key={feature} variant="secondary" className="text-xs">
+                            {feature}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Configure
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        View Logs
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>AI Performance Analytics</CardTitle>
+              <CardDescription>Detailed insights into AI module performance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 mb-4">Analytics dashboard coming soon</p>
+                <Button variant="outline">Request Analytics Access</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
