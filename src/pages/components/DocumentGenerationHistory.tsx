@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { 
   FileText, 
@@ -91,12 +91,12 @@ export const DocumentGenerationHistory = () => {
     // Create a blob with the content
     const blob = new Blob([document.content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${document.templateName}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const link = window.document.createElement('a');
+    link.href = url;
+    link.download = `${document.templateName}.txt`;
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
     toast({
@@ -198,7 +198,7 @@ export const DocumentGenerationHistory = () => {
 
       {/* Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="bg-white max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />

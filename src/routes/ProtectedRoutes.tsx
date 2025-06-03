@@ -4,8 +4,8 @@ import { Routes, Route } from 'react-router-dom';
 import { AuthenticatedLayout } from '@/pages/layouts/AuthenticatedLayout';
 import { Dashboard } from '@/pages/components/Dashboard';
 import { Document } from '@/pages/components/Document/Document';
-import { DocumentChat } from '@/pages/components/Document/DocumentChat';
-import { DocumentGenerator } from '@/pages/components/Document/DocumentGenerator';
+import { ModernDocumentChat } from '@/pages/components/Document/ModernDocumentChat';
+import { ModernDocumentGenerator } from '@/pages/components/Document/ModernDocumentGenerator';
 import { ChatHistory } from '@/pages/components/ChatHistory';
 import { DocumentGenerationHistory } from '@/pages/components/DocumentGenerationHistory';
 import { SharedDocuments } from '@/pages/components/SharedDocuments';
@@ -27,11 +27,11 @@ export const ProtectedRoutes = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/documents" element={<Document />} />
-        <Route path="/documents/chat" element={<DocumentChat />} />
-        <Route path="/documents/generate" element={<DocumentGenerator />} />
-        <Route path="/chat" element={<DocumentChat />} />
+        <Route path="/documents/chat" element={<ModernDocumentChat />} />
+        <Route path="/documents/generate" element={<ModernDocumentGenerator />} />
+        <Route path="/chat" element={<ModernDocumentChat />} />
         <Route path="/chat-history" element={<ChatHistory />} />
-        <Route path="/generate" element={<DocumentGenerator />} />
+        <Route path="/generate" element={<ModernDocumentGenerator />} />
         <Route path="/generation-history" element={<DocumentGenerationHistory />} />
         <Route path="/folders" element={<Folders />} />
         <Route path="/shared" element={<Shared />} />
