@@ -1,19 +1,14 @@
-import { http} from '@/lib/api';
+import { authApi } from './api';
 
-export const login = async ({email, password}: { email: string; password: string }) => {
+// Re-export all auth functions from the centralized API
+export const {
+  login,
+  register,
+  logout,
+  getCurrentUser,
+  resetPassword,
+  csrf
+} = authApi;
 
-    return http.post('api/auth/login', {
-        email,
-        password
-    });
-};
-
-export const csrf = async () => {
-    return http.get('/sanctum/csrf-cookie')
-}
-
-export const logout = () => http.post('/api/auth/logout')
-export const getCurrentUser = async () => {
-    const response = await http.get<{ user: any }>('/api/auth/me');
-    return response.user;
-};
+// Keep backward compatibility
+export const signUp = authApi.register;

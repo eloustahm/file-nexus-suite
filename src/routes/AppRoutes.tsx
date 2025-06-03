@@ -1,3 +1,4 @@
+
 import {Routes, Route} from "react-router-dom";
 import {Dashboard} from "@/pages/components/Dashboard";
 import {DocumentChat} from "@/pages/components/Document/DocumentChat";
@@ -23,6 +24,9 @@ import {LoginPage} from "@/pages/auth/LoginPage.tsx";
 import {RegisterPage} from "@/pages/auth/RegisterPage.tsx";
 import {ForgotPasswordPage} from "@/pages/auth/ForgotPasswordPage.tsx";
 import {ResetPasswordPage} from "@/pages/auth/ResetPasswordPage.tsx";
+import BlogPage from "@/pages/BlogPage";
+import AboutPage from "@/pages/AboutPage";
+import CareersPage from "@/pages/CareersPage";
 import {ProtectedRoute} from "@/components/ProtectedRoute";
 import {useAuth} from "@/contexts/AuthContext";
 import {GuestRoute} from "@/components/GuestRoute.tsx";
@@ -33,10 +37,7 @@ export const AppRoutes = () => {
     return (
         <Routes>
             {/* Guest routes */}
-
-
             <Route element={
-
                 <GuestRoute>
                     <GuestLayout/>
                 </GuestRoute>
@@ -46,8 +47,10 @@ export const AppRoutes = () => {
                 <Route path="/register" element={<RegisterPage/>}/>
                 <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
                 <Route path="/reset-password" element={<ResetPasswordPage/>}/>
+                <Route path="/about" element={<AboutPage/>}/>
+                <Route path="/blog" element={<BlogPage/>}/>
+                <Route path="/careers" element={<CareersPage/>}/>
             </Route>
-
 
             {/* Authenticated routes */}
             <Route element={
