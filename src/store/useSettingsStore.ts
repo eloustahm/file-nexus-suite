@@ -2,32 +2,43 @@
 import { create } from 'zustand';
 import { settingsApi } from '@/services/api';
 
-interface UserProfile {
-  id: string;
-  email: string;
+interface Profile {
   firstName: string;
   lastName: string;
+  email: string;
   avatar?: string;
-  timezone: string;
-  language: string;
+  phone?: string;
+}
+
+interface PasswordChangeData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 interface Integration {
-  provider: string;
+  id: string;
+  name: string;
   enabled: boolean;
-  config: any;
+  config?: any;
 }
 
 interface SettingsState {
-  profile: UserProfile | null;
+  profile: Profile | null;
   integrations: Integration[];
   loading: boolean;
   error: string | null;
+  
+  // Profile actions
   fetchProfile: () => Promise<void>;
-  updateProfile: (data: Partial<UserProfile>) => Promise<void>;
-  updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  updateProfile: (profileData: Partial<Profile>) => Promise<void>;
+  changePassword: (passwordData: PasswordChangeData) => Promise<void>;
+  
+  // Integration actions
   fetchIntegrations: () => Promise<void>;
   updateIntegration: (provider: string, config: any) => Promise<void>;
+  
+  // Utility actions
   clearError: () => void;
 }
 
@@ -40,7 +51,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   fetchProfile: async () => {
     try {
       set({ loading: true, error: null });
-      const profile = await settingsApi.getProfile() as UserProfile;
+      const profile = await settingsApi.getProfile() as Profile;
       set({ profile });
     } catch (error: any) {
       set({ error: error.message });
@@ -49,10 +60,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
   },
 
-  updateProfile: async (data: Partial<UserProfile>) => {
+  updateProfile: async (profileData: Partial<Profile>) => {
     try {
       set({ loading: true, error: null });
-      const updatedProfile = await settingsApi.updateProfile(data) as UserProfile;
+      const updatedProfile = await settingsApi.updateProfile(profileData) as Profile;
       set({ profile: updatedProfile });
     } catch (error: any) {
       set({ error: error.message });
@@ -62,10 +73,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
   },
 
-  updatePassword: async (currentPassword: string, newPassword: string) => {
+  changePassword: async (passwordData: PasswordChangeData) => {
     try {
       set({ loading: true, error: null });
-      await settingsApi.updatePassword({ currentPassword, newPassword });
+      await settingsApi.updatePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
     } catch (error: any) {
       set({ error: error.message });
       throw error;
@@ -94,6 +108,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       await get().fetchIntegrations();
     } catch (error: any) {
       set({ error: error.message });
+      throw error;
     } finally {
       set({ loading: false });
     }

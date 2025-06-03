@@ -9,18 +9,13 @@ import {
   CreditCard, 
   Bell, 
   Shield, 
-  Users,
-  Settings as SettingsIcon
+  Users
 } from 'lucide-react';
-
-const mockUser = {
-  name: 'John Doe',
-  email: 'john.doe@example.com',
-  role: 'Admin',
-  avatar: '/placeholder.svg'
-};
+import { useAuthStore } from '@/store/useAuthStore';
 
 export const Settings = () => {
+  const { user } = useAuthStore();
+
   return (
     <div className="space-y-6">
       <div>
@@ -57,7 +52,7 @@ export const Settings = () => {
         </TabsList>
 
         <TabsContent value="profile" className="mt-6">
-          <UserProfile user={mockUser} />
+          <UserProfile />
         </TabsContent>
 
         <TabsContent value="integrations" className="mt-6">

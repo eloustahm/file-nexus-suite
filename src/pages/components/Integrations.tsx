@@ -18,12 +18,21 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { settingsApi } from "@/services/api";
 
+interface Integration {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  status: 'connected' | 'available' | 'error';
+  category: string;
+}
+
 export const Integrations = () => {
   const { toast } = useToast();
-  const [integrations, setIntegrations] = useState<any[]>([]);
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const availableIntegrations = [
+  const availableIntegrations: Integration[] = [
     {
       id: 'google-drive',
       name: 'Google Drive',
@@ -82,7 +91,7 @@ export const Integrations = () => {
     try {
       setLoading(true);
       const data = await settingsApi.getIntegrations();
-      setIntegrations(data || []);
+      setIntegrations(Array.isArray(data) ? data : []);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -141,7 +150,7 @@ export const Integrations = () => {
     }
     acc[integration.category].push(integration);
     return acc;
-  }, {} as Record<string, typeof availableIntegrations>);
+  }, {} as Record<string, Integration[]>);
 
   return (
     <div className="space-y-6">
