@@ -22,3 +22,15 @@ export interface NewFieldData {
   placeholder: string;
   options: string;
 }
+
+export interface Agent {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  avatar?: string;
+  capabilities: string[];
+  personality: string;
+  icon: string;
+  color: string;
+}

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { DocumentTemplate, TemplateField } from '../types/generatorTypes';
-import { Agent } from '../types/chatTypes';
+import { DocumentTemplate, TemplateField } from '@/pages/components/Document/types/generatorTypes';
+import { Agent } from '@/pages/components/Document/types/chatTypes';
 
 export const useDocumentGeneration = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
@@ -51,10 +51,10 @@ export const useDocumentGeneration = () => {
       case 'creative':
         content = `# 🌟 ${template.name}\n\n*Crafted with precision and care*\n\nWelcome to this thoughtfully designed ${template.name.toLowerCase()}, where every detail has been carefully considered to meet your unique needs.\n\n`;
         break;
-      case 'technical':
+      case 'analytical':
         content = `# ${template.name}\n## Document Specification v1.0\n\n### Technical Overview\nThis ${template.name.toLowerCase()} has been systematically structured to provide comprehensive documentation with detailed specifications.\n\n`;
         break;
-      case 'persuasive':
+      case 'casual':
         content = `# ${template.name} 📈\n\n## Unlock Your Success\n\nThis powerful ${template.name.toLowerCase()} is designed to drive results and create maximum impact for your business objectives.\n\n`;
         break;
       default:

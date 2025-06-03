@@ -72,11 +72,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       const response = documentId 
         ? await aiApi.chatWithDocument(documentId, message)
-        : await aiApi.summarizeDocument(message); // Fallback API call
+        : await aiApi.summarizeDocument(message);
 
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: response.message || 'Response received',
+        content: (response as any).message || 'Response received',
         role: 'assistant',
         timestamp: new Date(),
         documentId

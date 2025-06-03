@@ -55,7 +55,7 @@ export const ChatMessages = ({ messages, selectedAgent, isAgentTyping }: ChatMes
               <span className={`text-xs block mt-1 ${
                 msg.type === 'user' ? 'text-blue-100' : 'text-gray-500'
               }`}>
-                {msg.timestamp}
+                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           </div>

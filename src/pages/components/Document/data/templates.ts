@@ -1,80 +1,106 @@
 
-import { DocumentTemplate } from '../types/generatorTypes';
-import { Agent } from '../types/chatTypes';
+import { Agent, DocumentTemplate } from '../types/generatorTypes';
 
 export const agents: Agent[] = [
   {
-    id: 'professional',
+    id: 'formal',
     name: 'Professional Writer',
+    type: 'assistant',
+    description: 'Creates formal, structured documents with professional tone',
+    capabilities: ['Formal Writing', 'Business Documents', 'Professional Communication'],
     personality: 'formal',
-    description: 'Creates formal, structured documents with professional language',
     icon: '👔',
     color: 'bg-blue-100 text-blue-800'
   },
   {
     id: 'creative',
-    name: 'Creative Writer',
+    name: 'Creative Storyteller',
+    type: 'creative',
+    description: 'Generates engaging, creative content with flair',
+    capabilities: ['Creative Writing', 'Storytelling', 'Marketing Copy'],
     personality: 'creative',
-    description: 'Generates engaging content with creative flair and storytelling',
     icon: '🎨',
     color: 'bg-purple-100 text-purple-800'
   },
   {
     id: 'technical',
-    name: 'Technical Writer',
+    name: 'Technical Expert',
+    type: 'technical',
+    description: 'Produces detailed technical documentation',
+    capabilities: ['Technical Writing', 'Documentation', 'Specifications'],
     personality: 'technical',
-    description: 'Produces detailed technical documentation with precision',
     icon: '⚙️',
-    color: 'bg-green-100 text-green-800'
+    color: 'bg-gray-100 text-gray-800'
   },
   {
-    id: 'marketing',
-    name: 'Marketing Expert',
+    id: 'persuasive',
+    name: 'Sales Champion',
+    type: 'sales',
+    description: 'Crafts compelling, persuasive content',
+    capabilities: ['Sales Copy', 'Persuasive Writing', 'Marketing'],
     personality: 'persuasive',
-    description: 'Crafts compelling marketing copy and persuasive content',
     icon: '📈',
-    color: 'bg-orange-100 text-orange-800'
+    color: 'bg-green-100 text-green-800'
   }
 ];
 
 export const templates: DocumentTemplate[] = [
   {
-    id: '1',
-    name: 'Business Contract',
-    description: 'Professional service agreement template',
-    type: 'Contract',
+    id: 'business-proposal',
+    name: 'Business Proposal',
+    description: 'Comprehensive business proposal template',
+    type: 'business',
     fields: [
-      { id: 'client_name', label: 'Client Name', placeholder: 'Enter client name', value: '', type: 'text' },
-      { id: 'service_description', label: 'Service Description', placeholder: 'Describe the services', value: '', type: 'textarea' },
-      { id: 'contract_date', label: 'Contract Date', placeholder: 'Select date', value: '', type: 'date' },
-      { id: 'amount', label: 'Contract Amount', placeholder: 'Enter amount', value: '', type: 'number' },
-      { id: 'contract_type', label: 'Contract Type', placeholder: 'Select type', value: '', type: 'select', options: ['Fixed Price', 'Hourly Rate', 'Retainer', 'Milestone-based'] },
+      {
+        id: 'company-name',
+        label: 'Company Name',
+        placeholder: 'Enter your company name',
+        value: '',
+        type: 'text'
+      },
+      {
+        id: 'project-title',
+        label: 'Project Title',
+        placeholder: 'Enter project title',
+        value: '',
+        type: 'text'
+      },
+      {
+        id: 'executive-summary',
+        label: 'Executive Summary',
+        placeholder: 'Brief overview of the proposal',
+        value: '',
+        type: 'textarea'
+      }
     ]
   },
   {
-    id: '2',
-    name: 'Project Report',
-    description: 'Comprehensive project status report',
-    type: 'Report',
+    id: 'meeting-notes',
+    name: 'Meeting Notes',
+    description: 'Structured meeting notes template',
+    type: 'meeting',
     fields: [
-      { id: 'project_name', label: 'Project Name', placeholder: 'Enter project name', value: '', type: 'text' },
-      { id: 'project_manager', label: 'Project Manager', placeholder: 'Enter manager name', value: '', type: 'text' },
-      { id: 'status_summary', label: 'Status Summary', placeholder: 'Describe current status', value: '', type: 'textarea' },
-      { id: 'completion_percentage', label: 'Completion %', placeholder: 'Enter percentage', value: '', type: 'number' },
-      { id: 'priority_level', label: 'Priority Level', placeholder: 'Select priority', value: '', type: 'select', options: ['Low', 'Medium', 'High', 'Critical'] },
-    ]
-  },
-  {
-    id: '3',
-    name: 'Meeting Minutes',
-    description: 'Professional meeting notes template',
-    type: 'Minutes',
-    fields: [
-      { id: 'meeting_title', label: 'Meeting Title', placeholder: 'Enter meeting title', value: '', type: 'text' },
-      { id: 'attendees', label: 'Attendees', placeholder: 'List attendees', value: '', type: 'textarea' },
-      { id: 'meeting_date', label: 'Meeting Date', placeholder: 'Select date', value: '', type: 'date' },
-      { id: 'action_items', label: 'Action Items', placeholder: 'List action items', value: '', type: 'textarea' },
-      { id: 'meeting_type', label: 'Meeting Type', placeholder: 'Select type', value: '', type: 'select', options: ['Weekly Standup', 'Project Review', 'Board Meeting', 'Client Meeting'] },
+      {
+        id: 'meeting-title',
+        label: 'Meeting Title',
+        placeholder: 'Enter meeting title',
+        value: '',
+        type: 'text'
+      },
+      {
+        id: 'date',
+        label: 'Date',
+        placeholder: 'Select date',
+        value: '',
+        type: 'date'
+      },
+      {
+        id: 'attendees',
+        label: 'Attendees',
+        placeholder: 'List attendees',
+        value: '',
+        type: 'textarea'
+      }
     ]
   }
 ];

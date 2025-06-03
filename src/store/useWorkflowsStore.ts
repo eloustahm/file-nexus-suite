@@ -5,19 +5,25 @@ import { workflowsApi } from '@/services/api';
 interface WorkflowStep {
   id: string;
   name: string;
-  type: string;
-  config: any;
-  order: number;
+  type: 'approval' | 'review' | 'automation' | 'notification';
+  assignedTo?: string;
+  completed: boolean;
+  completedAt?: string;
+  notes?: string;
 }
 
 interface Workflow {
   id: string;
   name: string;
   description: string;
+  status: 'draft' | 'active' | 'paused' | 'completed';
   steps: WorkflowStep[];
-  isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  createdBy: string;
+  documentIds: string[];
+  priority: 'low' | 'medium' | 'high';
+  dueDate?: string;
 }
 
 interface WorkflowsState {
@@ -31,6 +37,7 @@ interface WorkflowsState {
   updateWorkflow: (id: string, data: Partial<Workflow>) => Promise<void>;
   deleteWorkflow: (id: string) => Promise<void>;
   executeWorkflow: (id: string, documentId: string) => Promise<void>;
+  completeStep: (workflowId: string, stepId: string, notes?: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -82,9 +89,7 @@ export const useWorkflowsStore = create<WorkflowsState>((set, get) => ({
       set({ loading: true, error: null });
       const updatedWorkflow = await workflowsApi.update(id, data) as Workflow;
       set(state => ({
-        workflows: state.workflows.map(workflow => 
-          workflow.id === id ? updatedWorkflow : workflow
-        ),
+        workflows: state.workflows.map(workflow => workflow.id === id ? updatedWorkflow : workflow),
         selectedWorkflow: state.selectedWorkflow?.id === id ? updatedWorkflow : state.selectedWorkflow
       }));
     } catch (error: any) {
@@ -113,9 +118,30 @@ export const useWorkflowsStore = create<WorkflowsState>((set, get) => ({
     try {
       set({ loading: true, error: null });
       await workflowsApi.execute(id, documentId);
+      // Refresh workflows to get updated status
+      await get().fetchWorkflows();
     } catch (error: any) {
       set({ error: error.message });
       throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  completeStep: async (workflowId: string, stepId: string, notes?: string) => {
+    try {
+      set({ loading: true, error: null });
+      const workflow = get().selectedWorkflow;
+      if (workflow) {
+        const updatedSteps = workflow.steps.map(step => 
+          step.id === stepId 
+            ? { ...step, completed: true, completedAt: new Date().toISOString(), notes }
+            : step
+        );
+        await get().updateWorkflow(workflowId, { steps: updatedSteps });
+      }
+    } catch (error: any) {
+      set({ error: error.message });
     } finally {
       set({ loading: false });
     }
