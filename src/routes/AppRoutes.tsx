@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 // Layouts
 import { AuthenticatedLayout } from '@/pages/layouts/AuthenticatedLayout';
 import { GuestLayout } from '@/pages/layouts/GuestLayout';
-// data
+
 // Auth Pages
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
@@ -34,7 +34,16 @@ import { Workflow } from '@/pages/components/Workflow';
 import { Settings } from '@/pages/components/Settings';
 
 export const AppRoutes = () => {
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, loading } = useAuthStore();
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <Routes>
@@ -68,7 +77,7 @@ export const AppRoutes = () => {
 
       {/* Protected Routes */}
       {isAuthenticated ? (
-        <Route element={<AuthenticatedLayout />}>
+        <Route element={<AuthenticatedLayout user={user} />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/documents" element={<Document />} />
           <Route path="/documents/chat" element={<DocumentChat />} />

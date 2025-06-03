@@ -1,215 +1,85 @@
-
 import { create } from 'zustand';
 import { aiApi } from '@/services/api';
 
 interface ChatMessage {
   id: string;
-  content: string;
   role: 'user' | 'assistant';
+  content: string;
   timestamp: Date;
-  type: 'user' | 'ai';
-  message: string;
-  documentRefs?: string[];
-  agentPersonality?: string;
-}
-
-interface Agent {
-  id: string;
-  name: string;
-  type: string;
-  description: string;
-  personality: string;
-  icon: string;
-  color: string;
-  capabilities: string[];
-}
-
-interface ChatHistory {
-  id: string;
-  title: string;
-  documentId: string;
-  documentName: string;
-  messages: ChatMessage[];
-  lastActivity: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 interface DocumentChatState {
-  selectedDocuments: string[];
-  currentMessages: ChatMessage[];
-  selectedAgent: Agent | null;
-  isAgentTyping: boolean;
-  chatHistories: ChatHistory[];
-  selectedHistory: string | null;
-  loading: boolean;
+  activeDocumentId: string | null;
+  messages: ChatMessage[];
+  isLoading: boolean;
   error: string | null;
-
-  // Actions
-  setSelectedDocuments: (documents: string[]) => void;
-  addDocument: (documentName: string) => void;
-  removeDocument: (documentName: string) => void;
-  setSelectedAgent: (agent: Agent) => void;
+  setActiveDocumentId: (documentId: string | null) => void;
+  addMessage: (message: ChatMessage) => void;
+  clearMessages: () => void;
   sendMessage: (message: string) => Promise<void>;
-  loadChatHistory: (historyId: string) => void;
-  saveToHistory: (messages: ChatMessage[], documents: string[]) => void;
-  clearChat: () => void;
-  clearError: () => void;
 }
 
 export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
-  selectedDocuments: [],
-  currentMessages: [],
-  selectedAgent: null,
-  isAgentTyping: false,
-  chatHistories: [],
-  selectedHistory: null,
-  loading: false,
+  activeDocumentId: null,
+  messages: [],
+  isLoading: false,
   error: null,
 
-  setSelectedDocuments: (documents: string[]) => {
-    set({ selectedDocuments: documents });
+  setActiveDocumentId: (documentId) => {
+    set({ activeDocumentId: documentId, messages: [], error: null });
   },
 
-  addDocument: (documentName: string) => {
-    set(state => ({
-      selectedDocuments: state.selectedDocuments.includes(documentName) 
-        ? state.selectedDocuments
-        : [...state.selectedDocuments, documentName]
-    }));
+  addMessage: (message) => {
+    set((state) => ({ messages: [...state.messages, message] }));
   },
 
-  removeDocument: (documentName: string) => {
-    set(state => ({
-      selectedDocuments: state.selectedDocuments.filter(doc => doc !== documentName)
-    }));
-  },
-
-  setSelectedAgent: (agent: Agent) => {
-    set({ selectedAgent: agent });
-    
-    // Add agent switch message
-    const switchMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: `Switched to ${agent.name}. I'm ready to help you with ${agent.description.toLowerCase()}`,
-      role: 'assistant',
-      timestamp: new Date(),
-      type: 'ai',
-      message: `Switched to ${agent.name}. I'm ready to help you with ${agent.description.toLowerCase()}`,
-      agentPersonality: agent.personality
-    };
-
-    set(state => ({
-      currentMessages: [...state.currentMessages, switchMessage]
-    }));
+  clearMessages: () => {
+    set({ messages: [] });
   },
 
   sendMessage: async (message: string) => {
-    const { selectedDocuments, selectedAgent, currentMessages } = get();
+    const { activeDocumentId, addMessage } = get();
     
-    if (!message.trim() || !selectedAgent) return;
+    if (!activeDocumentId) {
+      console.error('No active document selected');
+      return;
+    }
 
     try {
-      set({ loading: true, error: null });
+      set({ isLoading: true, error: null });
 
       // Add user message
-      const userMessage: ChatMessage = {
+      addMessage({
         id: Date.now().toString(),
-        content: message,
         role: 'user',
-        timestamp: new Date(),
-        type: 'user',
-        message: message,
-        documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
-        agentPersonality: selectedAgent.personality
-      };
+        content: message,
+        timestamp: new Date()
+      });
 
-      const updatedMessages = [...currentMessages, userMessage];
-      set({ currentMessages: updatedMessages, isAgentTyping: true });
-
-      // Call AI API
-      const response = await aiApi.chatWithDocument(
-        selectedDocuments[0] || 'general', 
-        message
-      );
-
+      // Call API
+      const response = await aiApi.chatWithDocument(activeDocumentId, message);
+      
       // Add AI response
-      const aiMessage: ChatMessage = {
+      addMessage({
         id: (Date.now() + 1).toString(),
-        content: response.message || 'I understand your question. Let me help you with that.',
         role: 'assistant',
-        timestamp: new Date(),
-        type: 'ai',
-        message: response.message || 'I understand your question. Let me help you with that.',
-        documentRefs: selectedDocuments.length > 0 ? [...selectedDocuments] : undefined,
-        agentPersonality: selectedAgent.personality
-      };
-
-      const finalMessages = [...updatedMessages, aiMessage];
-      set({ currentMessages: finalMessages });
-
-      // Save to history
-      get().saveToHistory(finalMessages, selectedDocuments);
+        content: response?.content || 'Sorry, I could not process your request.',
+        timestamp: new Date()
+      });
 
     } catch (error: any) {
-      set({ error: error.message });
-      console.error('Error sending message:', error);
-    } finally {
-      set({ loading: false, isAgentTyping: false });
-    }
-  },
-
-  loadChatHistory: (historyId: string) => {
-    const { chatHistories } = get();
-    const history = chatHistories.find(h => h.documentId === historyId);
-    
-    if (history) {
-      const documents = historyId.split(',');
-      set({
-        currentMessages: history.messages,
-        selectedDocuments: documents,
-        selectedHistory: historyId
+      const errorMessage = error?.message || 'Failed to send message';
+      set({ error: errorMessage });
+      
+      // Add error message to chat
+      addMessage({
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: errorMessage,
+        timestamp: new Date()
       });
+    } finally {
+      set({ isLoading: false });
     }
   },
-
-  saveToHistory: (messages: ChatMessage[], selectedDocuments: string[]) => {
-    if (selectedDocuments.length === 0) return;
-    
-    const historyKey = selectedDocuments.sort().join(',');
-    const documentName = selectedDocuments.length === 1 
-      ? selectedDocuments[0] 
-      : `${selectedDocuments.length} Documents`;
-    
-    set(state => {
-      const existingIndex = state.chatHistories.findIndex(h => h.documentId === historyKey);
-      const newHistory: ChatHistory = {
-        id: historyKey,
-        title: documentName,
-        documentId: historyKey,
-        documentName,
-        messages,
-        lastActivity: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      
-      const updatedHistories = existingIndex >= 0
-        ? state.chatHistories.map((h, i) => i === existingIndex ? newHistory : h)
-        : [...state.chatHistories, newHistory];
-      
-      return { chatHistories: updatedHistories };
-    });
-  },
-
-  clearChat: () => {
-    set({
-      currentMessages: [],
-      selectedDocuments: [],
-      selectedHistory: null,
-      isAgentTyping: false
-    });
-  },
-
-  clearError: () => set({ error: null })
 }));

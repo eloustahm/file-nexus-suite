@@ -15,6 +15,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
+  isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -27,6 +28,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   loading: false,
   error: null,
+  isAuthenticated: false,
 
   signIn: async (email: string, password: string) => {
     try {
@@ -59,7 +61,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ loading: true });
       await authApi.logout();
-      set({ user: null });
+      set({ user: null, isAuthenticated: false });
     } catch (error: any) {
       set({ error: error.message });
     } finally {
@@ -83,9 +85,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ loading: true });
       const user = await authApi.getCurrentUser();
-      set({ user });
+      set({ user, isAuthenticated: true });
     } catch (error: any) {
-      set({ user: null, error: error.message });
+      set({ user: null, isAuthenticated: false, error: error.message });
     } finally {
       set({ loading: false });
     }
