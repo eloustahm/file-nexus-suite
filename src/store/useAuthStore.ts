@@ -1,6 +1,6 @@
 
 import { create } from 'zustand';
-import { mockAuthApi } from '@/services/mockAuth';
+import { authApi } from '@/services/api';
 import { createBaseActions, handleAsyncAction, BaseStoreState, BaseStoreActions } from '@/lib/storeUtils';
 
 interface User {
@@ -20,6 +20,7 @@ interface AuthState extends BaseStoreState, BaseStoreActions {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   getCurrentUser: () => Promise<void>;
+
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -29,16 +30,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: false,
   error: null,
 
+
   // Base actions
   ...createBaseActions(set),
 
   signIn: async (email: string, password: string) => {
     await handleAsyncAction(
       async () => {
-        await mockAuthApi.csrf();
-        await mockAuthApi.login({ email, password });
+        await authApi.csrf();
+        await authApi.login({ email, password });
+        debugger
         await get().getCurrentUser();
-        // Clear the auth attempted flag after successful login
         sessionStorage.removeItem('auth_attempted');
       },
       get().setLoading,
@@ -49,9 +51,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signUp: async (email: string, password: string, firstName: string, lastName: string) => {
     await handleAsyncAction(
       async () => {
-        await mockAuthApi.register({ email, password, firstName, lastName });
+        await authApi.register({ email, password, firstName, lastName });
         await get().getCurrentUser();
-        // Clear the auth attempted flag after successful signup
         sessionStorage.removeItem('auth_attempted');
       },
       get().setLoading,
@@ -62,7 +63,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     await handleAsyncAction(
       async () => {
-        await mockAuthApi.logout();
+        await authApi.logout();
         set({ user: null, isAuthenticated: false });
         // Clear the auth attempted flag on logout
         sessionStorage.removeItem('auth_attempted');
@@ -75,7 +76,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   resetPassword: async (email: string) => {
     await handleAsyncAction(
       async () => {
-        await mockAuthApi.resetPassword(email);
+        await authApi.resetPassword(email);
       },
       get().setLoading,
       get().setError
@@ -85,7 +86,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   getCurrentUser: async () => {
     await handleAsyncAction(
       async () => {
-        const user = await mockAuthApi.getCurrentUser();
+        const user = await authApi.getCurrentUser();
         set({ user, isAuthenticated: true });
         return user;
       },
