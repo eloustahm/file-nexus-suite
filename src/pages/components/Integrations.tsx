@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { useSettingsStore } from '@/store/useSettingsStore';
+import { useSettings } from '@/hooks/useSettings';
 import { Settings, ExternalLink, Check, X } from 'lucide-react';
 
 // Define local integration interface to match component needs
@@ -20,11 +20,11 @@ interface LocalIntegration {
 
 export const Integrations = () => {
   const [localIntegrations, setLocalIntegrations] = useState<LocalIntegration[]>([]);
-  const { integrations, loading, error, fetchIntegrations, updateIntegration } = useSettingsStore();
+  const { integrations, isLoadingIntegrations, integrationsError, refetchIntegrations, updateIntegration } = useSettings();
 
   useEffect(() => {
-    fetchIntegrations();
-  }, [fetchIntegrations]);
+    refetchIntegrations();
+  }, [refetchIntegrations]);
 
   useEffect(() => {
     // Transform API integrations to local format
@@ -42,7 +42,7 @@ export const Integrations = () => {
 
   const handleToggleIntegration = async (integrationId: string, enabled: boolean) => {
     try {
-      await updateIntegration(integrationId, { enabled });
+      await updateIntegration({ provider: integrationId, config: { enabled } });
       setLocalIntegrations(prev => 
         prev.map(integration => 
           integration.id === integrationId 
@@ -72,7 +72,7 @@ export const Integrations = () => {
     }
   };
 
-  if (loading) {
+  if (isLoadingIntegrations) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -89,9 +89,9 @@ export const Integrations = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {error && (
+        {integrationsError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-            <p className="text-red-600 text-sm">{error}</p>
+            <p className="text-red-600 text-sm">{integrationsError}</p>
           </div>
         )}
 

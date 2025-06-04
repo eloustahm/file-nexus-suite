@@ -12,16 +12,16 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import { useDocumentsStore } from '@/store/useDocumentsStore';
+import { useDocuments } from '@/hooks/useDocuments';
 
 export const NewChatPage = () => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const navigate = useNavigate();
-  const { documents, loading, fetchDocuments } = useDocumentsStore();
+  const { documents, isLoading, refetch } = useDocuments();
 
   useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
+    refetch();
+  }, [refetch]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setUploadedFiles(prev => [...prev, ...acceptedFiles]);
@@ -65,7 +65,7 @@ export const NewChatPage = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto py-8 px-4">
         <div className="flex justify-center items-center h-64">

@@ -17,16 +17,16 @@ import {
   Calendar,
   User
 } from "lucide-react";
-import { useDocumentsStore } from "@/store/useDocumentsStore";
+import { useDocuments } from "@/hooks/useDocuments";
 
 export const Shared = () => {
-  const { documents, loading, error, fetchDocuments } = useDocumentsStore();
+  const { documents, isLoading, error, refetch } = useDocuments();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
 
   useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
+    refetch();
+  }, [refetch]);
 
   // Mock shared documents data
   const sharedDocuments = [
@@ -78,7 +78,7 @@ export const Shared = () => {
     return matchesSearch && matchesRole;
   });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
