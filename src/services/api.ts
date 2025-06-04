@@ -59,6 +59,43 @@ export const documentsApi = {
   }
 };
 
+// Document Generation APIs
+export const documentGenerationApi = {
+  getTemplates: async () => {
+    return http.get('/api/document-generation/templates');
+  },
+  
+  getGeneratedDocuments: async () => {
+    return http.get('/api/document-generation/documents');
+  },
+  
+  getDocument: async (documentId: string) => {
+    return http.get(`/api/document-generation/documents/${documentId}`);
+  },
+  
+  generateDocument: async (data: any) => {
+    return http.post('/api/document-generation/generate', data);
+  },
+  
+  regenerateDocument: async (documentId: string, data: any) => {
+    return http.put(`/api/document-generation/documents/${documentId}/regenerate`, data);
+  },
+  
+  selectDocument: async (documentId: string) => {
+    return http.patch(`/api/document-generation/documents/${documentId}/select`);
+  },
+  
+  deleteDocument: async (documentId: string) => {
+    return http.delete(`/api/document-generation/documents/${documentId}`);
+  },
+  
+  downloadDocument: async (documentId: string) => {
+    return http.get(`/api/document-generation/documents/${documentId}/download`, {
+      responseType: 'blob'
+    });
+  }
+};
+
 // Folders APIs
 export const foldersApi = {
   getAll: async () => {

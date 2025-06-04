@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useDocumentGenerationStore } from '@/store/useDocumentGenerationStore';
+import { documentGenerationApi } from '@/services/documentGeneration';
 import { 
   X, 
   Download, 
@@ -35,38 +36,62 @@ export const DocumentPreviewer = ({ documentId, onClose, onRegenerate }: Documen
 
   if (!document) return null;
 
-  const handleSelect = () => {
-    selectDocument(document.id);
-    toast({
-      title: "Document selected",
-      description: `${document.title} is now your active document`,
-    });
+  const handleSelect = async () => {
+    try {
+      await selectDocument(document.id);
+      toast({
+        title: "Document selected",
+        description: `${document.title} is now your active document`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to select document",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDownload = () => {
-    const blob = new Blob([document.content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = window.document.createElement('a');
-    link.href = url;
-    link.download = `${document.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
-    window.document.body.appendChild(link);
-    link.click();
-    window.document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    try {
+      const blob = await documentGenerationApi.downloadDocument(document.id);
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = `${document.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
-    toast({
-      title: "Download started",
-      description: `${document.title} is being downloaded`,
-    });
+      toast({
+        title: "Download started",
+        description: `${document.title} is being downloaded`,
+      });
+    } catch (error) {
+      toast({
+        title: "Download failed",
+        description: "Failed to download document",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDelete = () => {
-    deleteDocument(document.id);
-    onClose();
-    toast({
-      title: "Document deleted",
-      description: `${document.title} has been removed`,
-    });
+  const handleDelete = async () => {
+    try {
+      await deleteDocument(document.id);
+      onClose();
+      toast({
+        title: "Document deleted",
+        description: `${document.title} has been removed`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete document",
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -78,7 +103,8 @@ export const DocumentPreviewer = ({ documentId, onClose, onRegenerate }: Documen
     }
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
