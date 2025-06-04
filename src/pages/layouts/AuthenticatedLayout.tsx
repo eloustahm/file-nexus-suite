@@ -4,14 +4,14 @@ import { SidebarMain } from "@/pages/components/Sidebar";
 import { UserMenu } from "@/components/UserMenu";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { HeaderSearch } from "@/components/HeaderSearch";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode;
 }
 
 export const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
 
   if (!user) {
     return (
