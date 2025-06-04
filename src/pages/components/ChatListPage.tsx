@@ -24,9 +24,9 @@ import {
   Search,
   MessageSquare,
   FileText,
-  Add,
-  AccessTime,
-  ArrowForward
+  Plus,
+  Clock,
+  ArrowRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDocumentChatStore } from '@/store/useDocumentChatStore';
@@ -91,7 +91,7 @@ export const ChatListPage = () => {
         </Box>
         <Button
           variant="contained"
-          startIcon={<Add />}
+          startIcon={<Plus />}
           onClick={handleNewChat}
           size="large"
         >
@@ -151,7 +151,7 @@ export const ChatListPage = () => {
           </Typography>
           <Button
             variant="contained"
-            startIcon={<Add />}
+            startIcon={<Plus />}
             onClick={handleNewChat}
             sx={{ mt: 2 }}
           >
@@ -185,7 +185,7 @@ export const ChatListPage = () => {
                         {chat.lastMessage}
                       </Typography>
                       <Box display="flex" alignItems="center" gap={1} mt={1}>
-                        <AccessTime size={14} />
+                        <Clock size={14} />
                         <Typography variant="caption" color="text.secondary">
                           {formatTimeAgo(chat.timestamp)}
                         </Typography>
@@ -196,7 +196,7 @@ export const ChatListPage = () => {
                 <ListItemSecondaryAction>
                   <Button
                     variant="outlined"
-                    endIcon={<ArrowForward />}
+                    endIcon={<ArrowRight />}
                     onClick={() => handleResumeChat(chat.id)}
                   >
                     Resume
