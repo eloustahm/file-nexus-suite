@@ -7,8 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
-import { authApi } from '@/services/api';
+// import { authApi } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
+
+import { useAuthStore } from '@/store/useAuthStore';   // ← add this
+
+
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -18,19 +22,19 @@ export const LoginPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
-
+  const { signIn } = useAuthStore();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      await authApi.login({ email, password });
+      await signIn( email, password );
       toast({
         title: "Login successful",
         description: "Welcome back! Redirecting to dashboard...",
       });
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true })
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {
