@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ChatHistory, ChatMessage } from '@/pages/components/Document/types/chatTypes';
+import { ChatHistory, ChatMessage } from '@/types';
 
 export const useChatHistory = () => {
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
@@ -15,7 +15,7 @@ export const useChatHistory = () => {
       : `${selectedDocuments.length} Documents`;
     
     setChatHistories(prev => {
-      const existingIndex = prev.findIndex(h => h.documentId === historyKey);
+      const existingIndex = prev.findIndex(h => h.id === historyKey);
       const lastMessage = messages.length > 0 ? messages[messages.length - 1].content : '';
       
       const newHistory: ChatHistory = {
@@ -25,12 +25,10 @@ export const useChatHistory = () => {
         lastMessage,
         timestamp: new Date(),
         messageCount: messages.length,
-        documentId: historyKey,
-        documentName,
         messages,
-        lastActivity: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        documentName
       };
       
       if (existingIndex >= 0) {
@@ -44,7 +42,7 @@ export const useChatHistory = () => {
   };
 
   const loadChatHistory = (historyId: string) => {
-    const history = chatHistories.find(h => h.documentId === historyId);
+    const history = chatHistories.find(h => h.id === historyId);
     if (history) {
       setSelectedHistory(historyId);
       const docs = historyId.split(',');

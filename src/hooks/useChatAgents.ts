@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Agent } from '@/pages/components/Document/types/chatTypes';
+import { Agent } from '@/types';
 
 const agents: Agent[] = [
   {
@@ -11,7 +11,8 @@ const agents: Agent[] = [
     capabilities: ['Document Analysis', 'Professional Writing', 'Business Insights'],
     personality: 'formal',
     icon: '👔',
-    color: 'bg-blue-100 text-blue-800'
+    color: 'bg-blue-100 text-blue-800',
+    isActive: true
   },
   {
     id: 'creative',
@@ -21,7 +22,8 @@ const agents: Agent[] = [
     capabilities: ['Creative Writing', 'Design Ideas', 'Innovation'],
     personality: 'creative',
     icon: '🎨',
-    color: 'bg-purple-100 text-purple-800'
+    color: 'bg-purple-100 text-purple-800',
+    isActive: true
   },
   {
     id: 'analytical',
@@ -31,7 +33,8 @@ const agents: Agent[] = [
     capabilities: ['Data Analysis', 'Statistics', 'Reporting'],
     personality: 'analytical',
     icon: '📊',
-    color: 'bg-green-100 text-green-800'
+    color: 'bg-green-100 text-green-800',
+    isActive: true
   },
   {
     id: 'casual',
@@ -41,7 +44,8 @@ const agents: Agent[] = [
     capabilities: ['Friendly Chat', 'Simple Explanations', 'Support'],
     personality: 'casual',
     icon: '😊',
-    color: 'bg-orange-100 text-orange-800'
+    color: 'bg-orange-100 text-orange-800',
+    isActive: true
   }
 ];
 

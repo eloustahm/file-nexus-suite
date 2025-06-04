@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ChatHistory } from '@/pages/components/Document/types/chatTypes';
+import { ChatHistory } from '@/types';
 import { ChatListItem } from './ChatListItem';
 
 interface ChatListProps {

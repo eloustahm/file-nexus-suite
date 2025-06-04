@@ -1,7 +1,7 @@
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { History, MessageSquare, Clock } from "lucide-react";
-import { ChatHistory } from '../types/chatTypes';
+import { ChatHistory } from '@/types';
 
 interface ChatHistoryPanelProps {
   chatHistories: ChatHistory[];
@@ -11,40 +11,31 @@ interface ChatHistoryPanelProps {
 
 export const ChatHistoryPanel = ({ chatHistories, selectedHistory, onLoadHistory }: ChatHistoryPanelProps) => {
   return (
-    <Card className="flex-1">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <History className="h-5 w-5" />
-          Chat History
-        </CardTitle>
+        <CardTitle>Chat History</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2 max-h-48 overflow-y-auto">
+      <CardContent className="space-y-2">
         {chatHistories.map((history) => (
           <div
-            key={history.documentId}
+            key={history.id}
             className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-              selectedHistory === history.documentId
+              selectedHistory === history.id
                 ? 'border-blue-500 bg-blue-50'
                 : 'border-gray-200 hover:bg-gray-50'
             }`}
-            onClick={() => onLoadHistory(history.documentId)}
+            onClick={() => onLoadHistory(history.id)}
           >
-            <div className="flex items-center gap-2 mb-1">
-              <MessageSquare className="h-4 w-4 text-gray-400" />
-              <span className="font-medium text-sm">{history.documentName}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-500">
-              <Clock className="h-3 w-3" />
-              <span>{history.lastActivity}</span>
-              <span>•</span>
-              <span>{history.messages.length} messages</span>
+            <div className="font-medium text-sm">{history.name}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {history.messageCount} messages
             </div>
           </div>
         ))}
         {chatHistories.length === 0 && (
-          <div className="text-center py-4 text-gray-500 text-sm">
+          <p className="text-sm text-gray-500 text-center py-4">
             No chat history yet
-          </div>
+          </p>
         )}
       </CardContent>
     </Card>

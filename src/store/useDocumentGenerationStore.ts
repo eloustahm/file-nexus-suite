@@ -53,7 +53,15 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
       // Transform to match Template interface
       const templates: Template[] = apiTemplates.map(template => ({
         ...template,
-        category: template.category || 'General'
+        category: template.category || 'General',
+        fields: template.fields.map(field => ({
+          name: field.id,
+          type: field.type as 'text' | 'textarea' | 'select' | 'date',
+          label: field.label,
+          required: field.required,
+          options: (field as any).options,
+          value: field.value
+        }))
       }));
       set({ templates });
     } catch (error: any) {
@@ -82,7 +90,8 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
         ...apiDocument,
         templateId: apiDocument.templateId || '',
         purpose: data.purpose,
-        instructions: data.instructions
+        instructions: data.instructions,
+        status: apiDocument.status === 'failed' ? 'error' : apiDocument.status as 'generating' | 'completed' | 'error'
       };
       set(state => ({
         generatedDocuments: [document, ...state.generatedDocuments]
@@ -107,7 +116,8 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
         ...apiDocument,
         templateId: apiDocument.templateId || '',
         purpose: formData.purpose || '',
-        instructions: formData.instructions
+        instructions: formData.instructions,
+        status: apiDocument.status === 'failed' ? 'error' : apiDocument.status as 'generating' | 'completed' | 'error'
       };
       set(state => ({
         generatedDocuments: [document, ...state.generatedDocuments]
@@ -132,7 +142,8 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
         ...apiDocument,
         templateId: apiDocument.templateId || '',
         purpose: changes?.purpose || '',
-        instructions: changes?.instructions
+        instructions: changes?.instructions,
+        status: apiDocument.status === 'failed' ? 'error' : apiDocument.status as 'generating' | 'completed' | 'error'
       };
       set(state => ({
         generatedDocuments: state.generatedDocuments.map(doc => 
@@ -158,7 +169,8 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
         ...doc,
         templateId: doc.templateId || '',
         purpose: doc.purpose || 'Document generation',
-        instructions: doc.instructions
+        instructions: doc.instructions,
+        status: doc.status === 'failed' ? 'error' : doc.status as 'generating' | 'completed' | 'error'
       }));
       set({ generatedDocuments: documents });
     } catch (error: any) {

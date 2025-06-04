@@ -1,105 +1,68 @@
 
-import { Agent, DocumentTemplate } from '../types/generatorTypes';
+import { Template } from '@/types';
 
-export const agents: Agent[] = [
+export const documentTemplates: Template[] = [
   {
-    id: 'formal',
-    name: 'Professional Writer',
-    type: 'assistant',
-    description: 'Creates formal, structured documents with professional tone',
-    capabilities: ['Formal Writing', 'Business Documents', 'Professional Communication'],
-    personality: 'formal',
-    icon: '👔',
-    color: 'bg-blue-100 text-blue-800'
-  },
-  {
-    id: 'creative',
-    name: 'Creative Storyteller',
-    type: 'creative',
-    description: 'Generates engaging, creative content with flair',
-    capabilities: ['Creative Writing', 'Storytelling', 'Marketing Copy'],
-    personality: 'creative',
-    icon: '🎨',
-    color: 'bg-purple-100 text-purple-800'
-  },
-  {
-    id: 'technical',
-    name: 'Technical Expert',
-    type: 'technical',
-    description: 'Produces detailed technical documentation',
-    capabilities: ['Technical Writing', 'Documentation', 'Specifications'],
-    personality: 'technical',
-    icon: '⚙️',
-    color: 'bg-gray-100 text-gray-800'
-  },
-  {
-    id: 'persuasive',
-    name: 'Sales Champion',
-    type: 'sales',
-    description: 'Crafts compelling, persuasive content',
-    capabilities: ['Sales Copy', 'Persuasive Writing', 'Marketing'],
-    personality: 'persuasive',
-    icon: '📈',
-    color: 'bg-green-100 text-green-800'
-  }
-];
-
-export const templates: DocumentTemplate[] = [
-  {
-    id: 'business-proposal',
+    id: '1',
     name: 'Business Proposal',
-    description: 'Comprehensive business proposal template',
-    type: 'business',
+    description: 'Professional business proposal template',
+    category: 'Business',
     fields: [
       {
-        id: 'company-name',
+        name: 'companyName',
+        type: 'text',
         label: 'Company Name',
-        placeholder: 'Enter your company name',
-        value: '',
-        type: 'text'
+        required: true
       },
       {
-        id: 'project-title',
-        label: 'Project Title',
-        placeholder: 'Enter project title',
-        value: '',
-        type: 'text'
+        name: 'proposalTitle',
+        type: 'text',
+        label: 'Proposal Title',
+        required: true
       },
       {
-        id: 'executive-summary',
-        label: 'Executive Summary',
-        placeholder: 'Brief overview of the proposal',
-        value: '',
-        type: 'textarea'
+        name: 'description',
+        type: 'textarea',
+        label: 'Project Description',
+        required: true
+      },
+      {
+        name: 'timeline',
+        type: 'text',
+        label: 'Project Timeline',
+        required: false
       }
     ]
   },
   {
-    id: 'meeting-notes',
-    name: 'Meeting Notes',
-    description: 'Structured meeting notes template',
-    type: 'meeting',
+    id: '2',
+    name: 'Meeting Minutes',
+    description: 'Template for recording meeting minutes',
+    category: 'Administrative',
     fields: [
       {
-        id: 'meeting-title',
+        name: 'meetingTitle',
+        type: 'text',
         label: 'Meeting Title',
-        placeholder: 'Enter meeting title',
-        value: '',
-        type: 'text'
+        required: true
       },
       {
-        id: 'date',
-        label: 'Date',
-        placeholder: 'Select date',
-        value: '',
-        type: 'date'
+        name: 'date',
+        type: 'date',
+        label: 'Meeting Date',
+        required: true
       },
       {
-        id: 'attendees',
+        name: 'attendees',
+        type: 'textarea',
         label: 'Attendees',
-        placeholder: 'List attendees',
-        value: '',
-        type: 'textarea'
+        required: true
+      },
+      {
+        name: 'agenda',
+        type: 'textarea',
+        label: 'Agenda Items',
+        required: true
       }
     ]
   }

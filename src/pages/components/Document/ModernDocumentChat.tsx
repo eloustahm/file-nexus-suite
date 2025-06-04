@@ -107,6 +107,11 @@ export const ModernDocumentChat = () => {
     }
   };
 
+  const formatTimestamp = (timestamp: string | Date) => {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   const activeTab = documentTabs.find(tab => tab.id === activeTabId);
 
   return (
@@ -247,7 +252,7 @@ export const ModernDocumentChat = () => {
                               <span className={`text-xs block mt-1 ${
                                 msg.role === 'user' ? 'text-blue-100' : 'text-gray-500'
                               }`}>
-                                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {formatTimestamp(msg.timestamp)}
                               </span>
                             </div>
                           </div>

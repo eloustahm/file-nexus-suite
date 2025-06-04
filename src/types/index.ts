@@ -157,6 +157,7 @@ export interface Template {
     label: string;
     required: boolean;
     options?: string[];
+    value?: string;
   }>;
   category: string;
   preview?: string;

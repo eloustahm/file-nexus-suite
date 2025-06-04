@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { FileText, Clock, ArrowRight } from 'lucide-react';
-import { ChatHistory } from '@/pages/components/Document/types/chatTypes';
+import { ChatHistory } from '@/types';
 
 interface ChatListItemProps {
   chat: ChatHistory;
