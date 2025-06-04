@@ -6,10 +6,10 @@ import { ProtectedRoutes } from './ProtectedRoutes';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 export const ProtectedRouteWrapper = () => {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, user } = useAuth();
 
-    // Show loading while checking authentication
-    if (isLoading) {
+    // Only show loading spinner if we're actually loading and haven't determined auth status yet
+    if (isLoading && user === undefined) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <LoadingSpinner size="lg" text="Checking authentication..." />

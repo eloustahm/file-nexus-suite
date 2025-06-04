@@ -6,10 +6,10 @@ import { PublicRoutes } from './PublicRoutes';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 export const PublicRouteWrapper = () => {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, user } = useAuth();
 
-    // Show loading while checking authentication
-    if (isLoading) {
+    // Only show loading spinner if we're actually loading and haven't determined auth status yet
+    if (isLoading && user === undefined) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <LoadingSpinner size="lg" text="Loading..." />
@@ -18,10 +18,10 @@ export const PublicRouteWrapper = () => {
     }
 
     // If authenticated, redirect to dashboard
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
         return <Navigate to="/dashboard" replace />;
     }
 
-    // Render public routes
-    return <PublicRoutes isAuthenticated={false} />;
+    // Render public routes (including landing page)
+    return <PublicRoutes isAuthenticated={isAuthenticated} />;
 };

@@ -11,15 +11,15 @@ export const useAuthQuery = () => {
     queryKey: ['auth', 'user'],
     queryFn: authApi.getCurrentUser,
     retry: (failureCount, error: any) => {
-      // Don't retry auth failures (401/403) or network errors
+      // Don't retry auth failures (401/403)
       if (error?.response?.status === 401 || error?.response?.status === 403) {
         return false;
       }
-      // Retry other errors up to 1 time
+      // Only retry other errors once
       return failureCount < 1;
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 15 * 60 * 1000, // 15 minutes (formerly cacheTime)
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -65,8 +65,9 @@ export const useAuthQuery = () => {
   return {
     user: userQuery.data,
     isLoading: userQuery.isLoading,
+    fetchStatus: userQuery.fetchStatus,
     error: userQuery.error,
-    isAuthenticated: !!userQuery.data && !userQuery.isLoading,
+    isAuthenticated: !!userQuery.data,
     
     // Mutations
     login: loginMutation.mutateAsync,
