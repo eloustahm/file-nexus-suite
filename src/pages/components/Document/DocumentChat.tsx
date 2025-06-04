@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MessageSquare, X } from "lucide-react";
 import { useChatAgents } from '@/hooks/useChatAgents';
-import { useDocumentChatStore } from '@/store/useDocumentChatStore';
+import { useDocumentChat } from '@/context/DocumentChatContext';
 import { AgentSelector } from './components/AgentSelector';
 import { ChatHistoryPanel } from './components/ChatHistoryPanel';
 import { DocumentSelector } from './components/DocumentSelector';
@@ -32,7 +32,7 @@ export const DocumentChat = () => {
     sendMessage,
     loadChatHistory,
     clearError
-  } = useDocumentChatStore();
+  } = useDocumentChat();
 
   // Mock documents data
   const documents = [

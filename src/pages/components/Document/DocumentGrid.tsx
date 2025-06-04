@@ -1,10 +1,9 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Download, Share, Trash2, Eye } from "lucide-react";
-import { useDocumentsStore } from "@/store/useDocumentsStore";
+import { useDocuments } from '@/context/DocumentsContext';
 
 interface DocumentGridProps {
   viewMode: "grid" | "list";
@@ -12,7 +11,7 @@ interface DocumentGridProps {
 }
 
 export const DocumentGrid = ({ viewMode }: DocumentGridProps) => {
-  const { filteredDocuments, deleteDocument, downloadDocument, setSelectedDocument } = useDocumentsStore();
+  const { filteredDocuments, deleteDocument, downloadDocument, setSelectedDocument } = useDocuments();
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';

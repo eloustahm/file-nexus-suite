@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Filter, Grid3X3, List } from "lucide-react";
 import { DocumentUpload } from "@/pages/components/Document/DocumentUpload.tsx";
 import { DocumentGrid } from "@/pages/components/Document/DocumentGrid.tsx";
-import { useDocumentsStore } from "@/store/useDocumentsStore";
+import { useDocuments } from '@/context/DocumentsContext';
 
 type ViewMode = "grid" | "list";
 
@@ -14,7 +14,7 @@ export const Document = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   
-  const { documents, loading, error, fetchDocuments, setSearchQuery: setStoreSearchQuery } = useDocumentsStore();
+  const { documents, loading, error, fetchDocuments, setSearchQuery: setStoreSearchQuery } = useDocuments();
 
   useEffect(() => {
     fetchDocuments();
