@@ -14,8 +14,8 @@ export const useAuth = () => {
     user: authQuery.user,
     isAuthenticated: authQuery.isAuthenticated,
     
-    // Loading state - only show loading on initial load, not on errors
-    isLoading: authQuery.isLoading && authQuery.fetchStatus !== 'idle',
+    // Simple loading state - only true during initial load
+    isLoading: authQuery.isLoading,
     error: authQuery.error?.message || authUI.error,
     
     // Auth actions

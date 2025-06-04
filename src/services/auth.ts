@@ -28,32 +28,33 @@ export interface RegisterData {
 export const authApi = {
   // Login user
   login: async (credentials: LoginCredentials) => {
-    console.log(credentials)
+    console.log('Login attempt:', credentials.email);
     return http.post('/api/auth/login', credentials);
   },
 
   // Register new user
   register: async (data: RegisterData) => {
+    console.log('Register attempt:', data.email);
     return http.post('/api/auth/register', data);
   },
 
   // Logout user
   logout: async () => {
+    console.log('Logout attempt');
     return http.post('/api/auth/logout');
   },
 
-  // Get current user - handles 401/403 gracefully
+  // Get current user - simplified error handling
   getCurrentUser: async (): Promise<User | null> => {
+    console.log('Checking current user authentication...');
     try {
       const response = await http.get<{ user: User }>('/api/auth/me');
+      console.log('Auth check successful:', response.user?.email);
       return response.user;
     } catch (error: any) {
-      // If the error is 401 or 403, user is not authenticated
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        return null;
-      }
-      // Re-throw other errors
-      throw error;
+      console.log('Auth check failed:', error.response?.status, error.message);
+      // Always return null for any auth error - don't throw
+      return null;
     }
   },
 

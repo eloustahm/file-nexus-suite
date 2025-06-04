@@ -6,23 +6,17 @@ import { toast } from 'sonner';
 export const useAuthQuery = () => {
   const queryClient = useQueryClient();
 
-  // Get current user query - handles auth failures gracefully
+  // Get current user query - simple configuration
   const userQuery = useQuery({
     queryKey: ['auth', 'user'],
     queryFn: authApi.getCurrentUser,
-    retry: (failureCount, error: any) => {
-      // Don't retry auth failures (401/403)
-      if (error?.response?.status === 401 || error?.response?.status === 403) {
-        return false;
-      }
-      // Only retry other errors once
-      return failureCount < 1;
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: false, // Never retry auth calls
+    staleTime: Infinity, // Cache auth result until manually invalidated
+    gcTime: Infinity, // Keep in cache
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
+    refetchInterval: false,
   });
 
   // Login mutation
@@ -58,6 +52,9 @@ export const useAuthQuery = () => {
       toast.success('Logged out successfully');
     },
     onError: (error: any) => {
+      // Even if logout fails, clear local state
+      queryClient.setQueryData(['auth', 'user'], null);
+      queryClient.clear();
       toast.error(error.message || 'Logout failed');
     },
   });
@@ -65,9 +62,8 @@ export const useAuthQuery = () => {
   return {
     user: userQuery.data,
     isLoading: userQuery.isLoading,
-    fetchStatus: userQuery.fetchStatus,
     error: userQuery.error,
-    isAuthenticated: !!userQuery.data,
+    isAuthenticated: userQuery.data !== null && userQuery.data !== undefined,
     
     // Mutations
     login: loginMutation.mutateAsync,

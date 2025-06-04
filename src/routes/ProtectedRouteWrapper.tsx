@@ -8,8 +8,8 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 export const ProtectedRouteWrapper = () => {
     const { isAuthenticated, isLoading, user } = useAuth();
 
-    // Only show loading spinner if we're actually loading and haven't determined auth status yet
-    if (isLoading && user === undefined) {
+    // Show loading only during initial auth check
+    if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <LoadingSpinner size="lg" text="Checking authentication..." />
@@ -18,7 +18,7 @@ export const ProtectedRouteWrapper = () => {
     }
 
     // If not authenticated, redirect to login
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
         return <Navigate to="/login" replace />;
     }
 
