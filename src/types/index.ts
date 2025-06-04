@@ -15,7 +15,7 @@ export interface ChatMessage {
   content: string;
   role: 'user' | 'assistant';
   sender: 'user' | 'agent';
-  timestamp: Date;
+  timestamp: Date | string;
   documentId?: string;
   agentId?: string;
 }
@@ -38,9 +38,9 @@ export interface Agent {
   capabilities: string[];
   isActive: boolean;
   type: string;
-  personality?: string;
-  icon?: string;
-  color?: string;
+  personality: string;
+  icon: string;
+  color: string;
 }
 
 export interface ChatHistory {
@@ -144,4 +144,33 @@ export interface Workflow {
   dueDate?: string;
   trigger?: string;
   lastRun?: string;
+}
+
+// Document Generation Types
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  fields: Array<{
+    name: string;
+    type: 'text' | 'textarea' | 'select' | 'date';
+    label: string;
+    required: boolean;
+    options?: string[];
+  }>;
+  category: string;
+  preview?: string;
+}
+
+export interface GeneratedDocument {
+  id: string;
+  title: string;
+  content: string;
+  templateId: string;
+  createdAt: string;
+  status: 'generating' | 'completed' | 'error';
+  purpose: string;
+  instructions?: string;
+  isSelected?: boolean;
+  wordCount?: number;
 }

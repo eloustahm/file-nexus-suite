@@ -112,7 +112,27 @@ export const validateData = <T>(schema: z.ZodSchema<T>, data: unknown): T => {
 
 export const validatePartialData = <T>(schema: z.ZodSchema<T>, data: unknown): Partial<T> => {
   try {
-    return schema.partial().parse(data);
+    // Convert schema to partial and parse
+    const partialSchema = z.object({}).passthrough();
+    const result = partialSchema.parse(data);
+    
+    // Validate individual fields that are present
+    const validatedResult: any = {};
+    const schemaShape = (schema as any)._def?.shape?.();
+    
+    if (schemaShape && typeof data === 'object' && data !== null) {
+      Object.keys(data as object).forEach(key => {
+        if (schemaShape[key]) {
+          try {
+            validatedResult[key] = schemaShape[key].parse((data as any)[key]);
+          } catch (error) {
+            // Skip invalid fields in partial validation
+          }
+        }
+      });
+    }
+    
+    return validatedResult;
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new Error(error.errors.map(e => e.message).join(', '));

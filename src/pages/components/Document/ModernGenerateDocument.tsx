@@ -68,7 +68,7 @@ export const ModernGenerateDocument = () => {
       </Tabs>
 
       <DocumentPreviewer
-        documentId={previewDocumentId}
+        document={previewDocumentId}
         onClose={handleClosePreview}
         onRegenerate={handleRegenerate}
       />

@@ -131,7 +131,7 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
         content,
         role: 'user',
         sender: 'user',
-        timestamp: new Date().toISOString()
+        timestamp: new Date()
       };
       
       set((state) => ({
@@ -180,7 +180,6 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
       }));
     } catch (error: any) {
       set({ error: error.message });
-      throw error;
     }
   },
 

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,11 @@ interface ChatHistoryProps {
 }
 
 export const ChatHistory = ({ onSelectChat, onDeleteChat }: ChatHistoryProps) => {
-  const { chatHistories, loading, error, deleteSession } = useDocumentChatStore();
+  const { chatHistories, loading, error, deleteSession, fetchSessions } = useDocumentChatStore();
+
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
 
   const handleDeleteChat = async (chatId: string) => {
     try {

@@ -1,38 +1,14 @@
 
 import { create } from 'zustand';
 import { documentGenerationApi } from '@/services/documentGeneration';
-import type { Document } from '@/types';
-
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  fields: Array<{
-    name: string;
-    type: 'text' | 'textarea' | 'select' | 'date';
-    label: string;
-    required: boolean;
-    options?: string[];
-  }>;
-  category: string;
-  preview?: string;
-}
-
-interface GeneratedDocument {
-  id: string;
-  title: string;
-  content: string;
-  templateId: string;
-  createdAt: string;
-  status: 'generating' | 'completed' | 'error';
-}
+import type { Template, GeneratedDocument } from '@/types';
 
 interface DocumentGenerationState {
   // State
   templates: Template[];
   selectedTemplate: Template | null;
   generatedDocuments: GeneratedDocument[];
-  selectedDocument: Document | null;
+  selectedDocument: GeneratedDocument | null;
   previewDocument: GeneratedDocument | null;
   
   // Loading and error states
@@ -47,7 +23,7 @@ interface DocumentGenerationState {
   generateDocumentFromForm: (formData: any) => Promise<void>;
   regenerateDocument: (documentId: string, changes?: any) => Promise<void>;
   fetchGeneratedDocuments: () => Promise<void>;
-  selectDocument: (document: Document) => void;
+  selectDocument: (document: GeneratedDocument) => void;
   setPreviewDocument: (document: GeneratedDocument | null) => void;
   clearError: () => void;
 }
@@ -73,7 +49,12 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
   fetchTemplates: async () => {
     try {
       set({ loading: true, error: null });
-      const templates = await documentGenerationApi.getTemplates();
+      const apiTemplates = await documentGenerationApi.getTemplates();
+      // Transform to match Template interface
+      const templates: Template[] = apiTemplates.map(template => ({
+        ...template,
+        category: template.category || 'General'
+      }));
       set({ templates });
     } catch (error: any) {
       set({ error: error.message });
@@ -95,7 +76,14 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
   generateDocument: async (data) => {
     try {
       set({ isGenerating: true, error: null });
-      const document = await documentGenerationApi.generateDocument(data);
+      const apiDocument = await documentGenerationApi.generateDocument(data);
+      // Transform to match GeneratedDocument interface
+      const document: GeneratedDocument = {
+        ...apiDocument,
+        templateId: apiDocument.templateId || '',
+        purpose: data.purpose,
+        instructions: data.instructions
+      };
       set(state => ({
         generatedDocuments: [document, ...state.generatedDocuments]
       }));
@@ -113,7 +101,14 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
   generateDocumentFromForm: async (formData) => {
     try {
       set({ isGenerating: true, error: null });
-      const document = await documentGenerationApi.generateFromTemplate(formData);
+      const apiDocument = await documentGenerationApi.generateDocument(formData);
+      // Transform to match GeneratedDocument interface
+      const document: GeneratedDocument = {
+        ...apiDocument,
+        templateId: apiDocument.templateId || '',
+        purpose: formData.purpose || '',
+        instructions: formData.instructions
+      };
       set(state => ({
         generatedDocuments: [document, ...state.generatedDocuments]
       }));
@@ -131,7 +126,14 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
   regenerateDocument: async (documentId, changes) => {
     try {
       set({ isGenerating: true, error: null });
-      const document = await documentGenerationApi.regenerateDocument(documentId, changes);
+      const apiDocument = await documentGenerationApi.regenerateDocument(documentId, changes);
+      // Transform to match GeneratedDocument interface
+      const document: GeneratedDocument = {
+        ...apiDocument,
+        templateId: apiDocument.templateId || '',
+        purpose: changes?.purpose || '',
+        instructions: changes?.instructions
+      };
       set(state => ({
         generatedDocuments: state.generatedDocuments.map(doc => 
           doc.id === documentId ? document : doc
@@ -139,7 +141,6 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
       }));
     } catch (error: any) {
       set({ error: error.message });
-      throw error;
     } finally {
       set({ isGenerating: false });
     }
@@ -151,7 +152,14 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
   fetchGeneratedDocuments: async () => {
     try {
       set({ loading: true, error: null });
-      const documents = await documentGenerationApi.getGeneratedDocuments();
+      const apiDocuments = await documentGenerationApi.getGeneratedDocuments();
+      // Transform to match GeneratedDocument interface
+      const documents: GeneratedDocument[] = apiDocuments.map(doc => ({
+        ...doc,
+        templateId: doc.templateId || '',
+        purpose: doc.purpose || 'Document generation',
+        instructions: doc.instructions
+      }));
       set({ generatedDocuments: documents });
     } catch (error: any) {
       set({ error: error.message });

@@ -11,6 +11,7 @@ import { ChatHistoryPanel } from './components/ChatHistoryPanel';
 import { DocumentSelector } from './components/DocumentSelector';
 import { ChatMessages } from './components/ChatMessages';
 import { MessageInput } from './components/MessageInput';
+import type { Agent } from '@/types';
 
 export const DocumentChat = () => {
   const { agents } = useChatAgents();
@@ -46,7 +47,13 @@ export const DocumentChat = () => {
   // Initialize with default agent and welcome message
   useEffect(() => {
     if (!selectedAgent && agents.length > 0) {
-      setSelectedAgent(agents[0]);
+      // Convert agent to match unified type
+      const unifiedAgent: Agent = {
+        ...agents[0],
+        isActive: true,
+        personality: agents[0].personality || agents[0].description
+      };
+      setSelectedAgent(unifiedAgent);
     }
   }, [agents, selectedAgent, setSelectedAgent]);
 
@@ -78,6 +85,16 @@ export const DocumentChat = () => {
     loadChatHistory(historyId);
   };
 
+  const handleAgentChange = (agent: any) => {
+    // Convert to unified Agent type
+    const unifiedAgent: Agent = {
+      ...agent,
+      isActive: true,
+      personality: agent.personality || agent.description
+    };
+    setSelectedAgent(unifiedAgent);
+  };
+
   // Clear error when component unmounts
   useEffect(() => {
     return () => clearError();
@@ -90,7 +107,7 @@ export const DocumentChat = () => {
         <AgentSelector
           agents={agents}
           selectedAgent={selectedAgent}
-          onAgentChange={setSelectedAgent}
+          onAgentChange={handleAgentChange}
         />
 
         <ChatHistoryPanel
