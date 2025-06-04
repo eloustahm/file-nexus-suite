@@ -1,6 +1,5 @@
 
 import { useDocuments } from '@/hooks/useDocuments';
-import { useDocumentsUIStore } from '@/store/useDocumentsUIStore';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,24 +9,15 @@ import { DocumentGrid } from "@/pages/components/Document/DocumentGrid.tsx";
 
 export const Document = () => {
   const { 
-    documents, 
+    filteredDocuments,
     isLoading, 
     error, 
-    refetch 
-  } = useDocuments();
-
-  const {
+    refetch,
     searchQuery,
     viewMode,
     setSearchQuery,
     setViewMode
-  } = useDocumentsUIStore();
-
-  // Filter documents based on UI state
-  const filteredDocuments = documents?.filter(doc =>
-    doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (doc.tags && doc.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
-  ) || [];
+  } = useDocuments();
 
   const handleRetry = () => {
     refetch();
@@ -49,7 +39,7 @@ export const Document = () => {
       <Card>
         <CardContent className="p-6">
           <div className="text-red-600 text-center">
-            <p>Error loading documents: {typeof error === 'string' ? error : 'Unknown error occurred'}</p>
+            <p>Error loading documents: {error}</p>
             <Button onClick={handleRetry} className="mt-4">
               Try Again
             </Button>
