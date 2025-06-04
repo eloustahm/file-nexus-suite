@@ -1,2 +1,2 @@
 
-export { useTeamCollaboration } from '@/context/TeamCollaborationContext';
+export { useTeamCollaborationStore as useTeamCollaboration } from '@/store/useTeamCollaborationStore';

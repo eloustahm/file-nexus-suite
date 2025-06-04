@@ -1,2 +1,2 @@
 
-export { useSettings } from '@/context/SettingsContext';
+export { useSettingsStore as useSettings } from '@/store/useSettingsStore';

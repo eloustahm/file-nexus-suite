@@ -1,26 +1,22 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom";
-import { AppRoutes } from "@/routes/AppRoutes";
-import { AppProviders } from "@/context";
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { Toaster } from '@/components/ui/sonner';
+import { QueryProvider } from '@/providers/QueryProvider';
+import AppRoutes from '@/routes/AppRoutes';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AppProviders>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+function App() {
+  return (
+    <ErrorBoundary>
+      <QueryProvider>
         <BrowserRouter>
           <AppRoutes />
+          <Toaster />
         </BrowserRouter>
-      </TooltipProvider>
-    </AppProviders>
-  </QueryClientProvider>
-);
+      </QueryProvider>
+    </ErrorBoundary>
+  );
+}
 
 export default App;

@@ -1,2 +1,2 @@
 
-export { useDocumentChat } from '@/context/DocumentChatContext';
+export { useDocumentChatStore as useDocumentChat } from '@/store/useDocumentChatStore';

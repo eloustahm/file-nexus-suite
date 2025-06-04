@@ -1,2 +1,2 @@
 
-export { useFolders } from '@/context/FoldersContext';
+export { useFoldersStore as useFolders } from '@/store/useFoldersStore';

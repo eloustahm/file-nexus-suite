@@ -1,2 +1,2 @@
 
-export { useTeam } from '@/context/TeamContext';
+export { useTeamStore as useTeam } from '@/store/useTeamStore';

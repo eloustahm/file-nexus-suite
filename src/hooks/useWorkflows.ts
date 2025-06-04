@@ -1,2 +1,2 @@
 
-export { useWorkflows } from '@/context/WorkflowsContext';
+export { useWorkflowsStore as useWorkflows } from '@/store/useWorkflowsStore';

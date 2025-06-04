@@ -1,2 +1,2 @@
 
-export { useDocuments } from '@/context/DocumentsContext';
+export { useDocumentsStore as useDocuments } from '@/store/useDocumentsStore';

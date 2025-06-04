@@ -1,2 +1,2 @@
 
-export { useDocumentGeneration } from '@/context/DocumentGenerationContext';
+export { useDocumentGenerationStore as useDocumentGeneration } from '@/store/useDocumentGenerationStore';

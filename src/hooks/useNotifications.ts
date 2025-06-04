@@ -1,2 +1,2 @@
 
-export { useNotifications } from '@/context/NotificationsContext';
+export { useNotificationsStore as useNotifications } from '@/store/useNotificationsStore';

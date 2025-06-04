@@ -1,2 +1,2 @@
 
-export { usePayment } from '@/context/PaymentContext';
+export { usePaymentStore as usePayment } from '@/store/usePaymentStore';

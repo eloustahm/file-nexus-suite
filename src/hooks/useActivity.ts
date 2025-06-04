@@ -1,2 +1,2 @@
 
-export { useActivity } from '@/context/ActivityContext';
+export { useActivityStore as useActivity } from '@/store/useActivityStore';
