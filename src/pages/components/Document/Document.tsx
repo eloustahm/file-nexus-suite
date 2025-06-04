@@ -26,7 +26,7 @@ export const Document = () => {
   // Filter documents based on UI state
   const filteredDocuments = documents?.filter(doc =>
     doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    (doc.tags && doc.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
   ) || [];
 
   const handleRetry = () => {
@@ -49,7 +49,7 @@ export const Document = () => {
       <Card>
         <CardContent className="p-6">
           <div className="text-red-600 text-center">
-            <p>Error loading documents: {error.message}</p>
+            <p>Error loading documents: {typeof error === 'string' ? error : 'Unknown error occurred'}</p>
             <Button onClick={handleRetry} className="mt-4">
               Try Again
             </Button>
@@ -102,7 +102,7 @@ export const Document = () => {
           <DocumentUpload />
         </div>
       </div>
-      <DocumentGrid viewMode={viewMode} documents={filteredDocuments} />
+      <DocumentGrid viewMode={viewMode} filteredDocuments={filteredDocuments} />
     </div>
   );
 };
