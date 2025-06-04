@@ -42,10 +42,19 @@ export const authApi = {
     return http.post('/api/auth/logout');
   },
 
-  // Get current user
-  getCurrentUser: async (): Promise<User> => {
-    const response = await http.get<{ user: User }>('/api/auth/me');
-    return response.user;
+  // Get current user - handles 401/403 gracefully
+  getCurrentUser: async (): Promise<User | null> => {
+    try {
+      const response = await http.get<{ user: User }>('/api/auth/me');
+      return response.user;
+    } catch (error: any) {
+      // If the error is 401 or 403, user is not authenticated
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        return null;
+      }
+      // Re-throw other errors
+      throw error;
+    }
   },
 
   // Reset password

@@ -6,13 +6,20 @@ import { toast } from 'sonner';
 export const useAuthQuery = () => {
   const queryClient = useQueryClient();
 
-  // Get current user query - only runs once and caches the result
+  // Get current user query - handles auth failures gracefully
   const userQuery = useQuery({
     queryKey: ['auth', 'user'],
     queryFn: authApi.getCurrentUser,
-    retry: false,
+    retry: (failureCount, error: any) => {
+      // Don't retry auth failures (401/403) or network errors
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        return false;
+      }
+      // Retry other errors up to 1 time
+      return failureCount < 1;
+    },
     staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 15 * 60 * 1000, // 15 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes (formerly cacheTime)
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -59,7 +66,7 @@ export const useAuthQuery = () => {
     user: userQuery.data,
     isLoading: userQuery.isLoading,
     error: userQuery.error,
-    isAuthenticated: !!userQuery.data && !userQuery.error,
+    isAuthenticated: !!userQuery.data && !userQuery.isLoading,
     
     // Mutations
     login: loginMutation.mutateAsync,
