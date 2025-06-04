@@ -65,13 +65,13 @@ export const NewChatPage = () => {
   });
 
   const handleStartChat = (document: Document) => {
-    navigate(`/chat/document/${document.id}`);
+    navigate(`/dashboard/chat/document/${document.id}`);
   };
 
   const handleUploadAndChat = () => {
     if (uploadedFiles.length > 0) {
       const mockId = Date.now().toString();
-      navigate(`/chat/document/${mockId}`);
+      navigate(`/dashboard/chat/document/${mockId}`);
     }
   };
 

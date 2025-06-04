@@ -26,7 +26,7 @@ import {
 const menuItems = [
   {id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard"},
   {id: "documents", label: "Documents", icon: FileText, badge: "125", path: "/dashboard/documents"},
-  {id: "chat", label: "Chat with Documents", icon: MessageSquare, path: "/dashboard/chat"},
+  {id: "chat", label: "Chat with Documents", icon: MessageSquare, path: "/dashboard/chats"},
   {id: "generate", label: "Generate Document", icon: Wand2, path: "/dashboard/generate"},
   {id: "workflow", label: "Workflow", icon: Settings, path: "/dashboard/workflow"},
   {id: "folders", label: "Folders", icon: Folder, path: "/dashboard/folders"},

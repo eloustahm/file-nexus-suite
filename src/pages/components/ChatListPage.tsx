@@ -11,27 +11,27 @@ export const ChatListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'recent'>('all');
   const navigate = useNavigate();
-  
+
   const { chatHistories, loading, error } = useDocumentChatStore();
 
   const filteredChats = chatHistories.filter(chat => {
     const matchesSearch = chat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     if (filterType === 'recent') {
       const isRecent = new Date().getTime() - chat.timestamp.getTime() < 86400000 * 7;
       return matchesSearch && isRecent;
     }
-    
+
     return matchesSearch;
   });
 
   const handleResumeChat = (chatId: string) => {
-    navigate(`/chat/${chatId}`);
+    navigate(`/dashboard/chat/${chatId}`);
   };
 
   const handleNewChat = () => {
-    navigate('/chat/new');
+    navigate('/dashboard/chat/new');
   };
 
   const formatTimeAgo = (date: Date) => {
@@ -39,7 +39,7 @@ export const ChatListPage = () => {
     const diffMs = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffHours / 24);
-    
+
     if (diffDays > 0) return `${diffDays}d ago`;
     if (diffHours > 0) return `${diffHours}h ago`;
     return 'Just now';
@@ -56,7 +56,7 @@ export const ChatListPage = () => {
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
       <ChatListHeader onNewChat={handleNewChat} />
-      
+
       <ChatSearchAndFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
