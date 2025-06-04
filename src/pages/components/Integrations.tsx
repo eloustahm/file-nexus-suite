@@ -1,252 +1,140 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  Zap, 
-  Settings, 
-  CheckCircle, 
-  AlertCircle,
-  ExternalLink,
-  Key
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { settingsApi } from "@/services/api";
+import { Switch } from "@/components/ui/switch";
+import { useSettingsStore } from '@/store/useSettingsStore';
+import { Settings, ExternalLink, Check, X } from 'lucide-react';
 
-interface Integration {
+// Define local integration interface to match component needs
+interface LocalIntegration {
   id: string;
   name: string;
   description: string;
   icon: string;
-  status: 'connected' | 'available' | 'error';
+  enabled: boolean;
+  status: 'connected' | 'disconnected' | 'error';
   category: string;
 }
 
 export const Integrations = () => {
-  const { toast } = useToast();
-  const [integrations, setIntegrations] = useState<Integration[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const availableIntegrations: Integration[] = [
-    {
-      id: 'google-drive',
-      name: 'Google Drive',
-      description: 'Sync documents with Google Drive',
-      icon: '📁',
-      status: 'connected',
-      category: 'Storage'
-    },
-    {
-      id: 'slack',
-      name: 'Slack',
-      description: 'Get notifications in Slack channels',
-      icon: '💬',
-      status: 'available',
-      category: 'Communication'
-    },
-    {
-      id: 'microsoft-365',
-      name: 'Microsoft 365',
-      description: 'Connect with Office 365 documents',
-      icon: '📊',
-      status: 'connected',
-      category: 'Productivity'
-    },
-    {
-      id: 'dropbox',
-      name: 'Dropbox',
-      description: 'Sync files with Dropbox',
-      icon: '📦',
-      status: 'available',
-      category: 'Storage'
-    },
-    {
-      id: 'zapier',
-      name: 'Zapier',
-      description: 'Automate workflows with 3000+ apps',
-      icon: '⚡',
-      status: 'available',
-      category: 'Automation'
-    },
-    {
-      id: 'gmail',
-      name: 'Gmail',
-      description: 'Process email attachments automatically',
-      icon: '📧',
-      status: 'available',
-      category: 'Communication'
-    }
-  ];
+  const [localIntegrations, setLocalIntegrations] = useState<LocalIntegration[]>([]);
+  const { integrations, loading, error, fetchIntegrations, updateIntegration } = useSettingsStore();
 
   useEffect(() => {
     fetchIntegrations();
-  }, []);
+  }, [fetchIntegrations]);
 
-  const fetchIntegrations = async () => {
-    try {
-      setLoading(true);
-      const data = await settingsApi.getIntegrations();
-      setIntegrations(Array.isArray(data) ? data : []);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load integrations",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    // Transform API integrations to local format
+    const transformed = integrations.map(integration => ({
+      id: integration.id,
+      name: integration.name,
+      description: `${integration.name} integration`,
+      icon: '🔧',
+      enabled: integration.enabled,
+      status: integration.enabled ? 'connected' as const : 'disconnected' as const,
+      category: 'productivity'
+    }));
+    setLocalIntegrations(transformed);
+  }, [integrations]);
 
   const handleToggleIntegration = async (integrationId: string, enabled: boolean) => {
     try {
-      await settingsApi.updateIntegration(integrationId, { enabled });
-      toast({
-        title: enabled ? "Integration Enabled" : "Integration Disabled",
-        description: `${integrationId} integration has been ${enabled ? 'connected' : 'disconnected'}.`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to update integration",
-        variant: "destructive",
-      });
+      await updateIntegration(integrationId, { enabled });
+      setLocalIntegrations(prev => 
+        prev.map(integration => 
+          integration.id === integrationId 
+            ? { ...integration, enabled, status: enabled ? 'connected' as const : 'disconnected' as const }
+            : integration
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update integration:', error);
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'connected':
-        return (
-          <Badge className="bg-green-100 text-green-800">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Connected
-          </Badge>
-        );
-      case 'error':
-        return (
-          <Badge className="bg-red-100 text-red-800">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Error
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline">
-            Available
-          </Badge>
-        );
+      case 'connected': return 'bg-green-100 text-green-800';
+      case 'disconnected': return 'bg-gray-100 text-gray-800';
+      case 'error': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const groupedIntegrations = availableIntegrations.reduce((acc, integration) => {
-    if (!acc[integration.category]) {
-      acc[integration.category] = [];
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'connected': return Check;
+      case 'error': return X;
+      default: return Settings;
     }
-    acc[integration.category].push(integration);
-    return acc;
-  }, {} as Record<string, Integration[]>);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Integrations</h1>
-        <p className="text-gray-600 mt-1">Connect your favorite tools and services</p>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Settings className="h-5 w-5" />
+          Integrations
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
 
-      <Alert>
-        <Key className="h-4 w-4" />
-        <AlertDescription>
-          Some integrations may require API keys or authentication. Your credentials are encrypted and stored securely.
-        </AlertDescription>
-      </Alert>
-
-      {Object.entries(groupedIntegrations).map(([category, categoryIntegrations]) => (
-        <Card key={category}>
-          <CardHeader>
-            <CardTitle>{category}</CardTitle>
-            <CardDescription>
-              {category === 'Storage' && 'Connect cloud storage services'}
-              {category === 'Communication' && 'Integrate messaging and email tools'}
-              {category === 'Productivity' && 'Connect productivity and office tools'}
-              {category === 'Automation' && 'Set up automated workflows'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              {categoryIntegrations.map((integration) => (
+        {localIntegrations.length === 0 ? (
+          <div className="text-center py-8">
+            <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No integrations available</h3>
+            <p className="text-gray-600">Check back later for available integrations.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {localIntegrations.map((integration) => {
+              const StatusIcon = getStatusIcon(integration.status);
+              return (
                 <div key={integration.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="text-2xl">{integration.icon}</div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{integration.name}</h3>
-                        {getStatusBadge(integration.status)}
+                        <h4 className="font-medium text-gray-900">{integration.name}</h4>
+                        <Badge className={getStatusColor(integration.status)}>
+                          <StatusIcon className="h-3 w-3 mr-1" />
+                          {integration.status}
+                        </Badge>
                       </div>
                       <p className="text-sm text-gray-600">{integration.description}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {integration.status === 'connected' ? (
-                      <>
-                        <Button variant="outline" size="sm">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Configure
-                        </Button>
-                        <Switch
-                          checked={true}
-                          onCheckedChange={(checked) => handleToggleIntegration(integration.id, checked)}
-                        />
-                      </>
-                    ) : (
-                      <Button size="sm">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Connect
-                      </Button>
-                    )}
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      checked={integration.enabled}
+                      onCheckedChange={(checked) => handleToggleIntegration(integration.id, checked)}
+                    />
+                    <Button variant="outline" size="sm">
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            API Access
-          </CardTitle>
-          <CardDescription>
-            Connect custom applications using our API
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="api-key">API Key</Label>
-            <div className="flex gap-2 mt-1">
-              <Input
-                id="api-key"
-                type="password"
-                value="sk-docuflow-••••••••••••••••"
-                readOnly
-                className="font-mono"
-              />
-              <Button variant="outline">Regenerate</Button>
-            </div>
+              );
+            })}
           </div>
-          <Button variant="outline" className="w-full">
-            <ExternalLink className="h-4 w-4 mr-2" />
-            View API Documentation
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

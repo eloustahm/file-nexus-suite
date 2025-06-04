@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { teamApi, TeamMember, InviteMemberData } from '@/services/team';
 
@@ -23,6 +22,7 @@ interface TeamCollaborationState {
   
   // Member actions
   fetchMembers: () => Promise<void>;
+  fetchSettings: () => Promise<void>;
   inviteMember: (data: InviteMemberData) => Promise<void>;
   updateMemberRole: (memberId: string, role: string) => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
@@ -56,6 +56,18 @@ export const useTeamCollaborationStore = create<TeamCollaborationState>((set, ge
       set({ loading: true, error: null });
       const members = await teamApi.getMembers();
       set({ members });
+    } catch (error: any) {
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  fetchSettings: async () => {
+    try {
+      set({ loading: true, error: null });
+      // For now, keep default settings since API doesn't have settings endpoint
+      // This would normally call an API endpoint
     } catch (error: any) {
       set({ error: error.message });
     } finally {

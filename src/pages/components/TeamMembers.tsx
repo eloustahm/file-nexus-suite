@@ -1,122 +1,57 @@
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  Mail, 
-  Settings,
-  UserMinus,
-  Crown,
-  Shield,
-  User
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useTeamCollaborationStore } from "@/store/useTeamCollaborationStore";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useTeamStore } from '@/store/useTeamStore';
+import { Users, UserPlus, Mail, Calendar, Activity, MoreVertical, Trash2 } from 'lucide-react';
 
 export const TeamMembers = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('viewer');
   const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [newMemberEmail, setNewMemberEmail] = useState("");
-  const [newMemberRole, setNewMemberRole] = useState<'admin' | 'editor' | 'viewer'>('viewer');
-  const { toast } = useToast();
-
-  const {
-    members,
-    loading,
-    error,
-    fetchMembers,
-    inviteMember,
-    updateMemberRole,
-    removeMember,
-    clearError
-  } = useTeamCollaborationStore();
+  
+  const { members, loading, error, fetchMembers, inviteMember, updateMemberRole, removeMember } = useTeamStore();
 
   useEffect(() => {
     fetchMembers();
   }, [fetchMembers]);
 
-  useEffect(() => {
-    return () => clearError();
-  }, [clearError]);
-
-  const filteredMembers = members.filter(member =>
-    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleInviteMember = async () => {
-    if (!newMemberEmail) return;
-
+  const handleInvite = async () => {
+    if (!inviteEmail.trim()) return;
+    
     try {
-      await inviteMember(newMemberEmail, newMemberRole);
-      setNewMemberEmail("");
-      setNewMemberRole('viewer');
+      await inviteMember(inviteEmail, inviteRole);
+      setInviteEmail('');
+      setInviteRole('viewer');
       setIsInviteOpen(false);
-      
-      toast({
-        title: "Invitation sent",
-        description: `Invited ${newMemberEmail} as ${newMemberRole}`,
-      });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send invitation",
-        variant: "destructive"
-      });
+      console.error('Failed to invite member:', error);
     }
   };
 
   const handleRoleChange = async (memberId: string, newRole: 'admin' | 'editor' | 'viewer') => {
     try {
       await updateMemberRole(memberId, newRole);
-      toast({
-        title: "Role updated",
-        description: "Member role has been updated successfully",
-      });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update member role",
-        variant: "destructive"
-      });
+      console.error('Failed to update role:', error);
     }
   };
 
   const handleRemoveMember = async (memberId: string) => {
-    try {
-      await removeMember(memberId);
-      toast({
-        title: "Member removed",
-        description: "Team member has been removed successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to remove member",
-        variant: "destructive"
-      });
+    if (window.confirm('Are you sure you want to remove this member?')) {
+      try {
+        await removeMember(memberId);
+      } catch (error) {
+        console.error('Failed to remove member:', error);
+      }
     }
   };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'admin': return <Crown className="h-4 w-4" />;
-      case 'editor': return <Shield className="h-4 w-4" />;
-      case 'viewer': return <User className="h-4 w-4" />;
-      default: return <User className="h-4 w-4" />;
-    }
-  };
-
-  const getRoleBadgeColor = (role: string) => {
+  const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800';
       case 'editor': return 'bg-blue-100 text-blue-800';
@@ -125,7 +60,7 @@ export const TeamMembers = () => {
     }
   };
 
-  const getStatusBadgeColor = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
@@ -134,13 +69,18 @@ export const TeamMembers = () => {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading team members...</p>
-        </div>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -156,41 +96,45 @@ export const TeamMembers = () => {
           <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="h-4 w-4 mr-2" />
+                <UserPlus className="h-4 w-4 mr-2" />
                 Invite Member
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-white">
+            <DialogContent>
               <DialogHeader>
                 <DialogTitle>Invite Team Member</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="email">Email Address</Label>
+                  <label className="text-sm font-medium">Email Address</label>
                   <Input
-                    id="email"
                     type="email"
-                    placeholder="Enter email address"
-                    value={newMemberEmail}
-                    onChange={(e) => setNewMemberEmail(e.target.value)}
+                    placeholder="member@company.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="role">Role</Label>
-                  <Select value={newMemberRole} onValueChange={(value: 'admin' | 'editor' | 'viewer') => setNewMemberRole(value)}>
+                  <label className="text-sm font-medium">Role</label>
+                  <Select value={inviteRole} onValueChange={(value: any) => setInviteRole(value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
+                      <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-white">
-                      <SelectItem value="viewer">Viewer - Can view documents</SelectItem>
-                      <SelectItem value="editor">Editor - Can edit and create documents</SelectItem>
-                      <SelectItem value="admin">Admin - Full access</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                      <SelectItem value="editor">Editor</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleInviteMember} className="w-full" disabled={loading}>
-                  {loading ? "Sending..." : "Send Invitation"}
-                </Button>
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={handleInvite} className="flex-1">
+                    Send Invitation
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsInviteOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -198,83 +142,83 @@ export const TeamMembers = () => {
       </CardHeader>
       <CardContent>
         {error && (
-          <div className="text-red-600 text-center py-4 mb-4">
-            <p>Error loading team members: {error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
-        
-        <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search members..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
 
-          <div className="space-y-3">
-            {filteredMembers.map((member) => (
-              <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
+        {members.length === 0 ? (
+          <div className="text-center py-8">
+            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No team members</h3>
+            <p className="text-gray-600">Invite your first team member to get started.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {members.map((member) => (
+              <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                 <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={member.avatar} />
-                    <AvatarFallback>
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    {member.avatar ? (
+                      <img src={member.avatar} alt={member.name} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-medium text-gray-600">
+                        {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      </span>
+                    )}
+                  </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{member.name}</h3>
-                      <Badge className={getRoleBadgeColor(member.role)}>
-                        {getRoleIcon(member.role)}
+                      <h4 className="font-medium text-gray-900">{member.name}</h4>
+                      <Badge className={getRoleColor(member.role)}>
                         {member.role}
                       </Badge>
-                      <Badge className={getStatusBadgeColor(member.status)}>
+                      <Badge className={getStatusColor(member.status)}>
                         {member.status}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600">{member.email}</p>
-                    <p className="text-xs text-gray-500">
-                      Joined {member.joinedAt.toLocaleDateString()}
-                    </p>
+                    <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                      <div className="flex items-center gap-1">
+                        <Mail className="h-3 w-3" />
+                        <span>{member.email}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>Joined {formatDate(member.joinedAt)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Activity className="h-3 w-3" />
+                        <span>Active {formatDate(member.lastActive)}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Select
-                    value={member.role}
-                    onValueChange={(value: 'admin' | 'editor' | 'viewer') => handleRoleChange(member.id, value)}
+                  <Select 
+                    value={member.role} 
+                    onValueChange={(value: any) => handleRoleChange(member.id, value)}
                   >
                     <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-white">
+                    <SelectContent>
                       <SelectItem value="viewer">Viewer</SelectItem>
                       <SelectItem value="editor">Editor</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="ghost" size="sm">
-                    <Mail className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={() => handleRemoveMember(member.id)}
-                    className="text-red-600 hover:text-red-800"
-                    disabled={loading}
                   >
-                    <UserMinus className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

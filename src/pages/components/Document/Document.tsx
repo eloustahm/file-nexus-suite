@@ -2,10 +2,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Search, Filter, Grid3X3, List
-} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Search, Filter, Grid3X3, List } from "lucide-react";
 import { DocumentUpload } from "@/pages/components/Document/DocumentUpload.tsx";
 import { DocumentGrid } from "@/pages/components/Document/DocumentGrid.tsx";
 import { useDocumentsStore } from "@/store/useDocumentsStore";
@@ -16,11 +14,15 @@ export const Document = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   
-  const { documents, loading, error, fetchDocuments } = useDocumentsStore();
+  const { documents, loading, error, fetchDocuments, setSearchQuery: setStoreSearchQuery } = useDocumentsStore();
 
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
+
+  useEffect(() => {
+    setStoreSearchQuery(searchQuery);
+  }, [searchQuery, setStoreSearchQuery]);
 
   if (loading) {
     return (
@@ -91,7 +93,7 @@ export const Document = () => {
           <DocumentUpload />
         </div>
       </div>
-      <DocumentGrid viewMode={viewMode} searchQuery={searchQuery} documents={documents} />
+      <DocumentGrid viewMode={viewMode} searchQuery={searchQuery} />
     </div>
   );
 };

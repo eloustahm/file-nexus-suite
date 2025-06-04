@@ -4,24 +4,23 @@ import { teamApi } from '@/services/api';
 
 interface TeamMember {
   id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
   name: string;
+  email: string;
   role: 'admin' | 'editor' | 'viewer';
-  status: 'active' | 'pending' | 'inactive';
-  joinedAt: string;
-  lastActive?: string;
   avatar?: string;
+  joinedAt: string;
+  lastActive: string;
+  status: 'active' | 'pending' | 'suspended';
 }
 
 interface TeamState {
   members: TeamMember[];
   loading: boolean;
   error: string | null;
+  
   fetchMembers: () => Promise<void>;
-  inviteMember: (email: string, role: string) => Promise<void>;
-  updateMemberRole: (memberId: string, role: string) => Promise<void>;
+  inviteMember: (email: string, role: 'admin' | 'editor' | 'viewer', message?: string) => Promise<void>;
+  updateMemberRole: (memberId: string, role: 'admin' | 'editor' | 'viewer') => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
   clearError: () => void;
 }
@@ -34,7 +33,7 @@ export const useTeamStore = create<TeamState>((set, get) => ({
   fetchMembers: async () => {
     try {
       set({ loading: true, error: null });
-      const members = await teamApi.getMembers() as TeamMember[];
+      const members = await teamApi.getMembers();
       set({ members });
     } catch (error: any) {
       set({ error: error.message });
@@ -43,11 +42,10 @@ export const useTeamStore = create<TeamState>((set, get) => ({
     }
   },
 
-  inviteMember: async (email: string, role: string) => {
+  inviteMember: async (email: string, role: 'admin' | 'editor' | 'viewer', message?: string) => {
     try {
       set({ loading: true, error: null });
-      await teamApi.inviteMember({ email, role });
-      // Refresh members list
+      await teamApi.inviteMember({ email, role, message });
       await get().fetchMembers();
     } catch (error: any) {
       set({ error: error.message });
@@ -57,17 +55,18 @@ export const useTeamStore = create<TeamState>((set, get) => ({
     }
   },
 
-  updateMemberRole: async (memberId: string, role: string) => {
+  updateMemberRole: async (memberId: string, role: 'admin' | 'editor' | 'viewer') => {
     try {
       set({ loading: true, error: null });
-      await teamApi.updateMemberRole(memberId, role);
+      const updatedMember = await teamApi.updateMemberRole(memberId, role);
       set(state => ({
-        members: state.members.map(member => 
-          member.id === memberId ? { ...member, role: role as any } : member
+        members: state.members.map(member =>
+          member.id === memberId ? updatedMember : member
         )
       }));
     } catch (error: any) {
       set({ error: error.message });
+      throw error;
     } finally {
       set({ loading: false });
     }
@@ -82,6 +81,7 @@ export const useTeamStore = create<TeamState>((set, get) => ({
       }));
     } catch (error: any) {
       set({ error: error.message });
+      throw error;
     } finally {
       set({ loading: false });
     }

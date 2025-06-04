@@ -1,94 +1,73 @@
 
-import { useState } from "react";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  FileText,
-  Download,
-  Edit,
-  Share,
-  MoreVertical,
-  Eye,
-  Clock,
-  User
-} from "lucide-react";
-import { DocumentPreview } from "./DocumentPreview";
-
-interface Document {
-  id: string;
-  name: string;
-  type: string;
-  size: number | string;
-  createdAt: string;
-  updatedAt: string;
-  folderId?: string;
-  content?: string;
-  tags?: string[];
-  url?: string;
-  status?: 'processing' | 'ready' | 'error';
-}
+import { FileText, Download, Share, Trash2, Eye } from "lucide-react";
+import { useDocumentsStore } from "@/store/useDocumentsStore";
 
 interface DocumentGridProps {
   viewMode: "grid" | "list";
   searchQuery: string;
-  documents: Document[];
 }
 
-export const DocumentGrid = ({ viewMode, searchQuery, documents }: DocumentGridProps) => {
-  const [selectedDocument, setSelectedDocument] = useState<any>(null);
-  
-  const filteredDocuments = documents.filter(doc =>
-    doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doc.type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+export const DocumentGrid = ({ viewMode }: DocumentGridProps) => {
+  const { filteredDocuments, deleteDocument, downloadDocument, setSelectedDocument } = useDocumentsStore();
 
-  const formatFileSize = (size: number | string): string => {
-    if (typeof size === 'string') return size;
-    if (size < 1024) return `${size} B`;
-    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
-    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-    
-    if (diffHours < 1) return 'Just now';
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString();
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
-  const getStatusColor = (status?: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case "processing": return "bg-yellow-100 text-yellow-800";
-      case "ready": return "bg-green-100 text-green-800";
-      case "error": return "bg-red-100 text-red-800";
-      default: return "bg-blue-100 text-blue-800";
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'archived': return 'bg-yellow-100 text-yellow-800';
+      case 'deleted': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getFileIcon = (type: string) => {
-    if (type.includes('pdf')) return "📄";
-    if (type.includes('word') || type.includes('doc')) return "📝";
-    if (type.includes('excel') || type.includes('sheet')) return "📊";
-    if (type.includes('powerpoint') || type.includes('presentation')) return "📋";
-    return "📄";
+  const handleView = (document: any) => {
+    setSelectedDocument(document);
+  };
+
+  const handleDownload = async (documentId: string) => {
+    try {
+      await downloadDocument(documentId);
+    } catch (error) {
+      console.error('Failed to download document:', error);
+    }
+  };
+
+  const handleDelete = async (documentId: string) => {
+    if (window.confirm('Are you sure you want to delete this document?')) {
+      try {
+        await deleteDocument(documentId);
+      } catch (error) {
+        console.error('Failed to delete document:', error);
+      }
+    }
   };
 
   if (filteredDocuments.length === 0) {
     return (
-      <Card className="p-8 text-center">
-        <CardContent>
+      <Card>
+        <CardContent className="p-12 text-center">
           <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
-          <p className="text-gray-500">
-            {searchQuery ? 'Try adjusting your search terms' : 'Upload your first document to get started'}
-          </p>
+          <p className="text-gray-600">Upload your first document to get started</p>
         </CardContent>
       </Card>
     );
@@ -96,109 +75,172 @@ export const DocumentGrid = ({ viewMode, searchQuery, documents }: DocumentGridP
 
   if (viewMode === "list") {
     return (
-      <div className="space-y-2">
-        <div className="grid grid-cols-12 gap-4 px-4 py-2 text-sm font-medium text-gray-500 border-b">
-          <div className="col-span-4">Name</div>
-          <div className="col-span-2">Type</div>
-          <div className="col-span-2">Modified</div>
-          <div className="col-span-2">Size</div>
-          <div className="col-span-1">Status</div>
-          <div className="col-span-1">Actions</div>
-        </div>
-        {filteredDocuments.map((doc) => (
-          <Card key={doc.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="grid grid-cols-12 gap-4 items-center">
-                <div className="col-span-4 flex items-center gap-3">
-                  <div className="text-2xl">{getFileIcon(doc.type)}</div>
-                  <div>
-                    <p className="font-medium text-gray-900">{doc.name}</p>
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      <User className="h-3 w-3" />
-                      System
-                    </p>
-                  </div>
-                </div>
-                <div className="col-span-2 text-sm text-gray-600">{doc.type}</div>
-                <div className="col-span-2 text-sm text-gray-600 flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {formatDate(doc.updatedAt)}
-                </div>
-                <div className="col-span-2 text-sm text-gray-600">{formatFileSize(doc.size)}</div>
-                <div className="col-span-1">
-                  <Badge className={getStatusColor(doc.status)}>
-                    {doc.status || 'ready'}
-                  </Badge>
-                </div>
-                <div className="col-span-1 flex items-center gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => setSelectedDocument(doc)}>
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Size
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Modified
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredDocuments.map((document) => (
+                  <tr key={document.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <FileText className="h-5 w-5 text-gray-400 mr-3" />
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {document.name}
+                          </div>
+                          {document.tags.length > 0 && (
+                            <div className="flex gap-1 mt-1">
+                              {document.tags.slice(0, 2).map((tag) => (
+                                <Badge key={tag} variant="outline" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {document.type}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatFileSize(document.size)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Badge className={getStatusColor(document.status)}>
+                        {document.status}
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(document.updatedAt)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleView(document)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDownload(document.id)}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(document.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredDocuments.map((doc) => (
-          <Card key={doc.id} className="group hover:shadow-lg transition-all duration-200 cursor-pointer">
-            <CardContent className="p-0">
-              <div className="aspect-[4/3] bg-gradient-to-br from-blue-50 to-gray-50 rounded-t-lg flex items-center justify-center">
-                <div className="text-6xl opacity-60">{getFileIcon(doc.type)}</div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {filteredDocuments.map((document) => (
+        <Card key={document.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between mb-4">
+              <FileText className="h-8 w-8 text-blue-600" />
+              <Badge className={getStatusColor(document.status)}>
+                {document.status}
+              </Badge>
+            </div>
+            
+            <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+              {document.name}
+            </h3>
+            
+            <div className="text-sm text-gray-500 mb-4">
+              <div className="flex justify-between">
+                <span>{document.type}</span>
+                <span>{formatFileSize(document.size)}</span>
               </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-medium text-gray-900 truncate flex-1 mr-2">{doc.name}</h3>
-                  <Badge className={`${getStatusColor(doc.status)} text-xs`}>
-                    {doc.status || 'ready'}
+              <div className="mt-1">
+                Modified {formatDate(document.updatedAt)}
+              </div>
+            </div>
+            
+            {document.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-4">
+                {document.tags.slice(0, 3).map((tag) => (
+                  <Badge key={tag} variant="outline" className="text-xs">
+                    {tag}
                   </Badge>
-                </div>
-                <p className="text-sm text-gray-500 mb-3">{doc.type}</p>
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span className="flex items-center gap-1">
-                    <User className="h-3 w-3" />
-                    System
-                  </span>
-                  <span>{formatFileSize(doc.size)}</span>
-                </div>
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-xs text-gray-500 flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {formatDate(doc.updatedAt)}
-                  </span>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedDocument(doc)}>
-                      <Eye className="h-3 w-3" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Download className="h-3 w-3" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Share className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
+                ))}
+                {document.tags.length > 3 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{document.tags.length - 3}
+                  </Badge>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {selectedDocument && (
-        <DocumentPreview 
-          document={selectedDocument} 
-          onClose={() => setSelectedDocument(null)} 
-        />
-      )}
-    </>
+            )}
+            
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => handleView(document)}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                View
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDownload(document.id)}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDelete(document.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 };

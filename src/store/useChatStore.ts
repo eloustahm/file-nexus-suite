@@ -1,6 +1,6 @@
 
 import { create } from 'zustand';
-import { aiApi } from '@/services/api';
+import { chatApi } from '@/services/api';
 
 interface ChatMessage {
   id: string;
@@ -70,16 +70,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       set(state => ({ messages: [...state.messages, userMessage] }));
 
-      const response = documentId 
-        ? await aiApi.chatWithDocument(documentId, message)
-        : await aiApi.summarizeDocument(message);
+      const response = await chatApi.sendMessage({
+        content: message,
+        documentId,
+        sessionId: get().currentSession?.id
+      });
 
       const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: (response as any).message || 'Response received',
+        id: response.id,
+        content: response.content,
         role: 'assistant',
-        timestamp: new Date(),
-        documentId
+        timestamp: new Date(response.timestamp)
       };
 
       set(state => ({ messages: [...state.messages, assistantMessage] }));
