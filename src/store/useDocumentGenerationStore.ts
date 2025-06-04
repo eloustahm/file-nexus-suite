@@ -1,229 +1,70 @@
 
 import { create } from 'zustand';
-import { 
-  documentGenerationApi, 
-  DocumentTemplate, 
-  TemplateField, 
-  GeneratedDocument, 
-  DocumentFormData 
-} from '@/services/documentGeneration';
+import { documentGenerationApi } from '@/services/documentGeneration';
 
-interface GenerationProgress {
-  step: number;
-  totalSteps: number;
-  currentTask: string;
-  completed: boolean;
+interface DocumentTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  fields: TemplateField[];
+}
+
+interface TemplateField {
+  id: string;
+  label: string;
+  type: string;
+  value: string;
+  required: boolean;
+  placeholder?: string;
+}
+
+interface GeneratedDocument {
+  id: string;
+  title: string;
+  purpose: string;
+  instructions?: string;
+  templateId?: string;
+  content: string;
+  status: 'generating' | 'completed' | 'failed';
+  createdAt: string;
+  updatedAt: string;
+  wordCount?: number;
+  isSelected: boolean;
+}
+
+interface DocumentFormData {
+  title: string;
+  purpose: string;
+  instructions?: string;
+  templateId?: string;
 }
 
 interface DocumentGenerationState {
-  selectedTemplate: DocumentTemplate | null;
-  generatedContent: string;
-  isGenerating: boolean;
-  isEditing: boolean;
-  editedContent: string;
-  generationProgress: GenerationProgress | null;
   templates: DocumentTemplate[];
   generatedDocuments: GeneratedDocument[];
+  selectedDocument: GeneratedDocument | null;
   loading: boolean;
   error: string | null;
   
-  setSelectedTemplate: (template: DocumentTemplate | null) => void;
-  updateFieldValue: (fieldId: string, value: string) => void;
-  addCustomField: (field: TemplateField) => void;
-  removeField: (fieldId: string) => void;
-  generateDocument: () => Promise<void>;
-  generateDocumentFromForm: (data: DocumentFormData) => Promise<void>;
-  regenerateDocument: (documentId: string, data: DocumentFormData) => Promise<void>;
-  setEditMode: (editing: boolean) => void;
-  updateEditedContent: (content: string) => void;
-  resetGeneration: () => void;
+  // Actions
   fetchTemplates: () => Promise<void>;
   fetchGeneratedDocuments: () => Promise<void>;
+  generateDocument: (data: DocumentFormData) => Promise<void>;
+  regenerateDocument: (documentId: string, data: DocumentFormData) => Promise<void>;
   selectDocument: (documentId: string) => Promise<void>;
   deleteDocument: (documentId: string) => Promise<void>;
+  downloadDocument: (documentId: string) => Promise<void>;
+  setSelectedDocument: (document: GeneratedDocument | null) => void;
   clearError: () => void;
 }
 
 export const useDocumentGenerationStore = create<DocumentGenerationState>((set, get) => ({
-  selectedTemplate: null,
-  generatedContent: '',
-  isGenerating: false,
-  isEditing: false,
-  editedContent: '',
-  generationProgress: null,
   templates: [],
   generatedDocuments: [],
+  selectedDocument: null,
   loading: false,
   error: null,
-
-  setSelectedTemplate: (template) => {
-    set({ 
-      selectedTemplate: template,
-      generatedContent: '',
-      error: null
-    });
-  },
-
-  updateFieldValue: (fieldId, value) => {
-    set((state) => {
-      if (!state.selectedTemplate) return state;
-      
-      const updatedTemplate = {
-        ...state.selectedTemplate,
-        fields: state.selectedTemplate.fields.map(field => 
-          field.id === fieldId ? { ...field, value } : field
-        )
-      };
-      
-      return { selectedTemplate: updatedTemplate };
-    });
-  },
-
-  addCustomField: (field) => {
-    set((state) => {
-      if (!state.selectedTemplate) return state;
-      
-      const updatedTemplate = {
-        ...state.selectedTemplate,
-        fields: [...state.selectedTemplate.fields, field]
-      };
-      
-      return { selectedTemplate: updatedTemplate };
-    });
-  },
-
-  removeField: (fieldId) => {
-    set((state) => {
-      if (!state.selectedTemplate) return state;
-      
-      const updatedTemplate = {
-        ...state.selectedTemplate,
-        fields: state.selectedTemplate.fields.filter(field => field.id !== fieldId)
-      };
-      
-      return { selectedTemplate: updatedTemplate };
-    });
-  },
-
-  setEditMode: (editing) => {
-    set({ isEditing: editing });
-  },
-
-  updateEditedContent: (content) => {
-    set({ editedContent: content });
-  },
-
-  generateDocumentFromForm: async (data: DocumentFormData) => {
-    try {
-      set({ isGenerating: true, error: null });
-
-      const newDocument = await documentGenerationApi.generateDocument(data);
-      
-      set(state => ({
-        generatedDocuments: [newDocument, ...state.generatedDocuments]
-      }));
-
-    } catch (error: any) {
-      set({ error: error.message });
-    } finally {
-      set({ isGenerating: false });
-    }
-  },
-
-  regenerateDocument: async (documentId: string, data: DocumentFormData) => {
-    try {
-      set({ isGenerating: true, error: null });
-
-      set(state => ({
-        generatedDocuments: state.generatedDocuments.map(doc =>
-          doc.id === documentId
-            ? { ...doc, status: 'generating' as const }
-            : doc
-        )
-      }));
-
-      const updatedDocument = await documentGenerationApi.regenerateDocument(documentId, data);
-
-      set(state => ({
-        generatedDocuments: state.generatedDocuments.map(doc =>
-          doc.id === documentId ? updatedDocument : doc
-        )
-      }));
-
-    } catch (error: any) {
-      set({ error: error.message });
-      
-      set(state => ({
-        generatedDocuments: state.generatedDocuments.map(doc =>
-          doc.id === documentId
-            ? { ...doc, status: 'failed' as const }
-            : doc
-        )
-      }));
-    } finally {
-      set({ isGenerating: false });
-    }
-  },
-
-  generateDocument: async () => {
-    const { selectedTemplate } = get();
-    
-    if (!selectedTemplate) {
-      set({ error: 'Please select a template' });
-      return;
-    }
-
-    try {
-      set({ 
-        isGenerating: true, 
-        error: null,
-        generationProgress: { step: 1, totalSteps: 3, currentTask: 'Preparing template...', completed: false }
-      });
-
-      setTimeout(() => {
-        set({ generationProgress: { step: 2, totalSteps: 3, currentTask: 'Generating content...', completed: false } });
-      }, 1000);
-
-      // Create form data from template
-      const formData: DocumentFormData = {
-        title: selectedTemplate.name,
-        purpose: `Document generated from ${selectedTemplate.name} template`,
-        instructions: selectedTemplate.fields.map(field => `${field.label}: ${field.value || 'Not specified'}`).join('\n'),
-        templateId: selectedTemplate.id
-      };
-
-      const newDocument = await documentGenerationApi.generateDocument(formData);
-
-      set({ 
-        generatedContent: newDocument.content,
-        editedContent: newDocument.content,
-        generationProgress: { step: 3, totalSteps: 3, currentTask: 'Complete!', completed: true }
-      });
-
-      // Add to documents list
-      set(state => ({
-        generatedDocuments: [newDocument, ...state.generatedDocuments]
-      }));
-
-    } catch (error: any) {
-      set({ error: error.message });
-    } finally {
-      set({ isGenerating: false });
-      setTimeout(() => set({ generationProgress: null }), 2000);
-    }
-  },
-
-  resetGeneration: () => {
-    set({
-      selectedTemplate: null,
-      generatedContent: '',
-      isGenerating: false,
-      isEditing: false,
-      editedContent: '',
-      generationProgress: null,
-      error: null
-    });
-  },
 
   fetchTemplates: async () => {
     try {
@@ -249,10 +90,42 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
     }
   },
 
+  generateDocument: async (data: DocumentFormData) => {
+    try {
+      set({ loading: true, error: null });
+      const document = await documentGenerationApi.generateDocument(data);
+      set(state => ({ 
+        generatedDocuments: [document, ...state.generatedDocuments] 
+      }));
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  regenerateDocument: async (documentId: string, data: DocumentFormData) => {
+    try {
+      set({ loading: true, error: null });
+      const document = await documentGenerationApi.regenerateDocument(documentId, data);
+      set(state => ({
+        generatedDocuments: state.generatedDocuments.map(doc => 
+          doc.id === documentId ? document : doc
+        ),
+        selectedDocument: state.selectedDocument?.id === documentId ? document : state.selectedDocument
+      }));
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
   selectDocument: async (documentId: string) => {
     try {
       await documentGenerationApi.selectDocument(documentId);
-      
       set(state => ({
         generatedDocuments: state.generatedDocuments.map(doc => ({
           ...doc,
@@ -261,20 +134,44 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
       }));
     } catch (error: any) {
       set({ error: error.message });
+      throw error;
     }
   },
 
   deleteDocument: async (documentId: string) => {
     try {
+      set({ loading: true, error: null });
       await documentGenerationApi.deleteDocument(documentId);
-      
       set(state => ({
-        generatedDocuments: state.generatedDocuments.filter(doc => doc.id !== documentId)
+        generatedDocuments: state.generatedDocuments.filter(doc => doc.id !== documentId),
+        selectedDocument: state.selectedDocument?.id === documentId ? null : state.selectedDocument
       }));
     } catch (error: any) {
       set({ error: error.message });
+    } finally {
+      set({ loading: false });
     }
   },
+
+  downloadDocument: async (documentId: string) => {
+    try {
+      const blob = await documentGenerationApi.downloadDocument(documentId);
+      const document = get().generatedDocuments.find(doc => doc.id === documentId);
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = document?.title || 'document';
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  setSelectedDocument: (document) => set({ selectedDocument: document }),
 
   clearError: () => set({ error: null })
 }));

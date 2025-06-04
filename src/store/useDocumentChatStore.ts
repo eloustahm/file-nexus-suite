@@ -1,18 +1,7 @@
 
 import { create } from 'zustand';
-import { chatApi, ChatSession, ChatMessage, Agent } from '@/services/chat';
-
-interface ChatHistory {
-  id: string;
-  name: string;
-  title: string;
-  lastMessage: string;
-  timestamp: Date;
-  messageCount: number;
-  messages: ChatMessage[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { chatApi } from '@/services/chat';
+import type { ChatSession, ChatMessage, Agent, ChatHistory } from '@/types';
 
 interface DocumentChatState {
   selectedAgent: Agent | null;
@@ -82,7 +71,8 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
         messageCount: session.messages.length,
         messages: session.messages,
         createdAt: new Date(session.createdAt),
-        updatedAt: new Date(session.updatedAt)
+        updatedAt: new Date(session.updatedAt),
+        documentName: session.documentId ? 'Document Chat' : undefined
       }));
       set({ sessions, chatHistories });
     } catch (error: any) {

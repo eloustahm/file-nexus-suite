@@ -1,34 +1,6 @@
 
 import { http } from '@/lib/api';
-
-export interface ChatMessage {
-  id: string;
-  content: string;
-  role: 'user' | 'assistant';
-  sender: 'user' | 'agent';
-  timestamp: string;
-  documentId?: string;
-  agentId?: string;
-}
-
-export interface ChatSession {
-  id: string;
-  title: string;
-  messages: ChatMessage[];
-  documentId?: string;
-  agentId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  avatar: string;
-  capabilities: string[];
-  isActive: boolean;
-}
+import type { ChatMessage, ChatSession, Agent } from '@/types';
 
 export interface SendMessageData {
   content: string;

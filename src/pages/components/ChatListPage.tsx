@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDocumentChatStore } from '@/store/useDocumentChatStore';
 import { ChatListHeader } from './ChatList/ChatListHeader';
@@ -12,7 +12,11 @@ export const ChatListPage = () => {
   const [filterType, setFilterType] = useState<'all' | 'recent'>('all');
   const navigate = useNavigate();
 
-  const { chatHistories, loading, error } = useDocumentChatStore();
+  const { chatHistories, loading, error, fetchSessions } = useDocumentChatStore();
+
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
 
   const filteredChats = chatHistories.filter(chat => {
     const matchesSearch = chat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,6 +53,22 @@ export const ChatListPage = () => {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-red-600 text-center">
+          <p>Error loading chat history: {error}</p>
+          <button 
+            onClick={fetchSessions}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
