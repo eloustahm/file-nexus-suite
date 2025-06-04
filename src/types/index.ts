@@ -34,7 +34,7 @@ export interface Agent {
   id: string;
   name: string;
   description: string;
-  avatar: string;
+  avatar?: string; // Made optional to fix build error
   capabilities: string[];
   isActive: boolean;
   type: string;
@@ -146,19 +146,22 @@ export interface Workflow {
   lastRun?: string;
 }
 
-// Document Generation Types
+// Document Generation Types - Unified Template Interface
+export interface TemplateField {
+  name: string; // Unified field identifier
+  type: 'text' | 'textarea' | 'select' | 'date';
+  label: string;
+  required: boolean;
+  options?: string[];
+  value?: string;
+  placeholder?: string;
+}
+
 export interface Template {
   id: string;
   name: string;
   description: string;
-  fields: Array<{
-    name: string;
-    type: 'text' | 'textarea' | 'select' | 'date';
-    label: string;
-    required: boolean;
-    options?: string[];
-    value?: string;
-  }>;
+  fields: TemplateField[];
   category: string;
   preview?: string;
 }

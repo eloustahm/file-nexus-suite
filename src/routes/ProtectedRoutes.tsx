@@ -6,7 +6,7 @@ import { Dashboard } from '@/pages/components/Dashboard';
 import { Document } from '@/pages/components/Document/Document';
 import { ModernDocumentChat } from '@/pages/components/Document/ModernDocumentChat';
 import { ModernGenerateDocument } from '@/pages/components/Document/ModernGenerateDocument';
-import { ChatHistory } from '@/pages/components/ChatHistory';
+import { ChatHistoryWrapper } from '@/pages/components/ChatHistoryWrapper';
 import { DocumentGenerationHistory } from '@/pages/components/DocumentGenerationHistory';
 import { SharedDocuments } from '@/pages/components/SharedDocuments';
 import { Folders } from '@/pages/components/Folders';
@@ -37,7 +37,7 @@ export const ProtectedRoutes = () => {
         <Route path="/chat/new" element={<NewChatPage />} />
         <Route path="/chat/:chatId" element={<ChatWithDocumentAgent />} />
         <Route path="/chat/document/:documentId" element={<ChatWithDocumentAgent />} />
-        <Route path="/chat-history" element={<ChatHistory />} />
+        <Route path="/chat-history" element={<ChatHistoryWrapper />} />
         <Route path="/generate" element={<ModernGenerateDocument />} />
         <Route path="/generation-history" element={<DocumentGenerationHistory />} />
         <Route path="/folders" element={<Folders />} />
