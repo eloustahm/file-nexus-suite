@@ -6,12 +6,16 @@ import { toast } from 'sonner';
 export const useAuthQuery = () => {
   const queryClient = useQueryClient();
 
-  // Get current user query
+  // Get current user query - only runs once and caches the result
   const userQuery = useQuery({
     queryKey: ['auth', 'user'],
     queryFn: authApi.getCurrentUser,
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   // Login mutation
@@ -67,7 +71,7 @@ export const useAuthQuery = () => {
     isRegistering: registerMutation.isPending,
     isLoggingOut: logoutMutation.isPending,
     
-    // Refetch
+    // Refetch - only call when explicitly needed
     refetchUser: userQuery.refetch,
   };
 };

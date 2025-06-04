@@ -22,7 +22,7 @@ export const useAuth = () => {
     login: authQuery.login,
     register: authQuery.register,
     logout: authQuery.logout,
-    getCurrentUser: authQuery.refetchUser,
+    refetchUser: authQuery.refetchUser,
     
     // Mutation loading states
     isLoggingIn: authQuery.isLoggingIn,
