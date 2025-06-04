@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { AuthenticatedLayout } from '@/pages/layouts/AuthenticatedLayout';
@@ -20,6 +19,9 @@ import { UserProfile } from '@/pages/components/UserProfile';
 import { Integrations } from '@/pages/components/Integrations';
 import { PricingPlans } from '@/pages/components/PricingPlans';
 import { DocumentSharing } from '@/pages/components/DocumentSharing';
+import { ChatListPage } from '@/pages/components/ChatListPage';
+import { NewChatPage } from '@/pages/components/NewChatPage';
+import { ChatWithDocumentAgent } from '@/pages/components/ChatWithDocumentAgent';
 
 export const ProtectedRoutes = () => {
   return (
@@ -30,6 +32,10 @@ export const ProtectedRoutes = () => {
         <Route path="/documents/chat" element={<ModernDocumentChat />} />
         <Route path="/documents/generate" element={<ModernDocumentGenerator />} />
         <Route path="/chat" element={<ModernDocumentChat />} />
+        <Route path="/chats" element={<ChatListPage />} />
+        <Route path="/chat/new" element={<NewChatPage />} />
+        <Route path="/chat/:chatId" element={<ChatWithDocumentAgent />} />
+        <Route path="/chat/document/:documentId" element={<ChatWithDocumentAgent />} />
         <Route path="/chat-history" element={<ChatHistory />} />
         <Route path="/generate" element={<ModernDocumentGenerator />} />
         <Route path="/generation-history" element={<DocumentGenerationHistory />} />
