@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,35 +7,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { signIn } = useAuth();
+  const { login, isLoggingIn, error, clearError } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
+    clearError();
 
     try {
-      await signIn(email, password);
-      toast({
-        title: "Login successful",
-        description: "Welcome back! Redirecting to dashboard...",
-      });
+      await login({ email, password });
       navigate('/dashboard', { replace: true });
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      // Error is handled by the mutation's onError
     }
   };
 
@@ -149,9 +139,9 @@ export const LoginPage = () => {
                   <Button
                       type="submit"
                       className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-                      disabled={isLoading}
+                      disabled={isLoggingIn}
                   >
-                    {isLoading ? (
+                    {isLoggingIn ? (
                         <div className="flex items-center space-x-2">
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                           <span>Signing in...</span>

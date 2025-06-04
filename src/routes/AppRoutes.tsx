@@ -1,39 +1,37 @@
-// src/routes/AppRoutes.tsx
 
 import React, { useEffect, useRef } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRouteWrapper } from './ProtectedRouteWrapper';
 import { PublicRouteWrapper } from './PublicRouteWrapper';
 import { NotFound } from '@/pages/NotFound';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 export const AppRoutes = () => {
-  const { user, loading, getCurrentUser } = useAuthStore()
-  const triedFetchRef = useRef(false)
+  const { user, isLoading, getCurrentUser } = useAuth();
+  const triedFetchRef = useRef(false);
 
   useEffect(() => {
-    const authAttempted = sessionStorage.getItem('auth_attempted')
+    const authAttempted = sessionStorage.getItem('auth_attempted');
     if (
         !triedFetchRef.current &&
         !user &&
-        !loading &&
+        !isLoading &&
         authAttempted === 'true'
     ) {
-
-      triedFetchRef.current = true
+      triedFetchRef.current = true;
       getCurrentUser().catch(() => {
-        console.log('User not authenticated')
-      })
+        console.log('User not authenticated');
+      });
     }
-  }, [user, loading, getCurrentUser])
+  }, [user, isLoading, getCurrentUser]);
 
-  if (loading) {
+  if (isLoading) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <LoadingSpinner size="lg" text="Loading application…" />
         </div>
-    )
+    );
   }
 
   return (
@@ -42,5 +40,5 @@ export const AppRoutes = () => {
         <Route path="/*" element={<PublicRouteWrapper />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-  )
-}
+  );
+};

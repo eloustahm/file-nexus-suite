@@ -3,8 +3,8 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { QueryProvider } from '@/providers/QueryProvider';
-import AppRoutes from '@/routes/AppRoutes';
-import ErrorBoundary from '@/components/ErrorBoundary';
+import { AppRoutes } from '@/routes/AppRoutes';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 function App() {
   return (

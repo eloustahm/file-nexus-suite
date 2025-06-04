@@ -1,15 +1,15 @@
 
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuth } from '@/hooks/useAuth';
 import { PublicRoutes } from './PublicRoutes';
 
 export const PublicRouteWrapper = () => {
-    const { isAuthenticated } = useAuthStore();
+    const { isAuthenticated } = useAuth();
     const location = useLocation();
 
     // If already authenticated, send to /dashboard
-    // (we preserve no “from” state here; always go to /dashboard)
+    // (we preserve no "from" state here; always go to /dashboard)
     if (isAuthenticated) {
         return <Navigate to="/dashboard" replace />;
     }

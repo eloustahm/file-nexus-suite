@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoutes } from './ProtectedRoutes';
 
 export const ProtectedRouteWrapper = () => {
-    const { isAuthenticated } = useAuthStore();
+    const { isAuthenticated } = useAuth();
 
     // If not logged in, send to /login (or "/" which PublicRoutes will interpret as login)
     if (!isAuthenticated) {

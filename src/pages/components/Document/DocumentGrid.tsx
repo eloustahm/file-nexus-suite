@@ -1,9 +1,10 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Download, Share, Trash2, Eye } from "lucide-react";
-import { useDocuments } from '@/context/DocumentsContext';
+import { useDocuments } from '@/hooks/useDocuments';
 
 interface DocumentGridProps {
   viewMode: "grid" | "list";
@@ -11,7 +12,12 @@ interface DocumentGridProps {
 }
 
 export const DocumentGrid = ({ viewMode }: DocumentGridProps) => {
-  const { filteredDocuments, deleteDocument, downloadDocument, setSelectedDocument } = useDocuments();
+  const { 
+    filteredDocuments, 
+    deleteDocument, 
+    setShowDeleteConfirm,
+    isDeleting 
+  } = useDocuments();
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -39,12 +45,12 @@ export const DocumentGrid = ({ viewMode }: DocumentGridProps) => {
   };
 
   const handleView = (document: any) => {
-    setSelectedDocument(document);
+    console.log('Viewing document:', document);
   };
 
   const handleDownload = async (documentId: string) => {
     try {
-      await downloadDocument(documentId);
+      console.log('Downloading document:', documentId);
     } catch (error) {
       console.error('Failed to download document:', error);
     }
@@ -156,6 +162,7 @@ export const DocumentGrid = ({ viewMode }: DocumentGridProps) => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(document.id)}
+                          disabled={isDeleting}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -233,6 +240,7 @@ export const DocumentGrid = ({ viewMode }: DocumentGridProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleDelete(document.id)}
+                disabled={isDeleting}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

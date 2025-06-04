@@ -6,25 +6,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Filter, Grid3X3, List } from "lucide-react";
 import { DocumentUpload } from "@/pages/components/Document/DocumentUpload.tsx";
 import { DocumentGrid } from "@/pages/components/Document/DocumentGrid.tsx";
-import { useDocuments } from '@/context/DocumentsContext';
+import { useDocuments } from '@/hooks/useDocuments';
 
 type ViewMode = "grid" | "list";
 
 export const Document = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [searchQuery, setSearchQuery] = useState("");
-  
-  const { documents, loading, error, fetchDocuments, setSearchQuery: setStoreSearchQuery } = useDocuments();
+  const { 
+    filteredDocuments, 
+    isLoading, 
+    error, 
+    searchQuery, 
+    viewMode,
+    setSearchQuery, 
+    setViewMode,
+    refetch 
+  } = useDocuments();
 
-  useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
-
-  useEffect(() => {
-    setStoreSearchQuery(searchQuery);
-  }, [searchQuery, setStoreSearchQuery]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -41,7 +39,7 @@ export const Document = () => {
         <CardContent className="p-6">
           <div className="text-red-600 text-center">
             <p>Error loading documents: {error}</p>
-            <Button onClick={fetchDocuments} className="mt-4">
+            <Button onClick={refetch} className="mt-4">
               Try Again
             </Button>
           </div>
@@ -56,7 +54,7 @@ export const Document = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Documents</h1>
           <p className="text-gray-600 mt-1">
-            Manage and organize your documents ({documents.length} total)
+            Manage and organize your documents ({filteredDocuments.length} total)
           </p>
         </div>
         <div className="flex items-center gap-3">
