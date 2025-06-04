@@ -6,7 +6,7 @@ import {
   Card,
   CardContent,
   Button,
-  Grid,
+  Grid2 as Grid,
   Paper,
   List,
   ListItem,
@@ -14,10 +14,6 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Container,
   Divider
 } from '@mui/material';
@@ -26,7 +22,6 @@ import {
   Upload,
   MessageSquare,
   ArrowLeft,
-  Download,
   Plus
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -41,8 +36,6 @@ interface Document {
 }
 
 export const NewChatPage = () => {
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const navigate = useNavigate();
 
@@ -125,7 +118,7 @@ export const NewChatPage = () => {
 
       <Grid container spacing={4}>
         {/* Upload Section */}
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom display="flex" alignItems="center" gap={1}>
@@ -196,7 +189,7 @@ export const NewChatPage = () => {
         </Grid>
 
         {/* Document Selection */}
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom display="flex" alignItems="center" gap={1}>

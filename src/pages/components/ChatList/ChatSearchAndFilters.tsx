@@ -2,7 +2,7 @@
 import React from 'react';
 import {
   Paper,
-  Grid,
+  Grid2 as Grid,
   TextField,
   InputAdornment,
   Chip,
@@ -26,7 +26,7 @@ export const ChatSearchAndFilters: React.FC<ChatSearchAndFiltersProps> = ({
   return (
     <Paper sx={{ p: 3, mb: 4 }}>
       <Grid container spacing={2} alignItems="center">
-        <Grid item xs={12} md={8}>
+        <Grid xs={12} md={8}>
           <TextField
             fullWidth
             placeholder="Search conversations..."
@@ -41,7 +41,7 @@ export const ChatSearchAndFilters: React.FC<ChatSearchAndFiltersProps> = ({
             }}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Box display="flex" gap={1}>
             <Chip
               label="All"
