@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,12 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
-// import { authApi } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
-
-import { useAuthStore } from '@/store/useAuthStore';   // ← add this
-
-
+import { useAuth } from '@/context/AuthContext';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -22,19 +17,20 @@ export const LoginPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn } = useAuthStore();
+  const { signIn } = useAuth();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      await signIn( email, password );
+      await signIn(email, password);
       toast({
         title: "Login successful",
         description: "Welcome back! Redirecting to dashboard...",
       });
-      navigate('/dashboard', { replace: true })
+      navigate('/dashboard', { replace: true });
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {
