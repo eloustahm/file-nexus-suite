@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { List } from '@mui/material';
 import { ChatHistory } from '@/pages/components/Document/types/chatTypes';
 import { ChatListItem } from './ChatListItem';
 
@@ -16,7 +15,7 @@ export const ChatList: React.FC<ChatListProps> = ({
   formatTimeAgo 
 }) => {
   return (
-    <List>
+    <div className="space-y-4">
       {chats.map((chat) => (
         <ChatListItem
           key={chat.id}
@@ -25,6 +24,6 @@ export const ChatList: React.FC<ChatListProps> = ({
           formatTimeAgo={formatTimeAgo}
         />
       ))}
-    </List>
+    </div>
   );
 };

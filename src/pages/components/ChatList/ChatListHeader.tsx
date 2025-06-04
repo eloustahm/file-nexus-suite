@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Box, Typography, Button } from '@mui/material';
+import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
 interface ChatListHeaderProps {
@@ -9,23 +9,19 @@ interface ChatListHeaderProps {
 
 export const ChatListHeader: React.FC<ChatListHeaderProps> = ({ onNewChat }) => {
   return (
-    <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-      <Box>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+    <div className="flex justify-between items-center mb-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Document Chats
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
+        </h1>
+        <p className="text-gray-600">
           Continue your conversations with documents
-        </Typography>
-      </Box>
-      <Button
-        variant="contained"
-        startIcon={<Plus />}
-        onClick={onNewChat}
-        size="large"
-      >
+        </p>
+      </div>
+      <Button onClick={onNewChat} size="lg">
+        <Plus className="h-4 w-4 mr-2" />
         New Chat
       </Button>
-    </Box>
+    </div>
   );
 };

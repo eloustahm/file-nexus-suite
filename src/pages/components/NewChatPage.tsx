@@ -1,22 +1,8 @@
 
 import React, { useState, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Button,
-  Grid2 as Grid,
-  Paper,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Container,
-  Divider
-} from '@mui/material';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   FileText,
   Upload,
@@ -79,13 +65,11 @@ export const NewChatPage = () => {
   });
 
   const handleStartChat = (document: Document) => {
-    // Navigate to chat interface with selected document
     navigate(`/chat/document/${document.id}`);
   };
 
   const handleUploadAndChat = () => {
     if (uploadedFiles.length > 0) {
-      // In a real app, upload the file first, then navigate
       const mockId = Date.now().toString();
       navigate(`/chat/document/${mockId}`);
     }
@@ -100,142 +84,117 @@ export const NewChatPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <div className="max-w-6xl mx-auto py-8 px-4">
       {/* Header */}
-      <Box display="flex" alignItems="center" mb={4}>
-        <IconButton onClick={() => navigate('/chats')} sx={{ mr: 2 }}>
-          <ArrowLeft />
-        </IconButton>
-        <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
+      <div className="flex items-center mb-8">
+        <Button variant="ghost" onClick={() => navigate('/chats')} className="mr-4">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Start New Chat
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
+          </h1>
+          <p className="text-gray-600">
             Select a document or upload a new one to begin chatting
-          </Typography>
-        </Box>
-      </Box>
+          </p>
+        </div>
+      </div>
 
-      <Grid container spacing={4}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Upload Section */}
-        <Grid xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom display="flex" alignItems="center" gap={1}>
-                <Upload size={20} />
-                Upload New Document
-              </Typography>
-              
-              <Paper
-                {...getRootProps()}
-                sx={{
-                  p: 4,
-                  border: '2px dashed',
-                  borderColor: isDragActive ? 'primary.main' : 'grey.300',
-                  backgroundColor: isDragActive ? 'primary.50' : 'grey.50',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  mt: 2,
-                  '&:hover': {
-                    borderColor: 'primary.main',
-                    backgroundColor: 'primary.50'
-                  }
-                }}
-              >
-                <input {...getInputProps()} />
-                <Upload size={48} color={isDragActive ? '#1976d2' : '#666'} style={{ marginBottom: 16 }} />
-                <Typography variant="h6" gutterBottom>
-                  {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  or click to browse
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Supports PDF, DOCX, XLSX, TXT files
-                </Typography>
-              </Paper>
+        <Card className="h-fit">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              Upload New Document
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                isDragActive 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-300 bg-gray-50 hover:border-blue-500 hover:bg-blue-50'
+              }`}
+            >
+              <input {...getInputProps()} />
+              <Upload className={`h-12 w-12 mx-auto mb-4 ${isDragActive ? 'text-blue-500' : 'text-gray-400'}`} />
+              <h3 className="text-lg font-semibold mb-2">
+                {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
+              </h3>
+              <p className="text-gray-600 mb-1">or click to browse</p>
+              <p className="text-sm text-gray-500">
+                Supports PDF, DOCX, XLSX, TXT files
+              </p>
+            </div>
 
-              {uploadedFiles.length > 0 && (
-                <Box mt={3}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Uploaded Files:
-                  </Typography>
-                  <List dense>
-                    {uploadedFiles.map((file, index) => (
-                      <ListItem key={index}>
-                        <ListItemIcon>
-                          <FileText size={20} />
-                        </ListItemIcon>
-                        <ListItemText 
-                          primary={file.name}
-                          secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    onClick={handleUploadAndChat}
-                    startIcon={<MessageSquare />}
-                    sx={{ mt: 2 }}
-                  >
-                    Start Chat with Uploaded Files
-                  </Button>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
+            {uploadedFiles.length > 0 && (
+              <div className="mt-6">
+                <h4 className="font-medium mb-3">Uploaded Files:</h4>
+                <div className="space-y-2">
+                  {uploadedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 rounded">
+                      <FileText className="h-4 w-4 text-gray-500" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{file.name}</p>
+                        <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  onClick={handleUploadAndChat}
+                  className="w-full mt-4"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Start Chat with Uploaded Files
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Document Selection */}
-        <Grid xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom display="flex" alignItems="center" gap={1}>
-                <FileText size={20} />
-                Select Existing Document
-              </Typography>
-              
-              <List sx={{ mt: 2 }}>
-                {availableDocuments.map((doc, index) => (
-                  <React.Fragment key={doc.id}>
-                    <ListItem>
-                      <ListItemIcon>
-                        <FileText size={20} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={doc.name}
-                        secondary={
-                          <Box>
-                            <Typography variant="caption" display="block">
-                              {doc.type} • {doc.size}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              Uploaded {formatDate(doc.uploadDate)}
-                            </Typography>
-                          </Box>
-                        }
-                      />
-                      <ListItemSecondaryAction>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() => handleStartChat(doc)}
-                          startIcon={<MessageSquare />}
-                        >
-                          Chat
-                        </Button>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                    {index < availableDocuments.length - 1 && <Divider />}
-                  </React.Fragment>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Container>
+        <Card className="h-fit">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Select Existing Document
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {availableDocuments.map((doc) => (
+                <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-gray-500" />
+                    <div>
+                      <h4 className="font-medium">{doc.name}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          {doc.type} • {doc.size}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Uploaded {formatDate(doc.uploadDate)}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleStartChat(doc)}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Chat
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };

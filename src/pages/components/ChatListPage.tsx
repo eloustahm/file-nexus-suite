@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Box, Typography, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDocumentChatStore } from '@/store/useDocumentChatStore';
 import { ChatListHeader } from './ChatList/ChatListHeader';
@@ -48,14 +47,14 @@ export const ChatListPage = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-        <Typography>Loading chats...</Typography>
-      </Box>
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <div className="max-w-6xl mx-auto py-8 px-4">
       <ChatListHeader onNewChat={handleNewChat} />
       
       <ChatSearchAndFilters
@@ -74,6 +73,6 @@ export const ChatListPage = () => {
           formatTimeAgo={formatTimeAgo}
         />
       )}
-    </Container>
+    </div>
   );
 };

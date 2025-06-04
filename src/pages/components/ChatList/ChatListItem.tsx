@@ -1,17 +1,9 @@
 
 import React from 'react';
-import {
-  Card,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  Avatar,
-  Typography,
-  Button,
-  Chip,
-  Box
-} from '@mui/material';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { FileText, Clock, ArrowRight } from 'lucide-react';
 import { ChatHistory } from '@/pages/components/Document/types/chatTypes';
 
@@ -27,48 +19,39 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
   formatTimeAgo 
 }) => {
   return (
-    <Card sx={{ mb: 2, '&:hover': { boxShadow: 3 } }}>
-      <ListItem>
-        <ListItemAvatar>
-          <Avatar sx={{ bgcolor: 'primary.main' }}>
-            <FileText size={20} />
+    <Card className="p-4 mb-4 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3 flex-1">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className="bg-blue-100 text-blue-600">
+              <FileText className="h-5 w-5" />
+            </AvatarFallback>
           </Avatar>
-        </ListItemAvatar>
-        <ListItemText
-          primary={
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography variant="h6">{chat.name}</Typography>
-              <Chip
-                label={`${chat.messageCount} messages`}
-                size="small"
-                variant="outlined"
-              />
-            </Box>
-          }
-          secondary={
-            <Box>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {chat.lastMessage}
-              </Typography>
-              <Box display="flex" alignItems="center" gap={1} mt={1}>
-                <Clock size={14} />
-                <Typography variant="caption" color="text.secondary">
-                  {formatTimeAgo(chat.timestamp)}
-                </Typography>
-              </Box>
-            </Box>
-          }
-        />
-        <ListItemSecondaryAction>
-          <Button
-            variant="outlined"
-            endIcon={<ArrowRight />}
-            onClick={() => onResumeChat(chat.id)}
-          >
-            Resume
-          </Button>
-        </ListItemSecondaryAction>
-      </ListItem>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-gray-900 truncate">{chat.name}</h3>
+              <Badge variant="outline" className="text-xs">
+                {chat.messageCount} messages
+              </Badge>
+            </div>
+            <p className="text-sm text-gray-600 truncate mb-1">
+              {chat.lastMessage}
+            </p>
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <Clock className="h-3 w-3" />
+              <span>{formatTimeAgo(chat.timestamp)}</span>
+            </div>
+          </div>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => onResumeChat(chat.id)}
+          className="ml-4"
+        >
+          Resume
+          <ArrowRight className="h-4 w-4 ml-2" />
+        </Button>
+      </div>
     </Card>
   );
 };

@@ -1,12 +1,7 @@
 
 import React from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Toolbar
-} from '@mui/material';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Download,
   Share,
@@ -37,56 +32,45 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 25, 50));
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
       {/* Preview Header */}
-      <Toolbar variant="dense" sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
-          {document.name}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ mr: 2 }}>
-          {document.type} • {document.size}
-        </Typography>
-        <Button size="small" onClick={handleZoomOut} disabled={zoom <= 50}>
-          <ZoomOut size={16} />
-        </Button>
-        <Typography variant="caption" sx={{ mx: 1 }}>
-          {zoom}%
-        </Typography>
-        <Button size="small" onClick={handleZoomIn} disabled={zoom >= 200}>
-          <ZoomIn size={16} />
-        </Button>
-        {onShare && (
-          <Button size="small" onClick={onShare} sx={{ ml: 1 }}>
-            <Share size={16} />
+      <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+        <div>
+          <h3 className="font-semibold">{document.name}</h3>
+          <p className="text-sm text-gray-600">{document.type} • {document.size}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleZoomOut} disabled={zoom <= 50}>
+            <ZoomOut className="h-4 w-4" />
           </Button>
-        )}
-        {onDownload && (
-          <Button size="small" onClick={onDownload} sx={{ ml: 1 }}>
-            <Download size={16} />
+          <span className="text-sm px-2">{zoom}%</span>
+          <Button variant="outline" size="sm" onClick={handleZoomIn} disabled={zoom >= 200}>
+            <ZoomIn className="h-4 w-4" />
           </Button>
-        )}
-      </Toolbar>
+          {onShare && (
+            <Button variant="outline" size="sm" onClick={onShare}>
+              <Share className="h-4 w-4" />
+            </Button>
+          )}
+          {onDownload && (
+            <Button variant="outline" size="sm" onClick={onDownload}>
+              <Download className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* Preview Content */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
-        <Paper 
-          sx={{ 
-            p: 3, 
-            bgcolor: 'grey.50', 
-            minHeight: '100%',
-            fontSize: `${zoom}%`
-          }}
-        >
-          <pre style={{ 
-            whiteSpace: 'pre-wrap', 
-            fontFamily: 'inherit', 
-            margin: 0,
-            lineHeight: 1.6
-          }}>
+      <div className="flex-1 overflow-auto p-4">
+        <Card className="p-6 bg-gray-50 min-h-full">
+          <pre 
+            className="whitespace-pre-wrap font-mono text-sm leading-relaxed"
+            style={{ fontSize: `${zoom}%` }}
+          >
             {document.content}
           </pre>
-        </Paper>
-      </Box>
-    </Box>
+        </Card>
+      </div>
+    </div>
   );
 };

@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Paper, Typography, Button } from '@mui/material';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { MessageSquare, Plus } from 'lucide-react';
 
 interface EmptyStateProps {
@@ -10,25 +11,21 @@ interface EmptyStateProps {
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ searchTerm, onNewChat }) => {
   return (
-    <Paper sx={{ p: 6, textAlign: 'center' }}>
-      <MessageSquare size={64} color="#ccc" style={{ marginBottom: 16 }} />
-      <Typography variant="h6" gutterBottom>
+    <Card className="p-12 text-center">
+      <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">
         {searchTerm ? 'No matching chats found' : 'No chats yet'}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" gutterBottom>
+      </h3>
+      <p className="text-gray-600 mb-4">
         {searchTerm 
           ? 'Try adjusting your search terms' 
           : 'Start a conversation with your documents'
         }
-      </Typography>
-      <Button
-        variant="contained"
-        startIcon={<Plus />}
-        onClick={onNewChat}
-        sx={{ mt: 2 }}
-      >
+      </p>
+      <Button onClick={onNewChat}>
+        <Plus className="h-4 w-4 mr-2" />
         Start First Chat
       </Button>
-    </Paper>
+    </Card>
   );
 };

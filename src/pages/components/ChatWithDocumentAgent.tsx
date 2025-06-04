@@ -1,22 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Box,
-  Grid,
-  Paper,
-  Typography,
-  TextField,
-  IconButton,
-  Avatar,
-  List,
-  ListItem,
-  Chip,
-  Button,
-  Divider,
-  Container,
-  AppBar,
-  Toolbar
-} from '@mui/material';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Send,
   FileText,
@@ -24,7 +12,9 @@ import {
   User,
   ArrowLeft,
   Download,
-  Share
+  Share,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDocumentChatStore } from '@/store/useDocumentChatStore';
@@ -41,6 +31,7 @@ export const ChatWithDocumentAgent = () => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [zoom, setZoom] = useState(100);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { documentId } = useParams();
@@ -82,7 +73,7 @@ export const ChatWithDocumentAgent = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [currentMessages]);
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -123,206 +114,142 @@ export const ChatWithDocumentAgent = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 25, 200));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 25, 50));
+
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="h-screen flex flex-col">
       {/* Header */}
-      <AppBar position="static" color="default" elevation={1}>
-        <Toolbar>
-          <IconButton onClick={() => navigate('/chats')} sx={{ mr: 2 }}>
-            <ArrowLeft />
-          </IconButton>
-          <FileText size={20} style={{ marginRight: 8 }} />
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            {document.name}
-          </Typography>
-          <Button startIcon={<Share />} sx={{ mr: 1 }}>
-            Share
-          </Button>
-          <Button startIcon={<Download />}>
-            Download
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <div className="bg-white border-b px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/chats')}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <FileText className="h-5 w-5" />
+            <h1 className="text-xl font-semibold">{document.name}</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">
+              <Share className="h-4 w-4 mr-2" />
+              Share
+            </Button>
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
-      <Box sx={{ flexGrow: 1, display: 'flex', overflow: 'hidden' }}>
+      <div className="flex flex-1 overflow-hidden">
         {/* Chat Panel */}
-        <Box sx={{ width: '50%', display: 'flex', flexDirection: 'column' }}>
+        <div className="w-1/2 flex flex-col">
           {/* Messages */}
-          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
-            <List>
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-4">
               {messages.map((msg) => (
-                <ListItem key={msg.id} sx={{ flexDirection: 'column', alignItems: 'flex-start', pb: 2 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      width: '100%',
-                      justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start'
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        gap: 1,
-                        maxWidth: '80%',
-                        flexDirection: msg.sender === 'user' ? 'row-reverse' : 'row'
-                      }}
-                    >
-                      <Avatar
-                        sx={{
-                          bgcolor: msg.sender === 'user' ? 'primary.main' : 'grey.600',
-                          width: 32,
-                          height: 32
-                        }}
-                      >
-                        {msg.sender === 'user' ? <User size={16} /> : <Bot size={16} />}
-                      </Avatar>
-                      <Paper
-                        sx={{
-                          p: 2,
-                          bgcolor: msg.sender === 'user' ? 'primary.main' : 'grey.100',
-                          color: msg.sender === 'user' ? 'white' : 'text.primary'
-                        }}
-                      >
-                        <Typography variant="body2">
-                          {msg.content}
-                        </Typography>
-                        {msg.documentReferences && (
-                          <Box sx={{ mt: 1 }}>
-                            {msg.documentReferences.map((ref, index) => (
-                              <Chip
-                                key={index}
-                                label={ref}
-                                size="small"
-                                variant="outlined"
-                                sx={{ mr: 0.5, color: 'inherit', borderColor: 'currentColor' }}
-                              />
-                            ))}
-                          </Box>
-                        )}
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            display: 'block',
-                            mt: 1,
-                            opacity: 0.7
-                          }}
-                        >
-                          {formatTime(msg.timestamp)}
-                        </Typography>
-                      </Paper>
-                    </Box>
-                  </Box>
-                </ListItem>
+                <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`flex gap-3 max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className={msg.sender === 'user' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}>
+                        {msg.sender === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Card className={`p-3 ${msg.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
+                      <p className="text-sm">{msg.content}</p>
+                      {msg.documentReferences && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {msg.documentReferences.map((ref, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {ref}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-xs opacity-70 mt-2">
+                        {formatTime(msg.timestamp)}
+                      </p>
+                    </Card>
+                  </div>
+                </div>
               ))}
               
               {/* Typing Indicator */}
               {isTyping && (
-                <ListItem sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <Avatar sx={{ bgcolor: 'grey.600', width: 32, height: 32 }}>
-                      <Bot size={16} />
+                <div className="flex justify-start">
+                  <div className="flex gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-gray-100 text-gray-600">
+                        <Bot className="h-4 w-4" />
+                      </AvatarFallback>
                     </Avatar>
-                    <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
-                      <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Box
-                          sx={{
-                            width: 6,
-                            height: 6,
-                            bgcolor: 'grey.500',
-                            borderRadius: '50%',
-                            animation: 'bounce 1.4s infinite ease-in-out'
-                          }}
-                        />
-                        <Box
-                          sx={{
-                            width: 6,
-                            height: 6,
-                            bgcolor: 'grey.500',
-                            borderRadius: '50%',
-                            animation: 'bounce 1.4s infinite ease-in-out',
-                            animationDelay: '0.16s'
-                          }}
-                        />
-                        <Box
-                          sx={{
-                            width: 6,
-                            height: 6,
-                            bgcolor: 'grey.500',
-                            borderRadius: '50%',
-                            animation: 'bounce 1.4s infinite ease-in-out',
-                            animationDelay: '0.32s'
-                          }}
-                        />
-                      </Box>
-                    </Paper>
-                  </Box>
-                </ListItem>
+                    <Card className="p-3 bg-gray-100">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                    </Card>
+                  </div>
+                </div>
               )}
-            </List>
+            </div>
             <div ref={messagesEndRef} />
-          </Box>
+          </div>
 
           {/* Message Input */}
-          <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <TextField
-                fullWidth
-                multiline
-                maxRows={4}
+          <div className="p-4 border-t">
+            <div className="flex gap-2">
+              <Input
                 placeholder="Ask about the document..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                variant="outlined"
-                size="small"
+                className="flex-1"
               />
-              <IconButton
-                color="primary"
+              <Button
                 onClick={handleSendMessage}
                 disabled={!message.trim() || isTyping}
               >
-                <Send />
-              </IconButton>
-            </Box>
-          </Box>
-        </Box>
-
-        <Divider orientation="vertical" flexItem />
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
 
         {/* Document Preview Panel */}
-        <Box sx={{ width: '50%', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-            <Typography variant="h6" gutterBottom>
-              Document Preview
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {document.type} • {document.size}
-            </Typography>
-          </Box>
-          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
-            <Paper sx={{ p: 3, bgcolor: 'grey.50', minHeight: '100%' }}>
-              <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', margin: 0 }}>
+        <div className="w-1/2 border-l flex flex-col">
+          <div className="p-4 border-b bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold">Document Preview</h3>
+                <p className="text-sm text-gray-600">{document.type} • {document.size}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleZoomOut} disabled={zoom <= 50}>
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <span className="text-sm px-2">{zoom}%</span>
+                <Button variant="outline" size="sm" onClick={handleZoomIn} disabled={zoom >= 200}>
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 overflow-auto p-4">
+            <Card className="p-6 bg-gray-50 min-h-full">
+              <pre 
+                className="whitespace-pre-wrap font-mono text-sm leading-relaxed"
+                style={{ fontSize: `${zoom}%` }}
+              >
                 {document.content}
               </pre>
-            </Paper>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Add bounce animation for typing indicator */}
-      <style>
-        {`
-          @keyframes bounce {
-            0%, 80%, 100% {
-              transform: scale(0);
-            }
-            40% {
-              transform: scale(1);
-            }
-          }
-        `}
-      </style>
-    </Box>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
