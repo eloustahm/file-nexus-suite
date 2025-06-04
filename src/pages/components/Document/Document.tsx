@@ -1,26 +1,33 @@
 
-import { useState, useEffect } from "react";
+import { useDocuments } from '@/hooks/useDocuments';
+import { useDocumentsUIStore } from '@/store/useDocumentsUIStore';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Filter, Grid3X3, List } from "lucide-react";
 import { DocumentUpload } from "@/pages/components/Document/DocumentUpload.tsx";
 import { DocumentGrid } from "@/pages/components/Document/DocumentGrid.tsx";
-import { useDocuments } from '@/hooks/useDocuments';
-
-type ViewMode = "grid" | "list";
 
 export const Document = () => {
   const { 
-    filteredDocuments, 
+    documents, 
     isLoading, 
     error, 
-    searchQuery, 
-    viewMode,
-    setSearchQuery, 
-    setViewMode,
     refetch 
   } = useDocuments();
+
+  const {
+    searchQuery,
+    viewMode,
+    setSearchQuery,
+    setViewMode
+  } = useDocumentsUIStore();
+
+  // Filter documents based on UI state
+  const filteredDocuments = documents?.filter(doc =>
+    doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
   const handleRetry = () => {
     refetch();
@@ -42,7 +49,7 @@ export const Document = () => {
       <Card>
         <CardContent className="p-6">
           <div className="text-red-600 text-center">
-            <p>Error loading documents: {error}</p>
+            <p>Error loading documents: {error.message}</p>
             <Button onClick={handleRetry} className="mt-4">
               Try Again
             </Button>
@@ -95,7 +102,7 @@ export const Document = () => {
           <DocumentUpload />
         </div>
       </div>
-      <DocumentGrid viewMode={viewMode} searchQuery={searchQuery} />
+      <DocumentGrid viewMode={viewMode} documents={filteredDocuments} />
     </div>
   );
 };

@@ -1,8 +1,12 @@
 
 import { create } from 'zustand';
 
+/**
+ * Auth UI Store - Manages only UI state for authentication forms
+ * Server data (user, tokens, etc.) is handled by React Query in useAuth hook
+ */
 interface AuthUIState {
-  // UI state only - no server data
+  // Form UI state
   isLoading: boolean;
   error: string | null;
   showLoginForm: boolean;
@@ -16,6 +20,7 @@ interface AuthUIState {
   setShowRegisterForm: (show: boolean) => void;
   setRememberMe: (remember: boolean) => void;
   clearError: () => void;
+  reset: () => void;
 }
 
 export const useAuthUIStore = create<AuthUIState>((set) => ({
@@ -31,4 +36,11 @@ export const useAuthUIStore = create<AuthUIState>((set) => ({
   setShowRegisterForm: (show) => set({ showRegisterForm: show }),
   setRememberMe: (remember) => set({ rememberMe: remember }),
   clearError: () => set({ error: null }),
+  reset: () => set({ 
+    isLoading: false, 
+    error: null, 
+    showLoginForm: false, 
+    showRegisterForm: false, 
+    rememberMe: false 
+  }),
 }));

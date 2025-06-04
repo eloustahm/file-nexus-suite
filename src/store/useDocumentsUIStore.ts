@@ -1,16 +1,23 @@
 
 import { create } from 'zustand';
 
+/**
+ * Documents UI Store - Manages only UI state for documents interface
+ * Server data (documents list, etc.) is handled by React Query in useDocuments hook
+ */
 interface DocumentsUIState {
-  // UI state only - no server data
+  // Search and filtering UI state
   searchQuery: string;
   selectedDocumentIds: string[];
   viewMode: 'grid' | 'list';
   sortBy: 'name' | 'date' | 'size' | 'type';
   sortOrder: 'asc' | 'desc';
   filterTags: string[];
+  
+  // Modal and dialog UI state
   showUploadModal: boolean;
   showDeleteConfirm: string | null; // document ID to delete
+  showShareModal: string | null; // document ID to share
   
   // Actions
   setSearchQuery: (query: string) => void;
@@ -21,7 +28,9 @@ interface DocumentsUIState {
   setFilterTags: (tags: string[]) => void;
   setShowUploadModal: (show: boolean) => void;
   setShowDeleteConfirm: (id: string | null) => void;
+  setShowShareModal: (id: string | null) => void;
   clearFilters: () => void;
+  clearSelections: () => void;
 }
 
 export const useDocumentsUIStore = create<DocumentsUIState>((set, get) => ({
@@ -33,6 +42,7 @@ export const useDocumentsUIStore = create<DocumentsUIState>((set, get) => ({
   filterTags: [],
   showUploadModal: false,
   showDeleteConfirm: null,
+  showShareModal: null,
 
   setSearchQuery: (query) => set({ searchQuery: query }),
   setSelectedDocuments: (ids) => set({ selectedDocumentIds: ids }),
@@ -50,10 +60,12 @@ export const useDocumentsUIStore = create<DocumentsUIState>((set, get) => ({
   setFilterTags: (tags) => set({ filterTags: tags }),
   setShowUploadModal: (show) => set({ showUploadModal: show }),
   setShowDeleteConfirm: (id) => set({ showDeleteConfirm: id }),
+  setShowShareModal: (id) => set({ showShareModal: id }),
   clearFilters: () => set({ 
     searchQuery: '', 
     filterTags: [], 
     sortBy: 'name', 
     sortOrder: 'asc' 
   }),
+  clearSelections: () => set({ selectedDocumentIds: [] }),
 }));
