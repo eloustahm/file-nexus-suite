@@ -1,6 +1,7 @@
 
 import { create } from 'zustand';
 import { authApi } from '@/services/api';
+import { createBaseActions, handleAsyncAction, BaseStoreState, BaseStoreActions } from '@/lib/storeUtils';
 
 interface User {
   id: string;
@@ -11,87 +12,87 @@ interface User {
   avatar?: string;
 }
 
-interface AuthState {
+interface AuthState extends BaseStoreState, BaseStoreActions {
   user: User | null;
-  loading: boolean;
-  error: string | null;
   isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   getCurrentUser: () => Promise<void>;
-  clearError: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
+  // State
   user: null,
+  isAuthenticated: false,
   loading: false,
   error: null,
-  isAuthenticated: false,
+
+  // Base actions
+  ...createBaseActions(set),
 
   signIn: async (email: string, password: string) => {
-    try {
-      set({ loading: true, error: null });
-      await authApi.csrf();
-      await authApi.login({ email, password });
-      await get().getCurrentUser();
-    } catch (error: any) {
-      set({ error: error.message });
-      throw error;
-    } finally {
-      set({ loading: false });
+    const result = await handleAsyncAction(
+      async () => {
+        await authApi.csrf();
+        await authApi.login({ email, password });
+        await get().getCurrentUser();
+      },
+      get().setLoading,
+      get().setError
+    );
+    if (!result && result !== undefined) {
+      throw new Error(get().error || 'Login failed');
     }
   },
 
   signUp: async (email: string, password: string, firstName: string, lastName: string) => {
-    try {
-      set({ loading: true, error: null });
-      await authApi.register({ email, password, firstName, lastName });
-      await get().getCurrentUser();
-    } catch (error: any) {
-      set({ error: error.message });
-      throw error;
-    } finally {
-      set({ loading: false });
+    const result = await handleAsyncAction(
+      async () => {
+        await authApi.register({ email, password, firstName, lastName });
+        await get().getCurrentUser();
+      },
+      get().setLoading,
+      get().setError
+    );
+    if (!result && result !== undefined) {
+      throw new Error(get().error || 'Registration failed');
     }
   },
 
   signOut: async () => {
-    try {
-      set({ loading: true });
-      await authApi.logout();
-      set({ user: null, isAuthenticated: false });
-    } catch (error: any) {
-      set({ error: error.message });
-    } finally {
-      set({ loading: false });
-    }
+    await handleAsyncAction(
+      async () => {
+        await authApi.logout();
+        set({ user: null, isAuthenticated: false });
+      },
+      get().setLoading,
+      get().setError
+    );
   },
 
   resetPassword: async (email: string) => {
-    try {
-      set({ loading: true, error: null });
-      await authApi.resetPassword(email);
-    } catch (error: any) {
-      set({ error: error.message });
-      throw error;
-    } finally {
-      set({ loading: false });
-    }
+    await handleAsyncAction(
+      async () => {
+        await authApi.resetPassword(email);
+      },
+      get().setLoading,
+      get().setError
+    );
   },
 
   getCurrentUser: async () => {
-    try {
-      set({ loading: true });
-      const user = await authApi.getCurrentUser();
-      set({ user, isAuthenticated: true });
-    } catch (error: any) {
-      set({ user: null, isAuthenticated: false, error: error.message });
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  clearError: () => set({ error: null })
+    await handleAsyncAction(
+      async () => {
+        const user = await authApi.getCurrentUser();
+        set({ user, isAuthenticated: true });
+        return user;
+      },
+      get().setLoading,
+      (error) => {
+        set({ user: null, isAuthenticated: false, error });
+      }
+    );
+  }
 }));

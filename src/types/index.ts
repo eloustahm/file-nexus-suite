@@ -15,7 +15,7 @@ export interface ChatMessage {
   content: string;
   role: 'user' | 'assistant';
   sender: 'user' | 'agent';
-  timestamp: Date | string;
+  timestamp: string; // Always ISO string
   documentId?: string;
   agentId?: string;
 }
@@ -26,15 +26,15 @@ export interface ChatSession {
   messages: ChatMessage[];
   documentId?: string;
   agentId?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string; // Always ISO string
+  updatedAt: string; // Always ISO string
 }
 
 export interface Agent {
   id: string;
   name: string;
   description: string;
-  avatar?: string; // Made optional to fix build error
+  avatar?: string;
   capabilities: string[];
   isActive: boolean;
   type: string;
@@ -48,11 +48,11 @@ export interface ChatHistory {
   name: string;
   title: string;
   lastMessage: string;
-  timestamp: Date;
+  timestamp: string; // Always ISO string
   messageCount: number;
   messages: ChatMessage[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // Always ISO string
+  updatedAt: string; // Always ISO string
   documentName?: string;
 }
 
@@ -63,8 +63,8 @@ export interface Document {
   size: number;
   content: string;
   url?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string; // Always ISO string
+  updatedAt: string; // Always ISO string
   folderId?: string;
   isShared: boolean;
   sharedWith: string[];
@@ -78,8 +78,8 @@ export interface TeamMember {
   email: string;
   role: 'admin' | 'editor' | 'viewer';
   avatar?: string;
-  joinedAt: string;
-  lastActive: string;
+  joinedAt: string; // Always ISO string
+  lastActive: string; // Always ISO string
   status: 'active' | 'pending' | 'suspended';
 }
 
@@ -89,7 +89,7 @@ export interface Notification {
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
   isRead: boolean;
-  createdAt: string;
+  createdAt: string; // Always ISO string
   actionUrl?: string;
   actionLabel?: string;
   metadata?: Record<string, any>;
@@ -102,7 +102,7 @@ export interface ActivityLog {
   userId: string;
   userName: string;
   userAvatar?: string;
-  timestamp: string;
+  timestamp: string; // Always ISO string
   type: 'document' | 'team' | 'system' | 'chat';
   metadata?: Record<string, any>;
   resourceId?: string;
@@ -114,8 +114,8 @@ export interface Folder {
   name: string;
   description?: string;
   parentId?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string; // Always ISO string
+  updatedAt: string; // Always ISO string
   documentCount: number;
   type?: 'folder' | 'shared';
 }
@@ -126,7 +126,7 @@ export interface WorkflowStep {
   type: 'approval' | 'review' | 'automation' | 'notification';
   assignedTo?: string;
   completed: boolean;
-  completedAt?: string;
+  completedAt?: string; // Always ISO string
   notes?: string;
 }
 
@@ -136,14 +136,14 @@ export interface Workflow {
   description: string;
   status: 'draft' | 'active' | 'paused' | 'completed';
   steps: WorkflowStep[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string; // Always ISO string
+  updatedAt: string; // Always ISO string
   createdBy: string;
   documentIds: string[];
   priority: 'low' | 'medium' | 'high';
-  dueDate?: string;
+  dueDate?: string; // Always ISO string
   trigger?: string;
-  lastRun?: string;
+  lastRun?: string; // Always ISO string
 }
 
 // Document Generation Types - Unified Template Interface
@@ -171,10 +171,42 @@ export interface GeneratedDocument {
   title: string;
   content: string;
   templateId: string;
-  createdAt: string;
+  createdAt: string; // Always ISO string
   status: 'generating' | 'completed' | 'error';
   purpose: string;
   instructions?: string;
   isSelected?: boolean;
   wordCount?: number;
+}
+
+// Standard API Response Types
+export interface ApiError {
+  message: string;
+  code?: string;
+  details?: any;
+}
+
+export interface ApiResponse<T> {
+  data: T;
+  success: boolean;
+  error?: ApiError;
+}
+
+// Pagination types
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
