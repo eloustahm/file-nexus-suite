@@ -1,17 +1,6 @@
 
 import { create } from 'zustand';
-import { teamApi } from '@/services/api';
-
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'editor' | 'viewer';
-  avatar?: string;
-  joinedAt: Date;
-  lastActive: Date;
-  status: 'active' | 'pending' | 'suspended';
-}
+import { teamApi, TeamMember, InviteMemberData } from '@/services/team';
 
 interface TeamSettings {
   teamName: string;
@@ -34,12 +23,11 @@ interface TeamCollaborationState {
   
   // Member actions
   fetchMembers: () => Promise<void>;
-  inviteMember: (email: string, role: string) => Promise<void>;
+  inviteMember: (data: InviteMemberData) => Promise<void>;
   updateMemberRole: (memberId: string, role: string) => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
   
   // Settings actions
-  fetchSettings: () => Promise<void>;
   updateSettings: (settings: Partial<TeamSettings>) => Promise<void>;
   
   // Utility actions
@@ -66,42 +54,19 @@ export const useTeamCollaborationStore = create<TeamCollaborationState>((set, ge
   fetchMembers: async () => {
     try {
       set({ loading: true, error: null });
-      const members = await teamApi.getMembers() as TeamMember[];
+      const members = await teamApi.getMembers();
       set({ members });
     } catch (error: any) {
-      // Fallback to mock data if API fails
-      const mockMembers: TeamMember[] = [
-        {
-          id: '1',
-          name: 'Alice Johnson',
-          email: 'alice@company.com',
-          role: 'admin',
-          avatar: '/placeholder.svg',
-          joinedAt: new Date('2024-01-01'),
-          lastActive: new Date(),
-          status: 'active'
-        },
-        {
-          id: '2',
-          name: 'Bob Smith',
-          email: 'bob@company.com',
-          role: 'editor',
-          avatar: '/placeholder.svg',
-          joinedAt: new Date('2024-01-15'),
-          lastActive: new Date(Date.now() - 86400000),
-          status: 'active'
-        }
-      ];
-      set({ members: mockMembers, error: null });
+      set({ error: error.message });
     } finally {
       set({ loading: false });
     }
   },
 
-  inviteMember: async (email: string, role: string) => {
+  inviteMember: async (data: InviteMemberData) => {
     try {
       set({ loading: true, error: null });
-      await teamApi.inviteMember({ email, role });
+      await teamApi.inviteMember(data);
       // Refresh members list
       await get().fetchMembers();
     } catch (error: any) {
@@ -115,11 +80,10 @@ export const useTeamCollaborationStore = create<TeamCollaborationState>((set, ge
   updateMemberRole: async (memberId: string, role: string) => {
     try {
       set({ loading: true, error: null });
-      await teamApi.updateMemberRole(memberId, role);
-      // Update local state
+      const updatedMember = await teamApi.updateMemberRole(memberId, role);
       set((state) => ({
         members: state.members.map(member =>
-          member.id === memberId ? { ...member, role: role as any } : member
+          member.id === memberId ? updatedMember : member
         )
       }));
     } catch (error: any) {
@@ -134,7 +98,6 @@ export const useTeamCollaborationStore = create<TeamCollaborationState>((set, ge
     try {
       set({ loading: true, error: null });
       await teamApi.removeMember(memberId);
-      // Remove from local state
       set((state) => ({
         members: state.members.filter(member => member.id !== memberId)
       }));
@@ -146,22 +109,10 @@ export const useTeamCollaborationStore = create<TeamCollaborationState>((set, ge
     }
   },
 
-  fetchSettings: async () => {
-    try {
-      set({ loading: true, error: null });
-      // Mock settings - replace with API call when available
-      set({ error: null });
-    } catch (error: any) {
-      set({ error: error.message });
-    } finally {
-      set({ loading: false });
-    }
-  },
-
   updateSettings: async (newSettings: Partial<TeamSettings>) => {
     try {
       set({ loading: true, error: null });
-      // Mock update - replace with API call when available
+      // API call would go here when backend is ready
       set((state) => ({
         settings: { ...state.settings, ...newSettings }
       }));

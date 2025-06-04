@@ -1,10 +1,24 @@
 
 import { create } from 'zustand';
-import { Agent, Message, ChatHistory, ChatMessage } from '@/pages/components/Document/types/chatTypes';
+import { chatApi, ChatSession, ChatMessage, Agent } from '@/services/chat';
+
+interface ChatHistory {
+  id: string;
+  name: string;
+  title: string;
+  lastMessage: string;
+  timestamp: Date;
+  messageCount: number;
+  messages: ChatMessage[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 interface DocumentChatState {
   selectedAgent: Agent | null;
-  messages: Message[];
+  agents: Agent[];
+  sessions: ChatSession[];
+  currentSession: ChatSession | null;
   selectedDocuments: string[];
   currentMessages: ChatMessage[];
   isLoading: boolean;
@@ -14,58 +28,94 @@ interface DocumentChatState {
   selectedHistory: string | null;
   loading: boolean;
   
+  // Actions
+  fetchAgents: () => Promise<void>;
+  fetchSessions: () => Promise<void>;
+  createSession: (documentId?: string, agentId?: string) => Promise<void>;
   setSelectedAgent: (agent: Agent | null) => void;
   setSelectedDocuments: (documents: string[]) => void;
   addDocument: (document: string) => void;
   removeDocument: (document: string) => void;
   sendMessage: (content: string, documentId?: string) => Promise<void>;
   loadChatHistory: (historyId: string) => void;
+  deleteSession: (sessionId: string) => Promise<void>;
   clearMessages: () => void;
   clearError: () => void;
 }
 
 export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
   selectedAgent: null,
-  messages: [],
+  agents: [],
+  sessions: [],
+  currentSession: null,
   selectedDocuments: [],
   currentMessages: [],
   isLoading: false,
   isAgentTyping: false,
   error: null,
-  chatHistories: [
-    {
-      id: '1',
-      name: 'Contract Analysis',
-      title: 'Contract Analysis',
-      lastMessage: 'The contract terms look favorable...',
-      timestamp: new Date(Date.now() - 86400000),
-      messageCount: 15,
-      messages: [],
-      createdAt: new Date(Date.now() - 86400000),
-      updatedAt: new Date(Date.now() - 86400000)
-    },
-    {
-      id: '2',
-      name: 'Financial Report Review',
-      title: 'Financial Report Review',
-      lastMessage: 'Q3 revenue increased by 23%...',
-      timestamp: new Date(Date.now() - 172800000),
-      messageCount: 8,
-      messages: [],
-      createdAt: new Date(Date.now() - 172800000),
-      updatedAt: new Date(Date.now() - 172800000)
-    }
-  ],
+  chatHistories: [],
   selectedHistory: null,
   loading: false,
 
-  setSelectedAgent: (agent) => {
-    set({ selectedAgent: agent });
+  fetchAgents: async () => {
+    try {
+      set({ loading: true, error: null });
+      const agents = await chatApi.getAgents();
+      set({ agents });
+    } catch (error: any) {
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
+    }
   },
 
-  setSelectedDocuments: (documents) => {
-    set({ selectedDocuments: documents });
+  fetchSessions: async () => {
+    try {
+      set({ loading: true, error: null });
+      const sessions = await chatApi.getSessions();
+      const chatHistories: ChatHistory[] = sessions.map(session => ({
+        id: session.id,
+        name: session.title,
+        title: session.title,
+        lastMessage: session.messages[session.messages.length - 1]?.content || '',
+        timestamp: new Date(session.updatedAt),
+        messageCount: session.messages.length,
+        messages: session.messages,
+        createdAt: new Date(session.createdAt),
+        updatedAt: new Date(session.updatedAt)
+      }));
+      set({ sessions, chatHistories });
+    } catch (error: any) {
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
+    }
   },
+
+  createSession: async (documentId?: string, agentId?: string) => {
+    try {
+      set({ loading: true, error: null });
+      const session = await chatApi.createSession({ 
+        title: documentId ? 'Document Chat' : 'New Chat',
+        documentId,
+        agentId
+      });
+      set(state => ({
+        sessions: [...state.sessions, session],
+        currentSession: session,
+        currentMessages: session.messages
+      }));
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  setSelectedAgent: (agent) => set({ selectedAgent: agent }),
+
+  setSelectedDocuments: (documents) => set({ selectedDocuments: documents }),
 
   addDocument: (document) => {
     set((state) => ({
@@ -80,71 +130,71 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
   },
 
   sendMessage: async (content, documentId) => {
-    const { selectedAgent } = get();
+    const { currentSession, selectedAgent } = get();
     
     try {
       set({ isLoading: true, isAgentTyping: true, error: null });
       
+      // Add user message immediately to UI
       const userMessage: ChatMessage = {
         id: Date.now().toString(),
         content,
         role: 'user',
         sender: 'user',
-        timestamp: new Date()
+        timestamp: new Date().toISOString()
       };
       
       set((state) => ({
         currentMessages: [...state.currentMessages, userMessage]
       }));
 
-      setTimeout(() => {
-        const agentMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          content: `I understand you're asking about: "${content}". Let me help you with that.`,
-          role: 'assistant',
-          sender: 'agent',
-          timestamp: new Date(),
-          agentId: selectedAgent?.id
-        };
-        
-        set((state) => ({
-          currentMessages: [...state.currentMessages, agentMessage],
-          isLoading: false,
-          isAgentTyping: false
-        }));
-      }, 1000);
+      // Send message to API
+      const message = await chatApi.sendMessage({
+        content,
+        sessionId: currentSession?.id,
+        documentId,
+        agentId: selectedAgent?.id
+      });
+
+      // Add assistant message to UI
+      set((state) => ({
+        currentMessages: [...state.currentMessages, message]
+      }));
 
     } catch (error: any) {
-      set({ error: error.message, isLoading: false, isAgentTyping: false });
+      set({ error: error.message });
+      throw error;
+    } finally {
+      set({ isLoading: false, isAgentTyping: false });
     }
   },
 
   loadChatHistory: (historyId) => {
-    set({ selectedHistory: historyId });
-    const mockMessages: ChatMessage[] = [
-      {
-        id: '1',
-        content: 'Hello, I need help with this document.',
-        role: 'user',
-        sender: 'user',
-        timestamp: new Date(Date.now() - 3600000)
-      },
-      {
-        id: '2',
-        content: 'I\'d be happy to help you analyze the document.',
-        role: 'assistant',
-        sender: 'agent',
-        timestamp: new Date(Date.now() - 3500000)
-      }
-    ];
-    set({ currentMessages: mockMessages });
+    const session = get().sessions.find(s => s.id === historyId);
+    if (session) {
+      set({ 
+        selectedHistory: historyId,
+        currentSession: session,
+        currentMessages: session.messages 
+      });
+    }
   },
 
-  clearMessages: () => {
-    set({ messages: [], currentMessages: [] });
+  deleteSession: async (sessionId: string) => {
+    try {
+      await chatApi.deleteSession(sessionId);
+      set(state => ({
+        sessions: state.sessions.filter(s => s.id !== sessionId),
+        currentSession: state.currentSession?.id === sessionId ? null : state.currentSession,
+        chatHistories: state.chatHistories.filter(h => h.id !== sessionId)
+      }));
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
   },
 
-  clearError: () => {
-    set({ error: null });
-  }
+  clearMessages: () => set({ currentMessages: [], currentSession: null }),
+
+  clearError: () => set({ error: null })
 }));

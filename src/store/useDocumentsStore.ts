@@ -1,40 +1,34 @@
 
 import { create } from 'zustand';
-import { documentsApi } from '@/services/api';
-
-interface Document {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  createdAt: string;
-  updatedAt: string;
-  folderId?: string;
-  content?: string;
-  tags?: string[];
-  url?: string;
-  status?: 'processing' | 'ready' | 'error';
-}
+import { documentsApi, Document, CreateDocumentData, ShareDocumentData } from '@/services/documents';
 
 interface DocumentsState {
   documents: Document[];
   selectedDocument: Document | null;
   loading: boolean;
   error: string | null;
-  uploadProgress: number;
-  
+  searchQuery: string;
+  filterTags: string[];
+  sortBy: 'name' | 'date' | 'type' | 'size';
+  sortOrder: 'asc' | 'desc';
+
   // Actions
   fetchDocuments: () => Promise<void>;
   getDocument: (id: string) => Promise<void>;
-  createDocument: (file: File, folderId?: string) => Promise<Document>;
+  createDocument: (data: CreateDocumentData) => Promise<void>;
+  uploadDocument: (file: File) => Promise<void>;
   updateDocument: (id: string, data: Partial<Document>) => Promise<void>;
   deleteDocument: (id: string) => Promise<void>;
-  shareDocument: (id: string, shareData: any) => Promise<void>;
-  searchDocuments: (query: string) => Promise<Document[]>;
-  bulkDeleteDocuments: (ids: string[]) => Promise<void>;
+  shareDocument: (id: string, shareData: ShareDocumentData) => Promise<void>;
+  downloadDocument: (id: string) => Promise<void>;
   setSelectedDocument: (document: Document | null) => void;
+  setSearchQuery: (query: string) => void;
+  setFilterTags: (tags: string[]) => void;
+  setSorting: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
   clearError: () => void;
-  resetUploadProgress: () => void;
+
+  // Computed state
+  filteredDocuments: Document[];
 }
 
 export const useDocumentsStore = create<DocumentsState>((set, get) => ({
@@ -42,16 +36,18 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
   selectedDocument: null,
   loading: false,
   error: null,
-  uploadProgress: 0,
+  searchQuery: '',
+  filterTags: [],
+  sortBy: 'name',
+  sortOrder: 'asc',
 
   fetchDocuments: async () => {
     try {
       set({ loading: true, error: null });
-      const documents = await documentsApi.getAll() as Document[];
+      const documents = await documentsApi.getAll();
       set({ documents });
     } catch (error: any) {
       set({ error: error.message });
-      console.error('Error fetching documents:', error);
     } finally {
       set({ loading: false });
     }
@@ -60,45 +56,37 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
   getDocument: async (id: string) => {
     try {
       set({ loading: true, error: null });
-      const document = await documentsApi.getById(id) as Document;
+      const document = await documentsApi.getById(id);
       set({ selectedDocument: document });
     } catch (error: any) {
       set({ error: error.message });
-      console.error('Error fetching document:', error);
     } finally {
       set({ loading: false });
     }
   },
 
-  createDocument: async (file: File, folderId?: string) => {
+  createDocument: async (data: CreateDocumentData) => {
     try {
-      set({ loading: true, error: null, uploadProgress: 0 });
-      
+      set({ loading: true, error: null });
+      const document = await documentsApi.create(data);
+      set(state => ({ documents: [document, ...state.documents] }));
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  uploadDocument: async (file: File) => {
+    try {
+      set({ loading: true, error: null });
       const formData = new FormData();
       formData.append('file', file);
-      if (folderId) formData.append('folderId', folderId);
-      
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        set(state => ({ 
-          uploadProgress: Math.min(state.uploadProgress + 10, 90) 
-        }));
-      }, 200);
-      
-      const document = await documentsApi.create(formData) as Document;
-      
-      clearInterval(progressInterval);
-      set({ uploadProgress: 100 });
-      
-      set(state => ({ 
-        documents: [...state.documents, document],
-        uploadProgress: 0
-      }));
-      
-      return document;
+      const document = await documentsApi.upload(formData);
+      set(state => ({ documents: [document, ...state.documents] }));
     } catch (error: any) {
-      set({ error: error.message, uploadProgress: 0 });
-      console.error('Error creating document:', error);
+      set({ error: error.message });
       throw error;
     } finally {
       set({ loading: false });
@@ -108,20 +96,13 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
   updateDocument: async (id: string, data: Partial<Document>) => {
     try {
       set({ loading: true, error: null });
-      const updatedDocument = await documentsApi.update(id, data) as Document;
-      
+      const updatedDocument = await documentsApi.update(id, data);
       set(state => ({
-        documents: state.documents.map(doc => 
-          doc.id === id ? updatedDocument : doc
-        ),
-        selectedDocument: state.selectedDocument?.id === id 
-          ? updatedDocument 
-          : state.selectedDocument
+        documents: state.documents.map(doc => doc.id === id ? updatedDocument : doc),
+        selectedDocument: state.selectedDocument?.id === id ? updatedDocument : state.selectedDocument
       }));
     } catch (error: any) {
       set({ error: error.message });
-      console.error('Error updating document:', error);
-      throw error;
     } finally {
       set({ loading: false });
     }
@@ -131,79 +112,97 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
     try {
       set({ loading: true, error: null });
       await documentsApi.delete(id);
-      
       set(state => ({
         documents: state.documents.filter(doc => doc.id !== id),
-        selectedDocument: state.selectedDocument?.id === id 
-          ? null 
-          : state.selectedDocument
+        selectedDocument: state.selectedDocument?.id === id ? null : state.selectedDocument
       }));
     } catch (error: any) {
       set({ error: error.message });
-      console.error('Error deleting document:', error);
-      throw error;
     } finally {
       set({ loading: false });
     }
   },
 
-  shareDocument: async (id: string, shareData: any) => {
+  shareDocument: async (id: string, shareData: ShareDocumentData) => {
     try {
       set({ loading: true, error: null });
       await documentsApi.share(id, shareData);
-    } catch (error: any) {
-      set({ error: error.message });
-      console.error('Error sharing document:', error);
-      throw error;
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  searchDocuments: async (query: string) => {
-    try {
-      set({ loading: true, error: null });
-      // For now, implement client-side search
-      const { documents } = get();
-      const filtered = documents.filter(doc => 
-        doc.name.toLowerCase().includes(query.toLowerCase()) ||
-        doc.tags?.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-      );
-      return filtered;
-    } catch (error: any) {
-      set({ error: error.message });
-      console.error('Error searching documents:', error);
-      return [];
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  bulkDeleteDocuments: async (ids: string[]) => {
-    try {
-      set({ loading: true, error: null });
-      await Promise.all(ids.map(id => documentsApi.delete(id)));
-      
+      // Refresh document to get updated sharing info
+      const updatedDocument = await documentsApi.getById(id);
       set(state => ({
-        documents: state.documents.filter(doc => !ids.includes(doc.id)),
-        selectedDocument: ids.includes(state.selectedDocument?.id || '') 
-          ? null 
-          : state.selectedDocument
+        documents: state.documents.map(doc => doc.id === id ? updatedDocument : doc)
       }));
     } catch (error: any) {
       set({ error: error.message });
-      console.error('Error bulk deleting documents:', error);
       throw error;
     } finally {
       set({ loading: false });
     }
   },
 
-  setSelectedDocument: (document: Document | null) => {
-    set({ selectedDocument: document });
+  downloadDocument: async (id: string) => {
+    try {
+      const blob = await documentsApi.download(id);
+      const document = get().documents.find(doc => doc.id === id);
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = document?.name || 'document';
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
   },
 
+  setSelectedDocument: (document) => set({ selectedDocument: document }),
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  setFilterTags: (tags) => set({ filterTags: tags }),
+  setSorting: (sortBy, sortOrder) => set({ sortBy: sortBy as any, sortOrder }),
   clearError: () => set({ error: null }),
-  
-  resetUploadProgress: () => set({ uploadProgress: 0 })
+
+  get filteredDocuments() {
+    const state = get();
+    let filtered = [...state.documents];
+
+    // Apply search filter
+    if (state.searchQuery) {
+      filtered = filtered.filter(doc =>
+        doc.name.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+        doc.content.toLowerCase().includes(state.searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply tag filter
+    if (state.filterTags.length > 0) {
+      filtered = filtered.filter(doc =>
+        state.filterTags.some(tag => doc.tags.includes(tag))
+      );
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      switch (state.sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'date':
+          comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          break;
+        case 'type':
+          comparison = a.type.localeCompare(b.type);
+          break;
+        case 'size':
+          comparison = a.size - b.size;
+          break;
+      }
+      return state.sortOrder === 'desc' ? -comparison : comparison;
+    });
+
+    return filtered;
+  }
 }));

@@ -1,27 +1,6 @@
 
 import { create } from 'zustand';
-
-interface TeamChatMessage {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar?: string;
-  content: string;
-  timestamp: Date;
-  type: 'text' | 'file' | 'system';
-  fileUrl?: string;
-  fileName?: string;
-}
-
-interface TeamChatRoom {
-  id: string;
-  name: string;
-  type: 'direct' | 'group' | 'project';
-  participants: string[];
-  lastMessage?: TeamChatMessage;
-  unreadCount: number;
-  createdAt: Date;
-}
+import { teamApi, TeamChatRoom, TeamChatMessage } from '@/services/team';
 
 interface TeamChatState {
   rooms: TeamChatRoom[];
@@ -29,16 +8,18 @@ interface TeamChatState {
   messages: Record<string, TeamChatMessage[]>;
   loading: boolean;
   error: string | null;
-  isTyping: Record<string, string[]>;
-  
+  isConnected: boolean;
+  typingUsers: Record<string, string[]>;
+
   // Actions
   fetchRooms: () => Promise<void>;
-  setActiveRoom: (room: TeamChatRoom) => void;
-  sendMessage: (roomId: string, content: string, type?: 'text' | 'file') => Promise<void>;
+  createRoom: (name: string, members: string[], type: 'group' | 'project') => Promise<void>;
+  setActiveRoom: (room: TeamChatRoom | null) => void;
   fetchMessages: (roomId: string) => Promise<void>;
-  markAsRead: (roomId: string) => void;
+  sendMessage: (roomId: string, content: string) => Promise<void>;
+  joinRoom: (roomId: string) => Promise<void>;
+  leaveRoom: (roomId: string) => Promise<void>;
   setTyping: (roomId: string, userId: string, isTyping: boolean) => void;
-  createRoom: (name: string, participants: string[], type: 'direct' | 'group' | 'project') => Promise<void>;
   clearError: () => void;
 }
 
@@ -48,49 +29,14 @@ export const useTeamChatStore = create<TeamChatState>((set, get) => ({
   messages: {},
   loading: false,
   error: null,
-  isTyping: {},
+  isConnected: false,
+  typingUsers: {},
 
   fetchRooms: async () => {
     try {
       set({ loading: true, error: null });
-      
-      // Mock data for now - replace with API call
-      const mockRooms: TeamChatRoom[] = [
-        {
-          id: '1',
-          name: 'General',
-          type: 'group',
-          participants: ['user1', 'user2', 'user3'],
-          unreadCount: 2,
-          createdAt: new Date(),
-          lastMessage: {
-            id: '1',
-            senderId: 'user2',
-            senderName: 'Alice Johnson',
-            content: 'Hey team, the new documents are ready for review!',
-            timestamp: new Date(),
-            type: 'text'
-          }
-        },
-        {
-          id: '2',
-          name: 'Project Alpha',
-          type: 'project',
-          participants: ['user1', 'user2'],
-          unreadCount: 0,
-          createdAt: new Date(),
-          lastMessage: {
-            id: '2',
-            senderId: 'user1',
-            senderName: 'Bob Smith',
-            content: 'Updated the contract terms document',
-            timestamp: new Date(Date.now() - 3600000),
-            type: 'text'
-          }
-        }
-      ];
-      
-      set({ rooms: mockRooms });
+      const rooms = await teamApi.getChatRooms();
+      set({ rooms });
     } catch (error: any) {
       set({ error: error.message });
     } finally {
@@ -98,132 +44,88 @@ export const useTeamChatStore = create<TeamChatState>((set, get) => ({
     }
   },
 
+  createRoom: async (name: string, members: string[], type: 'group' | 'project') => {
+    try {
+      set({ loading: true, error: null });
+      const room = await teamApi.createChatRoom({ name, members, type });
+      set(state => ({ rooms: [...state.rooms, room] }));
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
   setActiveRoom: (room) => {
     set({ activeRoom: room });
-    get().fetchMessages(room.id);
-    get().markAsRead(room.id);
-  },
-
-  sendMessage: async (roomId, content, type = 'text') => {
-    try {
-      const newMessage: TeamChatMessage = {
-        id: Date.now().toString(),
-        senderId: 'current-user',
-        senderName: 'You',
-        content,
-        timestamp: new Date(),
-        type
-      };
-
-      set((state) => ({
-        messages: {
-          ...state.messages,
-          [roomId]: [...(state.messages[roomId] || []), newMessage]
-        }
-      }));
-
-      // Update room's last message
-      set((state) => ({
-        rooms: state.rooms.map(room => 
-          room.id === roomId 
-            ? { ...room, lastMessage: newMessage }
-            : room
-        )
-      }));
-
-    } catch (error: any) {
-      set({ error: error.message });
+    if (room) {
+      get().fetchMessages(room.id);
     }
   },
 
-  fetchMessages: async (roomId) => {
+  fetchMessages: async (roomId: string) => {
     try {
-      const existingMessages = get().messages[roomId];
-      if (existingMessages) return; // Already loaded
+      set({ loading: true, error: null });
+      const messages = await teamApi.getRoomMessages(roomId);
+      set(state => ({
+        messages: { ...state.messages, [roomId]: messages }
+      }));
+    } catch (error: any) {
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
+    }
+  },
 
-      // Mock messages - replace with API call
-      const mockMessages: TeamChatMessage[] = [
-        {
-          id: '1',
-          senderId: 'user2',
-          senderName: 'Alice Johnson',
-          senderAvatar: '/placeholder.svg',
-          content: 'Good morning everyone! Ready for the sprint review?',
-          timestamp: new Date(Date.now() - 7200000),
-          type: 'text'
-        },
-        {
-          id: '2',
-          senderId: 'user3',
-          senderName: 'Carol Davis',
-          content: 'Yes, I have all the documents prepared.',
-          timestamp: new Date(Date.now() - 3600000),
-          type: 'text'
-        },
-        {
-          id: '3',
-          senderId: 'user2',
-          senderName: 'Alice Johnson',
-          content: 'contract-v2.pdf',
-          timestamp: new Date(Date.now() - 1800000),
-          type: 'file',
-          fileName: 'contract-v2.pdf',
-          fileUrl: '/placeholder-file.pdf'
-        }
-      ];
-
-      set((state) => ({
+  sendMessage: async (roomId: string, content: string) => {
+    try {
+      const message = await teamApi.sendRoomMessage(roomId, content);
+      set(state => ({
         messages: {
           ...state.messages,
-          [roomId]: mockMessages
+          [roomId]: [...(state.messages[roomId] || []), message]
         }
       }));
     } catch (error: any) {
       set({ error: error.message });
+      throw error;
     }
   },
 
-  markAsRead: (roomId) => {
-    set((state) => ({
-      rooms: state.rooms.map(room =>
-        room.id === roomId ? { ...room, unreadCount: 0 } : room
-      )
-    }));
+  joinRoom: async (roomId: string) => {
+    try {
+      await teamApi.joinRoom(roomId);
+      // Refresh rooms to get updated membership
+      await get().fetchRooms();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
   },
 
-  setTyping: (roomId, userId, isTyping) => {
-    set((state) => {
-      const currentTyping = state.isTyping[roomId] || [];
+  leaveRoom: async (roomId: string) => {
+    try {
+      await teamApi.leaveRoom(roomId);
+      // Refresh rooms to get updated membership
+      await get().fetchRooms();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  setTyping: (roomId: string, userId: string, isTyping: boolean) => {
+    set(state => {
+      const roomTyping = state.typingUsers[roomId] || [];
       const newTyping = isTyping
-        ? [...currentTyping.filter(id => id !== userId), userId]
-        : currentTyping.filter(id => id !== userId);
+        ? [...roomTyping.filter(id => id !== userId), userId]
+        : roomTyping.filter(id => id !== userId);
       
       return {
-        isTyping: {
-          ...state.isTyping,
-          [roomId]: newTyping
-        }
+        typingUsers: { ...state.typingUsers, [roomId]: newTyping }
       };
     });
-  },
-
-  createRoom: async (name, participants, type) => {
-    try {
-      const newRoom: TeamChatRoom = {
-        id: Date.now().toString(),
-        name,
-        type,
-        participants,
-        unreadCount: 0,
-        createdAt: new Date()
-      };
-
-      set((state) => ({
-        rooms: [...state.rooms, newRoom]
-      }));
-    } catch (error: any) {
-      set({ error: error.message });
-    }
   },
 
   clearError: () => set({ error: null })
