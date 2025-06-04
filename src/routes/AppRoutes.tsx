@@ -10,12 +10,15 @@ export const AppRoutes = () => {
   const { user, isAuthenticated, loading, getCurrentUser } = useAuthStore();
 
   useEffect(() => {
-    const hasTriedAuth = sessionStorage.getItem('auth_attempted');
-    if (!user && !loading && !hasTriedAuth) {
-      sessionStorage.setItem('auth_attempted', 'true');
-      getCurrentUser().catch(() => {
-        console.log('User not authenticated');
-      });
+    // Only try to get current user if we don't have user data and we're not already loading
+    if (!user && !loading) {
+      const hasTriedAuth = sessionStorage.getItem('auth_attempted');
+      if (!hasTriedAuth) {
+        sessionStorage.setItem('auth_attempted', 'true');
+        getCurrentUser().catch(() => {
+          console.log('User not authenticated');
+        });
+      }
     }
   }, [user, loading, getCurrentUser]);
 

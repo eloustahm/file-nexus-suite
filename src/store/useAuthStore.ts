@@ -38,6 +38,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await authApi.csrf();
         await authApi.login({ email, password });
         await get().getCurrentUser();
+        // Clear the auth attempted flag after successful login
+        sessionStorage.removeItem('auth_attempted');
       },
       get().setLoading,
       get().setError
@@ -49,6 +51,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       async () => {
         await authApi.register({ email, password, firstName, lastName });
         await get().getCurrentUser();
+        // Clear the auth attempted flag after successful signup
+        sessionStorage.removeItem('auth_attempted');
       },
       get().setLoading,
       get().setError
@@ -60,6 +64,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       async () => {
         await authApi.logout();
         set({ user: null, isAuthenticated: false });
+        // Clear the auth attempted flag on logout
+        sessionStorage.removeItem('auth_attempted');
       },
       get().setLoading,
       get().setError
