@@ -1,6 +1,6 @@
 
 import { create } from 'zustand';
-import { authApi } from '@/services/api';
+import { mockAuthApi } from '@/services/mockAuth';
 import { createBaseActions, handleAsyncAction, BaseStoreState, BaseStoreActions } from '@/lib/storeUtils';
 
 interface User {
@@ -35,8 +35,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signIn: async (email: string, password: string) => {
     await handleAsyncAction(
       async () => {
-        await authApi.csrf();
-        await authApi.login({ email, password });
+        await mockAuthApi.csrf();
+        await mockAuthApi.login({ email, password });
         await get().getCurrentUser();
         // Clear the auth attempted flag after successful login
         sessionStorage.removeItem('auth_attempted');
@@ -49,7 +49,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signUp: async (email: string, password: string, firstName: string, lastName: string) => {
     await handleAsyncAction(
       async () => {
-        await authApi.register({ email, password, firstName, lastName });
+        await mockAuthApi.register({ email, password, firstName, lastName });
         await get().getCurrentUser();
         // Clear the auth attempted flag after successful signup
         sessionStorage.removeItem('auth_attempted');
@@ -62,7 +62,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     await handleAsyncAction(
       async () => {
-        await authApi.logout();
+        await mockAuthApi.logout();
         set({ user: null, isAuthenticated: false });
         // Clear the auth attempted flag on logout
         sessionStorage.removeItem('auth_attempted');
@@ -75,7 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   resetPassword: async (email: string) => {
     await handleAsyncAction(
       async () => {
-        await authApi.resetPassword(email);
+        await mockAuthApi.resetPassword(email);
       },
       get().setLoading,
       get().setError
@@ -85,7 +85,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   getCurrentUser: async () => {
     await handleAsyncAction(
       async () => {
-        const user = await authApi.getCurrentUser();
+        const user = await mockAuthApi.getCurrentUser();
         set({ user, isAuthenticated: true });
         return user;
       },

@@ -6,12 +6,16 @@ import { RecentActivity } from "./Dashboard/RecentActivity";
 import { DocumentOverview } from "./Dashboard/DocumentOverview";
 import { AIInsights } from "./Dashboard/AIInsights";
 import { ActionCards } from "./Dashboard/ActionCards";
+import { WelcomeBanner } from "./Dashboard/WelcomeBanner";
 
 export const Dashboard = () => {
   return (
     <div className="space-y-8 bg-gradient-to-br from-gray-50 to-blue-50/30 min-h-screen p-6">
       {/* Header */}
       <DashboardHeader />
+
+      {/* Welcome Banner */}
+      <WelcomeBanner />
 
       {/* Quick Actions */}
       <QuickActionsDashboard />

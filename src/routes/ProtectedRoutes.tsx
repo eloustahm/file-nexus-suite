@@ -30,29 +30,41 @@ export const ProtectedRoutes = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/documents" element={<Document />} />
-        <Route path="/documents/chat" element={<ModernDocumentChat />} />
-        <Route path="/documents/generate" element={<ModernGenerateDocument />} />
+        
+        {/* Consolidated Chat Routes */}
         <Route path="/chat" element={<ModernDocumentChat />} />
-        <Route path="/chats" element={<ChatListPage />} />
         <Route path="/chat/new" element={<NewChatPage />} />
+        <Route path="/chat/history" element={<ChatHistoryWrapper />} />
+        <Route path="/chat/list" element={<ChatListPage />} />
         <Route path="/chat/:chatId" element={<ChatWithDocumentAgent />} />
         <Route path="/chat/document/:documentId" element={<ChatWithDocumentAgent />} />
-        <Route path="/chat-history" element={<ChatHistoryWrapper />} />
+        
+        {/* Document Routes */}
+        <Route path="/documents/chat" element={<ModernDocumentChat />} />
+        <Route path="/documents/generate" element={<ModernGenerateDocument />} />
         <Route path="/generate" element={<ModernGenerateDocument />} />
         <Route path="/generation-history" element={<DocumentGenerationHistory />} />
+        
+        {/* Organization Routes */}
         <Route path="/folders" element={<Folders />} />
         <Route path="/shared" element={<Shared />} />
         <Route path="/shared-documents" element={<SharedDocuments />} />
         <Route path="/sharing" element={<DocumentSharing />} />
+        
+        {/* Activity & Insights */}
         <Route path="/activity" element={<ActivityLogs />} />
         <Route path="/ai-modules" element={<AIModules />} />
+        
+        {/* Team & Collaboration */}
         <Route path="/team" element={<TeamCollaboration />} />
         <Route path="/workflows" element={<Workflow />} />
         <Route path="/workflow" element={<Workflow />} />
-        <Route path="/integrations" element={<Integrations />} />
-        <Route path="/pricing" element={<PricingPlans />} />
+        
+        {/* Settings & Profile */}
         <Route path="/settings" element={<Settings />} />
         <Route path="/profile" element={<UserProfile />} />
+        <Route path="/integrations" element={<Integrations />} />
+        <Route path="/pricing" element={<PricingPlans />} />
       </Routes>
     </AuthenticatedLayout>
   );
