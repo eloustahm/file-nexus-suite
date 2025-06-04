@@ -2,45 +2,38 @@
 import { create } from 'zustand';
 
 /**
- * Auth UI Store - Manages only UI state for authentication forms
- * Server data (user, tokens, etc.) is handled by React Query in useAuth hook
+ * Auth UI Store - Manages only UI state for authentication interface
  */
 interface AuthUIState {
   // Form UI state
-  isLoading: boolean;
-  error: string | null;
   showLoginForm: boolean;
   showRegisterForm: boolean;
   rememberMe: boolean;
   
+  // Loading and error states
+  isLoading: boolean;
+  error: string | null;
+  
   // Actions
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
   setShowLoginForm: (show: boolean) => void;
   setShowRegisterForm: (show: boolean) => void;
   setRememberMe: (remember: boolean) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
   clearError: () => void;
-  reset: () => void;
 }
 
 export const useAuthUIStore = create<AuthUIState>((set) => ({
-  isLoading: false,
-  error: null,
   showLoginForm: false,
   showRegisterForm: false,
   rememberMe: false,
+  isLoading: false,
+  error: null,
 
-  setLoading: (loading) => set({ isLoading: loading }),
-  setError: (error) => set({ error }),
   setShowLoginForm: (show) => set({ showLoginForm: show }),
   setShowRegisterForm: (show) => set({ showRegisterForm: show }),
   setRememberMe: (remember) => set({ rememberMe: remember }),
+  setLoading: (loading) => set({ isLoading: loading }),
+  setError: (error) => set({ error }),
   clearError: () => set({ error: null }),
-  reset: () => set({ 
-    isLoading: false, 
-    error: null, 
-    showLoginForm: false, 
-    showRegisterForm: false, 
-    rememberMe: false 
-  }),
 }));

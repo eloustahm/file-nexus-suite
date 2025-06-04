@@ -1,98 +1,105 @@
 
 /**
- * Application Constants
- * Centralized location for all constants used throughout the application
+ * Application constants
  */
 
-// Query Keys for React Query
+// React Query Keys
 export const QUERY_KEYS = {
-  auth: ['auth'] as const,
-  user: ['auth', 'user'] as const,
-  documents: ['documents'] as const,
-  folders: ['folders'] as const,
-  chat: ['chat'] as const,
-  chatSessions: ['chat', 'sessions'] as const,
-  team: ['team'] as const,
-  teamMembers: ['team', 'members'] as const,
-  notifications: ['notifications'] as const,
-  activity: ['activity'] as const,
-  workflows: ['workflows'] as const,
-  payment: ['payment'] as const,
-  settings: ['settings'] as const,
-  integrations: ['settings', 'integrations'] as const,
-  documentGeneration: ['documentGeneration'] as const,
+  // Auth
+  AUTH: 'auth',
+  USER: 'user',
+  
+  // Documents
+  DOCUMENTS: 'documents',
+  DOCUMENT: 'document',
+  
+  // Document Generation
+  DOCUMENT_GENERATION: 'documentGeneration',
+  TEMPLATES: 'templates',
+  GENERATED_DOCUMENTS: 'generatedDocuments',
+  
+  // Chat
+  CHAT: 'chat',
+  CHAT_SESSIONS: 'chatSessions',
+  CHAT_AGENTS: 'chatAgents',
+  
+  // Team
+  TEAM: 'team',
+  TEAM_MEMBERS: 'teamMembers',
+  TEAM_CHAT_ROOMS: 'teamChatRooms',
+  
+  // Activity
+  ACTIVITY: 'activity',
+  ACTIVITY_LOGS: 'activityLogs',
+  
+  // Notifications
+  NOTIFICATIONS: 'notifications',
+  NOTIFICATION_SETTINGS: 'notificationSettings',
+  
+  // Folders
+  FOLDERS: 'folders',
+  
+  // Workflows
+  WORKFLOWS: 'workflows',
+  
+  // Payment
+  PAYMENT: 'payment',
+  PAYMENT_PLANS: 'paymentPlans',
+  PAYMENT_USAGE: 'paymentUsage',
+  
+  // Settings
+  SETTINGS: 'settings',
+  PROFILE: 'profile',
+  INTEGRATIONS: 'integrations',
 } as const;
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  auth: {
-    login: '/api/auth/login',
-    register: '/api/auth/register',
-    logout: '/api/auth/logout',
-    me: '/api/auth/me',
-    resetPassword: '/api/auth/reset-password',
-    csrf: '/sanctum/csrf-cookie',
-  },
-  documents: {
-    base: '/api/documents',
-    upload: '/api/documents/upload',
-    share: (id: string) => `/api/documents/${id}/share`,
-    download: (id: string) => `/api/documents/${id}/download`,
-    versions: (id: string) => `/api/documents/${id}/versions`,
-  },
-  folders: {
-    base: '/api/folders',
-    documents: (id: string) => `/api/folders/${id}/documents`,
-  },
-  chat: {
-    sessions: '/api/chat/sessions',
-    messages: '/api/chat/messages',
-    agents: '/api/chat/agents',
-  },
-  team: {
-    members: '/api/team/members',
-    invite: '/api/team/invite',
-    chatRooms: '/api/team/chat/rooms',
-  },
-  notifications: {
-    base: '/api/notifications',
-    unreadCount: '/api/notifications/unread-count',
-    markAllRead: '/api/notifications/mark-all-read',
-    settings: '/api/notifications/settings',
-  },
-  activity: {
-    base: '/api/activity',
-    documents: (id: string) => `/api/activity/documents/${id}`,
-    users: (id: string) => `/api/activity/users/${id}`,
-  },
-  workflows: {
-    base: '/api/workflows',
-    execute: (id: string) => `/api/workflows/${id}/execute`,
-  },
-  payment: {
-    plans: '/api/payment/plans',
-    subscribe: '/api/payment/subscribe',
-    cancel: '/api/payment/cancel',
-    usage: '/api/payment/usage',
-  },
-  settings: {
-    profile: '/api/settings/profile',
-    password: '/api/settings/password',
-    integrations: '/api/settings/integrations',
-  },
+  // Auth
+  LOGIN: '/api/auth/login',
+  REGISTER: '/api/auth/register',
+  LOGOUT: '/api/auth/logout',
+  ME: '/api/auth/me',
+  
+  // Documents
+  DOCUMENTS: '/api/documents',
+  DOCUMENT_UPLOAD: '/api/documents/upload',
+  
+  // Document Generation
+  GENERATE_DOCUMENT: '/api/document-generation/generate',
+  TEMPLATES: '/api/document-generation/templates',
+  
+  // Chat
+  CHAT_SESSIONS: '/api/chat/sessions',
+  CHAT_AGENTS: '/api/chat/agents',
+  CHAT_MESSAGES: '/api/chat/messages',
+  
+  // Team
+  TEAM_MEMBERS: '/api/team/members',
+  TEAM_INVITE: '/api/team/invite',
+  
+  // Activity
+  ACTIVITY_LOGS: '/api/activity',
+  
+  // Notifications
+  NOTIFICATIONS: '/api/notifications',
+  
+  // Settings
+  PROFILE: '/api/settings/profile',
+  INTEGRATIONS: '/api/settings/integrations',
 } as const;
 
-// Cache Times (in milliseconds)
-export const CACHE_TIMES = {
-  short: 2 * 60 * 1000, // 2 minutes
-  medium: 5 * 60 * 1000, // 5 minutes
-  long: 15 * 60 * 1000, // 15 minutes
-  user: 10 * 60 * 1000, // 10 minutes for user data
-} as const;
-
-// Local Storage Keys
+// Storage Keys
 export const STORAGE_KEYS = {
-  authAttempted: 'auth_attempted',
-  theme: 'app_theme',
-  sidebarCollapsed: 'sidebar_collapsed',
+  AUTH_TOKEN: 'auth_token',
+  USER_PREFERENCES: 'user_preferences',
+  THEME: 'theme',
+} as const;
+
+// App Configuration
+export const APP_CONFIG = {
+  NAME: 'Document Management System',
+  VERSION: '1.0.0',
+  API_TIMEOUT: 30000, // 30 seconds
+  PAGINATION_SIZE: 20,
 } as const;

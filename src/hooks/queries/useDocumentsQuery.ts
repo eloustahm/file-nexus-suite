@@ -1,17 +1,16 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { documentsApi, type CreateDocumentData, type ShareDocumentData } from '@/services/documents';
-import { useDocumentsUIStore } from '@/store/useDocumentsUIStore';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
+import { QUERY_KEYS } from '@/constants';
 
 export const useDocumentsQuery = () => {
   const queryClient = useQueryClient();
-  const { searchQuery, sortBy, sortOrder, filterTags } = useDocumentsUIStore();
 
   // Get all documents query
   const documentsQuery = useQuery({
-    queryKey: ['documents', { searchQuery, sortBy, sortOrder, filterTags }],
-    queryFn: () => documentsApi.getAll(),
+    queryKey: [QUERY_KEYS.DOCUMENTS],
+    queryFn: documentsApi.getAll,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
@@ -19,11 +18,18 @@ export const useDocumentsQuery = () => {
   const createDocumentMutation = useMutation({
     mutationFn: (data: CreateDocumentData) => documentsApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast.success('Document created successfully');
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
+      toast({
+        title: "Success",
+        description: "Document created successfully",
+      });
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to create document');
+      toast({
+        title: "Error",
+        description: error.message || 'Failed to create document',
+        variant: "destructive",
+      });
     },
   });
 
@@ -35,11 +41,18 @@ export const useDocumentsQuery = () => {
       return documentsApi.upload(formData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast.success('Document uploaded successfully');
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
+      toast({
+        title: "Success",
+        description: "Document uploaded successfully",
+      });
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to upload document');
+      toast({
+        title: "Error",
+        description: error.message || 'Failed to upload document',
+        variant: "destructive",
+      });
     },
   });
 
@@ -48,11 +61,18 @@ export const useDocumentsQuery = () => {
     mutationFn: ({ id, data }: { id: string; data: Partial<any> }) => 
       documentsApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast.success('Document updated successfully');
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
+      toast({
+        title: "Success",
+        description: "Document updated successfully",
+      });
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to update document');
+      toast({
+        title: "Error",
+        description: error.message || 'Failed to update document',
+        variant: "destructive",
+      });
     },
   });
 
@@ -60,11 +80,18 @@ export const useDocumentsQuery = () => {
   const deleteDocumentMutation = useMutation({
     mutationFn: (id: string) => documentsApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast.success('Document deleted successfully');
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
+      toast({
+        title: "Success",
+        description: "Document deleted successfully",
+      });
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to delete document');
+      toast({
+        title: "Error",
+        description: error.message || 'Failed to delete document',
+        variant: "destructive",
+      });
     },
   });
 
@@ -73,11 +100,18 @@ export const useDocumentsQuery = () => {
     mutationFn: ({ id, shareData }: { id: string; shareData: ShareDocumentData }) => 
       documentsApi.share(id, shareData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast.success('Document shared successfully');
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
+      toast({
+        title: "Success",
+        description: "Document shared successfully",
+      });
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to share document');
+      toast({
+        title: "Error",
+        description: error.message || 'Failed to share document',
+        variant: "destructive",
+      });
     },
   });
 

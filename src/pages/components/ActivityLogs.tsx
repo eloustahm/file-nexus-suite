@@ -1,9 +1,9 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useActivityStore } from '@/store/useActivityStore';
+import { useActivity } from '@/hooks/useActivity';
 import { Clock, User, FileText, Users, Settings } from 'lucide-react';
 
 const getActivityIcon = (type: string) => {
@@ -27,50 +27,57 @@ const getActivityColor = (type: string) => {
 };
 
 export const ActivityLogs = () => {
-  const [filterType, setFilterType] = useState<'all' | 'document' | 'team' | 'system' | 'chat'>('all');
-  const { logs, loading, error, fetchLogs, setFilters } = useActivityStore();
-
-  useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
-
-  useEffect(() => {
-    if (filterType === 'all') {
-      setFilters({});
-    } else {
-      setFilters({ type: filterType as 'document' | 'team' | 'system' | 'chat' });
-    }
-  }, [filterType, setFilters]);
+  const { 
+    logs, 
+    isLoading, 
+    error, 
+    typeFilter, 
+    setTypeFilter 
+  } = useActivity();
 
   const formatTimeAgo = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diffDays > 0) return `${diffDays}d ago`;
-    if (diffHours > 0) return `${diffHours}h ago`;
-    return 'Just now';
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading activity logs...</p>
+        </div>
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-red-600 text-center">
+            <p>Error loading activity logs: {error}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Activity Logs
-          </CardTitle>
-          <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Activity Logs</h1>
+          <p className="text-gray-600 mt-1">Track all system activities and changes</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Select value={typeFilter} onValueChange={(value: any) => setTypeFilter(value)}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
@@ -83,58 +90,57 @@ export const ActivityLogs = () => {
             </SelectContent>
           </Select>
         </div>
-      </CardHeader>
-      <CardContent>
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        )}
-        
-        {logs.length === 0 ? (
-          <div className="text-center py-8">
-            <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No activity found</h3>
-            <p className="text-gray-600">No activity logs match your current filter.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {logs.map((log) => {
-              const Icon = getActivityIcon(log.type);
-              return (
-                <div key={log.id} className="flex items-start gap-3 p-3 border rounded-lg hover:bg-gray-50">
+      </div>
+
+      <div className="space-y-4">
+        {logs.map((log) => {
+          const Icon = getActivityIcon(log.type);
+          const colorClass = getActivityColor(log.type);
+
+          return (
+            <Card key={log.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Icon className="h-4 w-4 text-gray-600" />
+                    <div className={`p-2 rounded-full ${colorClass}`}>
+                      <Icon className="h-4 w-4" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-medium text-gray-900">{log.action}</p>
-                      <Badge className={getActivityColor(log.type)}>
+                      <h3 className="text-sm font-medium text-gray-900">{log.action}</h3>
+                      <Badge variant="outline" className={colorClass}>
                         {log.type}
                       </Badge>
                     </div>
                     <p className="text-sm text-gray-600 mb-2">{log.description}</p>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span>{log.userName}</span>
-                      <span>•</span>
-                      <span>{formatTimeAgo(log.timestamp)}</span>
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        {log.userName}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatTimeAgo(log.timestamp)}
+                      </span>
                     </div>
                   </div>
-                  {log.userAvatar && (
-                    <img
-                      src={log.userAvatar}
-                      alt={log.userName}
-                      className="w-8 h-8 rounded-full"
-                    />
-                  )}
                 </div>
-              );
-            })}
-          </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+
+        {logs.length === 0 && (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No activity logs</h3>
+              <p className="text-gray-600">Activity logs will appear here as actions are performed.</p>
+            </CardContent>
+          </Card>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

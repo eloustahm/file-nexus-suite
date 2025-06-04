@@ -11,7 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Settings, CreditCard, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAuth } from "@/hooks/useAuth";
 
 interface UserMenuProps {
   user: {
@@ -24,11 +24,11 @@ interface UserMenuProps {
 
 export const UserMenu = ({ user }: UserMenuProps) => {
   const navigate = useNavigate();
-  const { signOut } = useAuthStore();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await signOut();
+      await logout();
       navigate("/login");
     } catch (error) {
       console.error("Error logging out:", error);

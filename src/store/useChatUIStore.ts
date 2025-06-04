@@ -1,38 +1,45 @@
 
 import { create } from 'zustand';
 
+/**
+ * Chat UI Store - Manages only UI state for chat interface
+ */
 interface ChatUIState {
-  // UI state only - no server data
+  // Agent and session selection
   selectedAgentId: string | null;
-  isTyping: boolean;
-  messageInput: string;
   selectedSessionId: string | null;
+  
+  // Message input state
+  messageInput: string;
+  isTyping: boolean;
+  
+  // Modal and dialog UI state
   showNewChatModal: boolean;
-  showDeleteSessionConfirm: string | null;
+  showDeleteSessionConfirm: boolean;
   
   // Actions
   setSelectedAgent: (agentId: string | null) => void;
-  setIsTyping: (typing: boolean) => void;
-  setMessageInput: (input: string) => void;
   setSelectedSession: (sessionId: string | null) => void;
+  setMessageInput: (input: string) => void;
+  setIsTyping: (typing: boolean) => void;
   setShowNewChatModal: (show: boolean) => void;
-  setShowDeleteSessionConfirm: (sessionId: string | null) => void;
+  setShowDeleteSessionConfirm: (show: boolean) => void;
   clearInput: () => void;
 }
 
 export const useChatUIStore = create<ChatUIState>((set) => ({
   selectedAgentId: null,
-  isTyping: false,
-  messageInput: '',
   selectedSessionId: null,
+  messageInput: '',
+  isTyping: false,
   showNewChatModal: false,
-  showDeleteSessionConfirm: null,
+  showDeleteSessionConfirm: false,
 
   setSelectedAgent: (agentId) => set({ selectedAgentId: agentId }),
-  setIsTyping: (typing) => set({ isTyping: typing }),
-  setMessageInput: (input) => set({ messageInput: input }),
   setSelectedSession: (sessionId) => set({ selectedSessionId: sessionId }),
+  setMessageInput: (input) => set({ messageInput: input }),
+  setIsTyping: (typing) => set({ isTyping: typing }),
   setShowNewChatModal: (show) => set({ showNewChatModal: show }),
-  setShowDeleteSessionConfirm: (sessionId) => set({ showDeleteSessionConfirm: sessionId }),
+  setShowDeleteSessionConfirm: (show) => set({ showDeleteSessionConfirm: show }),
   clearInput: () => set({ messageInput: '' }),
 }));
