@@ -22,6 +22,10 @@ export const Document = () => {
     refetch 
   } = useDocuments();
 
+  const handleRetry = () => {
+    refetch();
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -39,7 +43,7 @@ export const Document = () => {
         <CardContent className="p-6">
           <div className="text-red-600 text-center">
             <p>Error loading documents: {error}</p>
-            <Button onClick={refetch} className="mt-4">
+            <Button onClick={handleRetry} className="mt-4">
               Try Again
             </Button>
           </div>

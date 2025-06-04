@@ -17,7 +17,7 @@ interface DocumentsUIState {
   setSelectedDocuments: (ids: string[]) => void;
   toggleDocumentSelection: (id: string) => void;
   setViewMode: (mode: 'grid' | 'list') => void;
-  setSorting: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
+  setSorting: (sortBy: 'name' | 'date' | 'size' | 'type', sortOrder: 'asc' | 'desc') => void;
   setFilterTags: (tags: string[]) => void;
   setShowUploadModal: (show: boolean) => void;
   setShowDeleteConfirm: (id: string | null) => void;
