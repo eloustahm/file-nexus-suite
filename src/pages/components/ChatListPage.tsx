@@ -1,35 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Button,
-  TextField,
-  InputAdornment,
-  Chip,
-  Avatar,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Container,
-  Grid,
-  Paper
-} from '@mui/material';
-import {
-  Search,
-  MessageSquare,
-  FileText,
-  Plus,
-  Clock,
-  ArrowRight
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { Box, Typography, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDocumentChatStore } from '@/store/useDocumentChatStore';
+import { ChatListHeader } from './ChatList/ChatListHeader';
+import { ChatSearchAndFilters } from './ChatList/ChatSearchAndFilters';
+import { EmptyState } from './ChatList/EmptyState';
+import { ChatList } from './ChatList/ChatList';
 
 export const ChatListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -79,133 +56,23 @@ export const ChatListPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Document Chats
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Continue your conversations with documents
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<Plus />}
-          onClick={handleNewChat}
-          size="large"
-        >
-          New Chat
-        </Button>
-      </Box>
+      <ChatListHeader onNewChat={handleNewChat} />
+      
+      <ChatSearchAndFilters
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filterType={filterType}
+        onFilterChange={setFilterType}
+      />
 
-      {/* Search and Filters */}
-      <Paper sx={{ p: 3, mb: 4 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={8}>
-            <TextField
-              fullWidth
-              placeholder="Search conversations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search size={20} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Box display="flex" gap={1}>
-              <Chip
-                label="All"
-                onClick={() => setFilterType('all')}
-                color={filterType === 'all' ? 'primary' : 'default'}
-                variant={filterType === 'all' ? 'filled' : 'outlined'}
-              />
-              <Chip
-                label="Recent"
-                onClick={() => setFilterType('recent')}
-                color={filterType === 'recent' ? 'primary' : 'default'}
-                variant={filterType === 'recent' ? 'filled' : 'outlined'}
-              />
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Chat List */}
       {filteredChats.length === 0 ? (
-        <Paper sx={{ p: 6, textAlign: 'center' }}>
-          <MessageSquare size={64} color="#ccc" style={{ marginBottom: 16 }} />
-          <Typography variant="h6" gutterBottom>
-            {searchTerm ? 'No matching chats found' : 'No chats yet'}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            {searchTerm 
-              ? 'Try adjusting your search terms' 
-              : 'Start a conversation with your documents'
-            }
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<Plus />}
-            onClick={handleNewChat}
-            sx={{ mt: 2 }}
-          >
-            Start First Chat
-          </Button>
-        </Paper>
+        <EmptyState searchTerm={searchTerm} onNewChat={handleNewChat} />
       ) : (
-        <List>
-          {filteredChats.map((chat) => (
-            <Card key={chat.id} sx={{ mb: 2, '&:hover': { boxShadow: 3 } }}>
-              <ListItem>
-                <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: 'primary.main' }}>
-                    <FileText size={20} />
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Typography variant="h6">{chat.name}</Typography>
-                      <Chip
-                        label={`${chat.messageCount} messages`}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </Box>
-                  }
-                  secondary={
-                    <Box>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {chat.lastMessage}
-                      </Typography>
-                      <Box display="flex" alignItems="center" gap={1} mt={1}>
-                        <Clock size={14} />
-                        <Typography variant="caption" color="text.secondary">
-                          {formatTimeAgo(chat.timestamp)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  }
-                />
-                <ListItemSecondaryAction>
-                  <Button
-                    variant="outlined"
-                    endIcon={<ArrowRight />}
-                    onClick={() => handleResumeChat(chat.id)}
-                  >
-                    Resume
-                  </Button>
-                </ListItemSecondaryAction>
-              </ListItem>
-            </Card>
-          ))}
-        </List>
+        <ChatList
+          chats={filteredChats}
+          onResumeChat={handleResumeChat}
+          formatTimeAgo={formatTimeAgo}
+        />
       )}
     </Container>
   );
