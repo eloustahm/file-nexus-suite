@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,17 +25,52 @@ import { useWorkflowsStore } from "@/store/useWorkflowsStore";
 import { useToast } from "@/hooks/use-toast";
 
 export const Workflow = () => {
-  const { workflows, loading, createWorkflow, executeWorkflow, deleteWorkflow } = useWorkflowsStore();
+  const { 
+    workflows, 
+    loading, 
+    error,
+    fetchWorkflows,
+    createWorkflow, 
+    executeWorkflow, 
+    deleteWorkflow,
+    clearError
+  } = useWorkflowsStore();
+  
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newWorkflow, setNewWorkflow] = useState({
     name: '',
     description: '',
-    trigger: 'manual',
+    trigger: 'manual' as const,
     steps: []
   });
 
+  // Fetch workflows on component mount
+  useEffect(() => {
+    fetchWorkflows();
+  }, [fetchWorkflows]);
+
+  // Clear errors when component unmounts
+  useEffect(() => {
+    return () => clearError();
+  }, [clearError]);
+
+  // Computed statistics from actual workflow data
+  const activeWorkflows = workflows.filter(w => w.status === 'active').length;
+  const completedWorkflows = workflows.filter(w => w.status === 'completed').length;
+  const totalExecutions = workflows.reduce((sum, w) => sum + (w.documentIds?.length || 0), 0);
+  const successRate = workflows.length > 0 ? Math.round((completedWorkflows / workflows.length) * 100) : 0;
+
   const handleCreateWorkflow = async () => {
+    if (!newWorkflow.name.trim()) {
+      toast({
+        title: "Name required",
+        description: "Please enter a workflow name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await createWorkflow(newWorkflow);
       toast({
@@ -69,6 +104,22 @@ export const Workflow = () => {
     }
   };
 
+  const handleDeleteWorkflow = async (workflowId: string) => {
+    try {
+      await deleteWorkflow(workflowId);
+      toast({
+        title: "Workflow deleted",
+        description: "Workflow has been deleted successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete workflow.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active': return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -86,6 +137,14 @@ export const Workflow = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -130,7 +189,7 @@ export const Workflow = () => {
               </div>
               <div>
                 <Label htmlFor="workflow-trigger">Trigger</Label>
-                <Select value={newWorkflow.trigger} onValueChange={(value) => setNewWorkflow(prev => ({ ...prev, trigger: value }))}>
+                <Select value={newWorkflow.trigger} onValueChange={(value: any) => setNewWorkflow(prev => ({ ...prev, trigger: value }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -155,6 +214,12 @@ export const Workflow = () => {
         </Dialog>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
+
       {/* Workflow Stats */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -173,19 +238,17 @@ export const Workflow = () => {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {workflows.filter(w => w.status === 'active').length}
-            </div>
+            <div className="text-2xl font-bold">{activeWorkflows}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Executions Today</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Executions</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">47</div>
+            <div className="text-2xl font-bold">{totalExecutions}</div>
           </CardContent>
         </Card>
 
@@ -195,7 +258,7 @@ export const Workflow = () => {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">98%</div>
+            <div className="text-2xl font-bold">{successRate}%</div>
           </CardContent>
         </Card>
       </div>
@@ -264,7 +327,7 @@ export const Workflow = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => deleteWorkflow(workflow.id)}
+                      onClick={() => handleDeleteWorkflow(workflow.id)}
                       className="text-red-600 hover:text-red-700"
                     >
                       Delete

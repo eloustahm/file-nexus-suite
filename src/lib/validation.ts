@@ -79,6 +79,25 @@ export const notificationSettingsSchema = z.object({
   marketingEmails: z.boolean()
 });
 
+// Folder validation schemas
+export const createFolderSchema = z.object({
+  name: z.string().min(1, 'Folder name is required').max(100, 'Name too long'),
+  description: z.string().max(500, 'Description too long').optional(),
+  parentId: z.string().optional()
+});
+
+// Workflow validation schemas
+export const createWorkflowSchema = z.object({
+  name: z.string().min(1, 'Workflow name is required').max(100, 'Name too long'),
+  description: z.string().max(500, 'Description too long').optional(),
+  trigger: z.enum(['manual', 'upload', 'schedule', 'approval']),
+  steps: z.array(z.object({
+    name: z.string().min(1, 'Step name is required'),
+    type: z.enum(['approval', 'review', 'automation', 'notification']),
+    assignedTo: z.string().optional()
+  })).optional()
+});
+
 // Generic validation helpers
 export const validateData = <T>(schema: z.ZodSchema<T>, data: unknown): T => {
   try {
@@ -93,8 +112,7 @@ export const validateData = <T>(schema: z.ZodSchema<T>, data: unknown): T => {
 
 export const validatePartialData = <T>(schema: z.ZodSchema<T>, data: unknown): Partial<T> => {
   try {
-    const partialSchema = schema.partial();
-    return partialSchema.parse(data);
+    return schema.partial().parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new Error(error.errors.map(e => e.message).join(', '));

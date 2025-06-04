@@ -24,6 +24,7 @@ interface DocumentPreviewerProps {
   onShare: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
+  onRegenerate?: (documentId: string) => void;
 }
 
 export const DocumentPreviewer = ({
@@ -34,7 +35,8 @@ export const DocumentPreviewer = ({
   onDownload,
   onShare,
   onZoomIn,
-  onZoomOut
+  onZoomOut,
+  onRegenerate
 }: DocumentPreviewerProps) => {
   if (!isVisible || !document) return null;
 
@@ -87,6 +89,11 @@ export const DocumentPreviewer = ({
             <Button variant="outline" size="sm" onClick={onZoomIn} disabled={zoom >= 200}>
               <ZoomIn className="h-4 w-4" />
             </Button>
+            {onRegenerate && (
+              <Button variant="outline" size="sm" onClick={() => onRegenerate(document.id)}>
+                Regenerate
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={onShare}>
               <Share className="h-4 w-4 mr-2" />
               Share

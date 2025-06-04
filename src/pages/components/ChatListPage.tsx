@@ -23,7 +23,7 @@ export const ChatListPage = () => {
                          chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (filterType === 'recent') {
-      const isRecent = new Date().getTime() - chat.timestamp.getTime() < 86400000 * 7;
+      const isRecent = new Date().getTime() - new Date(chat.timestamp).getTime() < 86400000 * 7;
       return matchesSearch && isRecent;
     }
 
@@ -38,7 +38,8 @@ export const ChatListPage = () => {
     navigate('/dashboard/chat/new');
   };
 
-  const formatTimeAgo = (date: Date) => {
+  const formatTimeAgo = (timestamp: Date | string) => {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));

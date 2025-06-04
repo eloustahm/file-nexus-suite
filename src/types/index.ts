@@ -15,7 +15,7 @@ export interface ChatMessage {
   content: string;
   role: 'user' | 'assistant';
   sender: 'user' | 'agent';
-  timestamp: string;
+  timestamp: Date;
   documentId?: string;
   agentId?: string;
 }
@@ -37,8 +37,7 @@ export interface Agent {
   avatar: string;
   capabilities: string[];
   isActive: boolean;
-  // UI-specific properties for compatibility
-  type?: string;
+  type: string;
   personality?: string;
   icon?: string;
   color?: string;
@@ -108,4 +107,41 @@ export interface ActivityLog {
   metadata?: Record<string, any>;
   resourceId?: string;
   resourceType?: string;
+}
+
+export interface Folder {
+  id: string;
+  name: string;
+  description?: string;
+  parentId?: string;
+  createdAt: string;
+  updatedAt: string;
+  documentCount: number;
+  type?: 'folder' | 'shared';
+}
+
+export interface WorkflowStep {
+  id: string;
+  name: string;
+  type: 'approval' | 'review' | 'automation' | 'notification';
+  assignedTo?: string;
+  completed: boolean;
+  completedAt?: string;
+  notes?: string;
+}
+
+export interface Workflow {
+  id: string;
+  name: string;
+  description: string;
+  status: 'draft' | 'active' | 'paused' | 'completed';
+  steps: WorkflowStep[];
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  documentIds: string[];
+  priority: 'low' | 'medium' | 'high';
+  dueDate?: string;
+  trigger?: string;
+  lastRun?: string;
 }

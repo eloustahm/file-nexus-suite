@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,16 @@ import { useFoldersStore } from "@/store/useFoldersStore";
 
 export const Folders = () => {
   const { toast } = useToast();
-  const { folders, loading, createFolder, deleteFolder } = useFoldersStore();
+  const { 
+    folders, 
+    loading, 
+    error,
+    fetchFolders,
+    createFolder, 
+    deleteFolder,
+    clearError
+  } = useFoldersStore();
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,6 +41,16 @@ export const Folders = () => {
     name: '',
     description: ''
   });
+
+  // Fetch folders on component mount
+  useEffect(() => {
+    fetchFolders();
+  }, [fetchFolders]);
+
+  // Clear errors when component unmounts
+  useEffect(() => {
+    return () => clearError();
+  }, [clearError]);
 
   const handleCreateFolder = async () => {
     if (!newFolderData.name.trim()) {
@@ -84,6 +103,14 @@ export const Folders = () => {
   const filteredFolders = folders.filter(folder =>
     folder.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -169,6 +196,12 @@ export const Folders = () => {
           </Dialog>
         </div>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
 
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

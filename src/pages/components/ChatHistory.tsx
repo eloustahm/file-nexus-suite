@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useDocumentChatStore } from '@/store/useDocumentChatStore';
 import { MessageSquare, Calendar, FileText, Trash2 } from 'lucide-react';
-import type { ChatHistory as ChatHistoryType } from '@/types';
 
 interface ChatHistoryProps {
   onSelectChat: (chatId: string) => void;
@@ -24,17 +23,8 @@ export const ChatHistory = ({ onSelectChat, onDeleteChat }: ChatHistoryProps) =>
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const formatTimeAgo = (date: Date) => {
+  const formatTimeAgo = (timestamp: Date | string) => {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));

@@ -1,71 +1,75 @@
 
 import { create } from 'zustand';
 import { documentGenerationApi } from '@/services/documentGeneration';
+import type { Document } from '@/types';
 
-interface DocumentTemplate {
+interface Template {
   id: string;
   name: string;
   description: string;
-  type: string;
-  fields: TemplateField[];
-}
-
-interface TemplateField {
-  id: string;
-  label: string;
-  type: string;
-  value: string;
-  required: boolean;
-  placeholder?: string;
+  fields: Array<{
+    name: string;
+    type: 'text' | 'textarea' | 'select' | 'date';
+    label: string;
+    required: boolean;
+    options?: string[];
+  }>;
+  category: string;
+  preview?: string;
 }
 
 interface GeneratedDocument {
   id: string;
   title: string;
-  purpose: string;
-  instructions?: string;
-  templateId?: string;
   content: string;
-  status: 'generating' | 'completed' | 'failed';
+  templateId: string;
   createdAt: string;
-  updatedAt: string;
-  wordCount?: number;
-  isSelected: boolean;
-}
-
-interface DocumentFormData {
-  title: string;
-  purpose: string;
-  instructions?: string;
-  templateId?: string;
+  status: 'generating' | 'completed' | 'error';
 }
 
 interface DocumentGenerationState {
-  templates: DocumentTemplate[];
+  // State
+  templates: Template[];
+  selectedTemplate: Template | null;
   generatedDocuments: GeneratedDocument[];
-  selectedDocument: GeneratedDocument | null;
+  selectedDocument: Document | null;
+  previewDocument: GeneratedDocument | null;
+  
+  // Loading and error states
   loading: boolean;
+  isGenerating: boolean;
   error: string | null;
   
   // Actions
   fetchTemplates: () => Promise<void>;
+  selectTemplate: (template: Template) => void;
+  generateDocument: (data: { title: string; purpose: string; instructions?: string; templateId?: string }) => Promise<void>;
+  generateDocumentFromForm: (formData: any) => Promise<void>;
+  regenerateDocument: (documentId: string, changes?: any) => Promise<void>;
   fetchGeneratedDocuments: () => Promise<void>;
-  generateDocument: (data: DocumentFormData) => Promise<void>;
-  regenerateDocument: (documentId: string, data: DocumentFormData) => Promise<void>;
-  selectDocument: (documentId: string) => Promise<void>;
-  deleteDocument: (documentId: string) => Promise<void>;
-  downloadDocument: (documentId: string) => Promise<void>;
-  setSelectedDocument: (document: GeneratedDocument | null) => void;
+  selectDocument: (document: Document) => void;
+  setPreviewDocument: (document: GeneratedDocument | null) => void;
   clearError: () => void;
 }
 
+/**
+ * Document Generation Store
+ * Manages document templates, generation, and regeneration
+ */
 export const useDocumentGenerationStore = create<DocumentGenerationState>((set, get) => ({
+  // Initial State
   templates: [],
+  selectedTemplate: null,
   generatedDocuments: [],
   selectedDocument: null,
+  previewDocument: null,
   loading: false,
+  isGenerating: false,
   error: null,
 
+  /**
+   * Fetch available document templates
+   */
   fetchTemplates: async () => {
     try {
       set({ loading: true, error: null });
@@ -78,6 +82,72 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
     }
   },
 
+  /**
+   * Select a template for document generation
+   */
+  selectTemplate: (template) => {
+    set({ selectedTemplate: template });
+  },
+
+  /**
+   * Generate a new document
+   */
+  generateDocument: async (data) => {
+    try {
+      set({ isGenerating: true, error: null });
+      const document = await documentGenerationApi.generateDocument(data);
+      set(state => ({
+        generatedDocuments: [document, ...state.generatedDocuments]
+      }));
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    } finally {
+      set({ isGenerating: false });
+    }
+  },
+
+  /**
+   * Generate document from form data
+   */
+  generateDocumentFromForm: async (formData) => {
+    try {
+      set({ isGenerating: true, error: null });
+      const document = await documentGenerationApi.generateFromTemplate(formData);
+      set(state => ({
+        generatedDocuments: [document, ...state.generatedDocuments]
+      }));
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    } finally {
+      set({ isGenerating: false });
+    }
+  },
+
+  /**
+   * Regenerate an existing document with changes
+   */
+  regenerateDocument: async (documentId, changes) => {
+    try {
+      set({ isGenerating: true, error: null });
+      const document = await documentGenerationApi.regenerateDocument(documentId, changes);
+      set(state => ({
+        generatedDocuments: state.generatedDocuments.map(doc => 
+          doc.id === documentId ? document : doc
+        )
+      }));
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    } finally {
+      set({ isGenerating: false });
+    }
+  },
+
+  /**
+   * Fetch all generated documents
+   */
   fetchGeneratedDocuments: async () => {
     try {
       set({ loading: true, error: null });
@@ -90,88 +160,24 @@ export const useDocumentGenerationStore = create<DocumentGenerationState>((set, 
     }
   },
 
-  generateDocument: async (data: DocumentFormData) => {
-    try {
-      set({ loading: true, error: null });
-      const document = await documentGenerationApi.generateDocument(data);
-      set(state => ({ 
-        generatedDocuments: [document, ...state.generatedDocuments] 
-      }));
-    } catch (error: any) {
-      set({ error: error.message });
-      throw error;
-    } finally {
-      set({ loading: false });
-    }
+  /**
+   * Select a document for viewing/editing
+   */
+  selectDocument: (document) => {
+    set({ selectedDocument: document });
   },
 
-  regenerateDocument: async (documentId: string, data: DocumentFormData) => {
-    try {
-      set({ loading: true, error: null });
-      const document = await documentGenerationApi.regenerateDocument(documentId, data);
-      set(state => ({
-        generatedDocuments: state.generatedDocuments.map(doc => 
-          doc.id === documentId ? document : doc
-        ),
-        selectedDocument: state.selectedDocument?.id === documentId ? document : state.selectedDocument
-      }));
-    } catch (error: any) {
-      set({ error: error.message });
-      throw error;
-    } finally {
-      set({ loading: false });
-    }
+  /**
+   * Set preview document
+   */
+  setPreviewDocument: (document) => {
+    set({ previewDocument: document });
   },
 
-  selectDocument: async (documentId: string) => {
-    try {
-      await documentGenerationApi.selectDocument(documentId);
-      set(state => ({
-        generatedDocuments: state.generatedDocuments.map(doc => ({
-          ...doc,
-          isSelected: doc.id === documentId
-        }))
-      }));
-    } catch (error: any) {
-      set({ error: error.message });
-      throw error;
-    }
-  },
-
-  deleteDocument: async (documentId: string) => {
-    try {
-      set({ loading: true, error: null });
-      await documentGenerationApi.deleteDocument(documentId);
-      set(state => ({
-        generatedDocuments: state.generatedDocuments.filter(doc => doc.id !== documentId),
-        selectedDocument: state.selectedDocument?.id === documentId ? null : state.selectedDocument
-      }));
-    } catch (error: any) {
-      set({ error: error.message });
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  downloadDocument: async (documentId: string) => {
-    try {
-      const blob = await documentGenerationApi.downloadDocument(documentId);
-      const document = get().generatedDocuments.find(doc => doc.id === documentId);
-      const url = URL.createObjectURL(blob);
-      const link = window.document.createElement('a');
-      link.href = url;
-      link.download = document?.title || 'document';
-      window.document.body.appendChild(link);
-      link.click();
-      window.document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error: any) {
-      set({ error: error.message });
-      throw error;
-    }
-  },
-
-  setSelectedDocument: (document) => set({ selectedDocument: document }),
-
-  clearError: () => set({ error: null })
+  /**
+   * Clear error state
+   */
+  clearError: () => {
+    set({ error: null });
+  }
 }));
