@@ -1,79 +1,92 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSettings } from '@/hooks/useSettings';
-import { useAuth } from '@/hooks/useAuth';
-import { Settings as SettingsIcon, User, Shield, Bell, Zap } from 'lucide-react';
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { 
+  User, 
+  Shield, 
+  Bell, 
+  Palette, 
+  Globe, 
+  Database,
+  Save,
+  RefreshCw
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { PrivacySettings } from './PrivacySettings';
+import { OTPSettings } from './OTPSettings';
+import { NotificationSettings } from './NotificationSettings';
 
 export const Settings = () => {
-  const { user } = useAuth();
-  const { 
-    profile, 
-    integrations, 
-    isLoadingProfile,
-    isLoadingIntegrations,
-    profileError,
-    integrationsError,
-    updateProfile,
-    updateIntegration,
-    activeSection,
-    setActiveSection
-  } = useSettings();
+  const [isLoading, setIsLoading] = useState(false);
+  const [profile, setProfile] = useState({
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john.doe@example.com',
+    phone: '+1 (555) 123-4567',
+    company: 'Acme Corp',
+    role: 'Product Manager',
+    timezone: 'America/New_York',
+    language: 'en',
+    theme: 'light'
+  });
 
-  const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  const [preferences, setPreferences] = useState({
+    emailNotifications: true,
+    pushNotifications: false,
+    weeklyDigest: true,
+    marketingEmails: false,
+    autoSave: true,
+    darkMode: false,
+    compactView: false,
+    showTips: true
+  });
+
+  const handleSaveProfile = async () => {
+    setIsLoading(true);
     
-    await updateProfile({
-      firstName: formData.get('firstName') as string,
-      lastName: formData.get('lastName') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-    });
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('Profile updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update profile. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleIntegrationToggle = async (provider: string, enabled: boolean) => {
-    await updateIntegration({ provider, config: { enabled } });
+  const handleSavePreferences = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('Preferences updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update preferences. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  if (isLoadingProfile) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading settings...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <SettingsIcon className="h-8 w-8 text-blue-600" />
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600">Manage your account settings and preferences</p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold">Settings</h1>
+        <p className="text-gray-600">Manage your account settings and preferences</p>
       </div>
 
-      {(profileError || integrationsError) && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-4">
-            <p className="text-red-600">
-              {profileError || integrationsError}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      <Tabs value={activeSection} onValueChange={(value: any) => setActiveSection(value)}>
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Profile
@@ -86,124 +99,243 @@ export const Settings = () => {
             <Bell className="h-4 w-4" />
             Notifications
           </TabsTrigger>
-          <TabsTrigger value="integrations" className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            Integrations
+          <TabsTrigger value="preferences" className="flex items-center gap-2">
+            <Palette className="h-4 w-4" />
+            Preferences
+          </TabsTrigger>
+          <TabsTrigger value="privacy" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Privacy
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Profile Information
+              </CardTitle>
+              <CardDescription>
+                Update your personal information and contact details
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleProfileSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      name="firstName"
-                      defaultValue={profile?.firstName || user?.firstName}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      name="lastName"
-                      defaultValue={profile?.lastName || user?.lastName}
-                      required
-                    />
-                  </div>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={profile.firstName}
+                    onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={profile.lastName}
+                    onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
+                    disabled={isLoading}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
-                    name="email"
                     type="email"
-                    defaultValue={profile?.email || user?.email}
-                    required
+                    value={profile.email}
+                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone</Label>
                   <Input
                     id="phone"
-                    name="phone"
-                    type="tel"
-                    defaultValue={profile?.phone}
+                    value={profile.phone}
+                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                    disabled={isLoading}
                   />
                 </div>
-                <Button type="submit">
-                  Save Changes
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                <div className="space-y-2">
+                  <Label htmlFor="company">Company</Label>
+                  <Input
+                    id="company"
+                    value={profile.company}
+                    onChange={(e) => setProfile({ ...profile, company: e.target.value })}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Input
+                    id="role"
+                    value={profile.role}
+                    onChange={(e) => setProfile({ ...profile, role: e.target.value })}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
 
-        <TabsContent value="integrations" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Available Integrations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingIntegrations ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Loading integrations...</p>
+              <Separator />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="timezone">Timezone</Label>
+                  <Select value={profile.timezone} onValueChange={(value) => setProfile({ ...profile, timezone: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="America/New_York">Eastern Time</SelectItem>
+                      <SelectItem value="America/Chicago">Central Time</SelectItem>
+                      <SelectItem value="America/Denver">Mountain Time</SelectItem>
+                      <SelectItem value="America/Los_Angeles">Pacific Time</SelectItem>
+                      <SelectItem value="Europe/London">London</SelectItem>
+                      <SelectItem value="Europe/Paris">Paris</SelectItem>
+                      <SelectItem value="Asia/Tokyo">Tokyo</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {integrations.map((integration) => (
-                    <div key={integration.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h3 className="font-medium">{integration.name}</h3>
-                        <p className="text-sm text-gray-600">
-                          {integration.enabled ? 'Connected' : 'Not connected'}
-                        </p>
-                      </div>
-                      <Switch
-                        checked={integration.enabled}
-                        onCheckedChange={(enabled) => handleIntegrationToggle(integration.id, enabled)}
-                      />
-                    </div>
-                  ))}
-                  {integrations.length === 0 && (
-                    <p className="text-gray-600 text-center py-8">
-                      No integrations available at this time.
-                    </p>
+                <div className="space-y-2">
+                  <Label htmlFor="language">Language</Label>
+                  <Select value={profile.language} onValueChange={(value) => setProfile({ ...profile, language: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="de">German</SelectItem>
+                      <SelectItem value="ja">Japanese</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={handleSaveProfile} disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      <span className="ml-2">Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Profile
+                    </>
                   )}
-                </div>
-              )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="security" className="space-y-6">
+          <OTPSettings />
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-6">
+          <NotificationSettings />
+        </TabsContent>
+
+        <TabsContent value="preferences" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Application Preferences
+              </CardTitle>
+              <CardDescription>
+                Customize your application experience
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Security settings will be implemented here.</p>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Auto-save documents</Label>
+                    <p className="text-sm text-gray-500">
+                      Automatically save changes to your documents
+                    </p>
+                  </div>
+                  <Switch
+                    checked={preferences.autoSave}
+                    onCheckedChange={(checked) => setPreferences({ ...preferences, autoSave: checked })}
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Dark mode</Label>
+                    <p className="text-sm text-gray-500">
+                      Use dark theme for the interface
+                    </p>
+                  </div>
+                  <Switch
+                    checked={preferences.darkMode}
+                    onCheckedChange={(checked) => setPreferences({ ...preferences, darkMode: checked })}
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Compact view</Label>
+                    <p className="text-sm text-gray-500">
+                      Show more content in less space
+                    </p>
+                  </div>
+                  <Switch
+                    checked={preferences.compactView}
+                    onCheckedChange={(checked) => setPreferences({ ...preferences, compactView: checked })}
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Show helpful tips</Label>
+                    <p className="text-sm text-gray-500">
+                      Display tips and hints throughout the app
+                    </p>
+                  </div>
+                  <Switch
+                    checked={preferences.showTips}
+                    onCheckedChange={(checked) => setPreferences({ ...preferences, showTips: checked })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={handleSavePreferences} disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      <span className="ml-2">Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Preferences
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="notifications" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Notification preferences will be implemented here.</p>
-            </CardContent>
-          </Card>
+        <TabsContent value="privacy" className="space-y-6">
+          <PrivacySettings />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,70 +1,83 @@
 
-import { http } from '@/lib/api';
+import { api } from '@/lib/api';
+import { User, LoginRequest, RegisterRequest } from '@/types';
 
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  avatar?: string;
+export interface AuthResponse {
+  user: User;
+  token: string;
 }
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-
-/**
- * Authentication API service
- */
 export const authApi = {
-  // Login user
-  login: async (credentials: LoginCredentials) => {
-    console.log('Login attempt:', credentials.email);
-    return http.post('/api/auth/login', credentials);
-  },
-
-  // Register new user
-  register: async (data: RegisterData) => {
-    console.log('Register attempt:', data.email);
-    return http.post('/api/auth/register', data);
-  },
-
-  // Logout user
-  logout: async () => {
-    console.log('Logout attempt');
-    return http.post('/api/auth/logout');
-  },
-
-  // Get current user - simplified error handling
+  // Get current user (no throw on 401/403)
   getCurrentUser: async (): Promise<User | null> => {
-    console.log('Checking current user authentication...');
     try {
-      const response = await http.get<{ user: User }>('/api/auth/me');
-      console.log('Auth check successful:', response.user?.email);
-      return response.user;
+      const response = await api.get<{ user: User }>('/auth/me');
+      return response.data.user;
     } catch (error: any) {
-      console.log('Auth check failed:', error.response?.status, error.message);
-      // Always return null for any auth error - don't throw
-      return null;
+      // Return null for auth-related errors instead of throwing
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        return null;
+      }
+      throw error;
     }
   },
 
-  // Reset password
-  resetPassword: async (email: string) => {
-    return http.post('/api/auth/reset-password', { email });
+  // Login
+  login: async (credentials: LoginRequest): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/login', credentials);
+    
+    // Store token in localStorage
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    
+    return response.data;
   },
 
-  // Get CSRF token
-  csrf: async () => {
-    return http.get('/sanctum/csrf-cookie');
+  // Register
+  register: async (userData: RegisterRequest): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/register', userData);
+    
+    // Store token in localStorage
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    
+    return response.data;
+  },
+
+  // Logout
+  logout: async (): Promise<void> => {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      // Continue with logout even if API call fails
+      console.warn('Logout API call failed:', error);
+    } finally {
+      // Always remove token from localStorage
+      localStorage.removeItem('token');
+    }
+  },
+
+  // Forgot password
+  forgotPassword: async (email: string): Promise<void> => {
+    await api.post('/auth/forgot-password', { email });
+  },
+
+  // Reset password
+  resetPassword: async (token: string, password: string): Promise<void> => {
+    await api.post('/auth/reset-password', { token, password });
+  },
+
+  // Refresh token
+  refreshToken: async (): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/refresh');
+    
+    // Update token in localStorage
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    
+    return response.data;
   }
 };
