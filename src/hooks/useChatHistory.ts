@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { ChatHistory, ChatMessage } from '@/types';
+import { ensureISOString } from '@/lib/dateUtils';
 
 export const useChatHistory = () => {
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
@@ -23,11 +24,11 @@ export const useChatHistory = () => {
         name: documentName,
         title: documentName,
         lastMessage,
-        timestamp: new Date(),
+        timestamp: ensureISOString(new Date()),
         messageCount: messages.length,
         messages,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: ensureISOString(new Date()),
+        updatedAt: ensureISOString(new Date()),
         documentName
       };
       

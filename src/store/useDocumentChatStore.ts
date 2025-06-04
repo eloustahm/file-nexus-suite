@@ -1,6 +1,7 @@
 
 import { create } from 'zustand';
 import { chatApi } from '@/services/chat';
+import { ensureISOString } from '@/lib/dateUtils';
 import type { ChatSession, ChatMessage, Agent, ChatHistory } from '@/types';
 
 interface DocumentChatState {
@@ -67,11 +68,11 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
         name: session.title,
         title: session.title,
         lastMessage: session.messages[session.messages.length - 1]?.content || '',
-        timestamp: new Date(session.updatedAt),
+        timestamp: ensureISOString(session.updatedAt),
         messageCount: session.messages.length,
         messages: session.messages,
-        createdAt: new Date(session.createdAt),
-        updatedAt: new Date(session.updatedAt),
+        createdAt: ensureISOString(session.createdAt),
+        updatedAt: ensureISOString(session.updatedAt),
         documentName: session.documentId ? 'Document Chat' : undefined
       }));
       set({ sessions, chatHistories });
@@ -131,7 +132,7 @@ export const useDocumentChatStore = create<DocumentChatState>((set, get) => ({
         content,
         role: 'user',
         sender: 'user',
-        timestamp: new Date()
+        timestamp: ensureISOString(new Date())
       };
       
       set((state) => ({

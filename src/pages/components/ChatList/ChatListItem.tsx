@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { FileText, Clock, ArrowRight } from 'lucide-react';
 import { ChatHistory } from '@/types';
+import { formatRelativeTime } from '@/lib/dateUtils';
 
 interface ChatListItemProps {
   chat: ChatHistory;
@@ -39,7 +40,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
             </p>
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Clock className="h-3 w-3" />
-              <span>{formatTimeAgo(chat.timestamp)}</span>
+              <span>{formatRelativeTime(chat.timestamp)}</span>
             </div>
           </div>
         </div>

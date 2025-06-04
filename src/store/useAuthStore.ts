@@ -33,7 +33,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   ...createBaseActions(set),
 
   signIn: async (email: string, password: string) => {
-    const result = await handleAsyncAction(
+    await handleAsyncAction(
       async () => {
         await authApi.csrf();
         await authApi.login({ email, password });
@@ -42,13 +42,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       get().setLoading,
       get().setError
     );
-    if (!result && result !== undefined) {
-      throw new Error(get().error || 'Login failed');
-    }
   },
 
   signUp: async (email: string, password: string, firstName: string, lastName: string) => {
-    const result = await handleAsyncAction(
+    await handleAsyncAction(
       async () => {
         await authApi.register({ email, password, firstName, lastName });
         await get().getCurrentUser();
@@ -56,9 +53,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       get().setLoading,
       get().setError
     );
-    if (!result && result !== undefined) {
-      throw new Error(get().error || 'Registration failed');
-    }
   },
 
   signOut: async () => {

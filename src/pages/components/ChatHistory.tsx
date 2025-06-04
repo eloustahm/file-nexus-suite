@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Clock, ArrowRight } from 'lucide-react';
+import { formatRelativeTime } from '@/lib/dateUtils';
 
 export interface ChatHistoryProps {
   onSelectChat: (chatId: string) => void;
@@ -17,18 +18,6 @@ export const ChatHistory = ({ onSelectChat, onDeleteChat }: ChatHistoryProps) =>
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
-
-  const formatTimeAgo = (timestamp: Date | string) => {
-    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffDays > 0) return `${diffDays}d ago`;
-    if (diffHours > 0) return `${diffHours}h ago`;
-    return 'Just now';
-  };
 
   const handleDeleteChat = async (chatId: string) => {
     await deleteSession(chatId);
@@ -86,7 +75,7 @@ export const ChatHistory = ({ onSelectChat, onDeleteChat }: ChatHistoryProps) =>
                     </p>
                     <div className="flex items-center gap-1 text-xs text-gray-500">
                       <Clock className="h-3 w-3" />
-                      <span>{formatTimeAgo(chat.timestamp)}</span>
+                      <span>{formatRelativeTime(chat.timestamp)}</span>
                     </div>
                   </div>
                 </div>
