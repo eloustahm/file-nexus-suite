@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Check, Star, Zap, Shield } from 'lucide-react';
-import { usePaymentStore } from '@/store/usePaymentStore';
+import { usePayment } from '@/hooks/usePayment';
 import { useToast } from '@/hooks/use-toast';
 
 export const PricingPlans = () => {
   const [isAnnual, setIsAnnual] = useState(false);
-  const { createSubscription, loading } = usePaymentStore();
+  const { createSubscription, isCreatingSubscription } = usePayment();
   const { toast } = useToast();
 
   const plans = [
@@ -180,9 +180,9 @@ export const PricingPlans = () => {
                 className="w-full" 
                 variant={plan.popular ? 'default' : 'outline'}
                 onClick={() => handleSubscribe(plan.id)}
-                disabled={loading}
+                disabled={isCreatingSubscription}
               >
-                {loading ? 'Processing...' : `Get ${plan.name}`}
+                {isCreatingSubscription ? 'Processing...' : `Get ${plan.name}`}
               </Button>
               
               <p className="text-xs text-gray-500 text-center">

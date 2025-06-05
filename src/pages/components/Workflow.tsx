@@ -21,20 +21,22 @@ import {
   Settings,
   Activity
 } from "lucide-react";
-import { useWorkflowsStore } from "@/store/useWorkflowsStore";
+import { useWorkflows } from "@/hooks/useWorkflows";
 import { useToast } from "@/hooks/use-toast";
 
 export const Workflow = () => {
-  const { 
-    workflows, 
-    loading, 
+  const {
+    workflows,
+    isLoading,
     error,
-    fetchWorkflows,
-    createWorkflow, 
-    executeWorkflow, 
+    createWorkflow,
+    executeWorkflow,
     deleteWorkflow,
-    clearError
-  } = useWorkflowsStore();
+    refetch,
+    isCreating,
+    isExecuting,
+    isDeleting
+  } = useWorkflows();
   
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -47,13 +49,10 @@ export const Workflow = () => {
 
   // Fetch workflows on component mount
   useEffect(() => {
-    fetchWorkflows();
-  }, [fetchWorkflows]);
+    refetch();
+  }, [refetch]);
 
   // Clear errors when component unmounts
-  useEffect(() => {
-    return () => clearError();
-  }, [clearError]);
 
   // Computed statistics from actual workflow data
   const activeWorkflows = workflows.filter(w => w.status === 'active').length;
@@ -138,7 +137,7 @@ export const Workflow = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -202,8 +201,8 @@ export const Workflow = () => {
                 </Select>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleCreateWorkflow} disabled={loading || !newWorkflow.name}>
-                  {loading ? "Creating..." : "Create Workflow"}
+                <Button onClick={handleCreateWorkflow} disabled={isCreating || !newWorkflow.name}>
+                  {isCreating ? "Creating..." : "Create Workflow"}
                 </Button>
                 <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Cancel
@@ -312,7 +311,7 @@ export const Workflow = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleExecuteWorkflow(workflow.id, 'sample-doc-id')}
-                      disabled={loading}
+                      disabled={isExecuting}
                     >
                       <Play className="h-4 w-4 mr-2" />
                       Execute

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useTeamStore } from '@/store/useTeamStore';
+import { useTeam } from '@/hooks/useTeam';
 import { Users, UserPlus, Mail, Calendar, Activity, MoreVertical, Trash2 } from 'lucide-react';
 
 export const TeamMembers = () => {
@@ -14,11 +14,19 @@ export const TeamMembers = () => {
   const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('viewer');
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   
-  const { members, loading, error, fetchMembers, inviteMember, updateMemberRole, removeMember } = useTeamStore();
+  const {
+    members,
+    isLoadingMembers,
+    membersError,
+    inviteMember,
+    updateMemberRole,
+    removeMember,
+    refetchMembers
+  } = useTeam();
 
   useEffect(() => {
-    fetchMembers();
-  }, [fetchMembers]);
+    refetchMembers();
+  }, [refetchMembers]);
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return;
@@ -77,7 +85,7 @@ export const TeamMembers = () => {
     });
   };
 
-  if (loading) {
+  if (isLoadingMembers) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -141,9 +149,9 @@ export const TeamMembers = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {error && (
+        {membersError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-            <p className="text-red-600 text-sm">{error}</p>
+            <p className="text-red-600 text-sm">{membersError}</p>
           </div>
         )}
 
