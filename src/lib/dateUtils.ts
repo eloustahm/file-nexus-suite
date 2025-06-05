@@ -1,73 +1,33 @@
 
 /**
- * Utilities for consistent date handling across the application
+ * Date utility functions
  */
 
-/**
- * Converts a date value to ISO string format
- */
-export const toISOString = (date: Date | string | null | undefined): string => {
-  if (!date) return new Date().toISOString();
-  if (typeof date === 'string') return date;
+export const ensureISOString = (date: string | Date): string => {
+  if (typeof date === 'string') {
+    // Check if it's already an ISO string
+    if (date.includes('T') && (date.includes('Z') || date.includes('+') || date.includes('-'))) {
+      return date;
+    }
+    // Try to parse and convert to ISO
+    const parsed = new Date(date);
+    return parsed.toISOString();
+  }
   return date.toISOString();
 };
 
-/**
- * Converts an ISO string to a Date object
- */
-export const fromISOString = (dateString: string | null | undefined): Date => {
-  if (!dateString) return new Date();
-  return new Date(dateString);
-};
+export const formatRelativeTime = (date: string | Date): string => {
+  const now = new Date();
+  const target = new Date(date);
+  const diffInMs = now.getTime() - target.getTime();
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-/**
- * Type guard to check if a value is a valid date string
- */
-export const isValidDateString = (value: any): value is string => {
-  return typeof value === 'string' && !isNaN(Date.parse(value));
-};
-
-/**
- * Safely converts any date value to ISO string
- */
-export const ensureISOString = (value: Date | string | null | undefined): string => {
-  if (!value) return new Date().toISOString();
-  if (typeof value === 'string') {
-    return isValidDateString(value) ? value : new Date().toISOString();
-  }
-  return value.toISOString();
-};
-
-/**
- * Formats a date string for display
- */
-export const formatDisplayDate = (dateString: string): string => {
-  try {
-    return new Date(dateString).toLocaleDateString();
-  } catch {
-    return 'Invalid date';
-  }
-};
-
-/**
- * Formats a date string for relative time (e.g., "2 hours ago")
- */
-export const formatRelativeTime = (dateString: string): string => {
-  try {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMinutes < 1) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes} minutes ago`;
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays < 30) return `${diffDays} days ago`;
-    
-    return formatDisplayDate(dateString);
-  } catch {
-    return 'Invalid date';
-  }
+  if (diffInMinutes < 1) return 'Just now';
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  
+  return target.toLocaleDateString();
 };

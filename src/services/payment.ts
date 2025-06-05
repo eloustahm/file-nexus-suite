@@ -14,13 +14,6 @@ export interface Plan {
   };
 }
 
-export interface Subscription {
-  id: string;
-  planId: string;
-  status: 'active' | 'cancelled' | 'past_due';
-  currentPeriodEnd: string;
-}
-
 export interface Usage {
   documents: number;
   templates: number;
@@ -36,21 +29,25 @@ export interface Usage {
 export const paymentApi = {
   // Get available plans
   getPlans: async (): Promise<Plan[]> => {
+    console.log('Fetching payment plans');
     return http.get<Plan[]>('/api/payment/plans');
   },
-  
-  // Create subscription
-  createSubscription: async (planId: string): Promise<Subscription> => {
-    return http.post<Subscription>('/api/payment/subscribe', { planId });
-  },
-  
-  // Cancel subscription
-  cancelSubscription: async (): Promise<void> => {
-    return http.post<void>('/api/payment/cancel');
-  },
-  
-  // Get usage statistics
+
+  // Get current usage
   getUsage: async (): Promise<Usage> => {
+    console.log('Fetching usage data');
     return http.get<Usage>('/api/payment/usage');
+  },
+
+  // Create subscription
+  createSubscription: async (planId: string) => {
+    console.log('Creating subscription for plan:', planId);
+    return http.post('/api/payment/subscription', { planId });
+  },
+
+  // Cancel subscription
+  cancelSubscription: async () => {
+    console.log('Cancelling subscription');
+    return http.delete('/api/payment/subscription');
   }
 };

@@ -1,3 +1,17 @@
 
-// Re-export the toast functionality from the UI components
-export { useToast, toast } from "@/components/ui/use-toast";
+import { toast as sonnerToast } from 'sonner';
+
+// Simple wrapper around sonner to match the expected interface
+export const toast = ({ title, description, variant }: { 
+  title: string; 
+  description?: string; 
+  variant?: 'default' | 'destructive'; 
+}) => {
+  if (variant === 'destructive') {
+    sonnerToast.error(title, { description });
+  } else {
+    sonnerToast.success(title, { description });
+  }
+};
+
+export { toast as useToast };

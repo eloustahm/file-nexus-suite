@@ -25,8 +25,8 @@ export interface TeamChatRoom {
   type: 'group' | 'project';
   members: string[];
   createdAt: string;
+  lastMessage?: string;
   lastActivity: string;
-  isPrivate: boolean;
 }
 
 export interface TeamChatMessage {
@@ -37,7 +37,6 @@ export interface TeamChatMessage {
   roomId: string;
   timestamp: string;
   type: 'text' | 'file' | 'system';
-  fileUrl?: string;
 }
 
 /**
@@ -46,51 +45,61 @@ export interface TeamChatMessage {
 export const teamApi = {
   // Get team members
   getMembers: async (): Promise<TeamMember[]> => {
+    console.log('Fetching team members');
     return http.get<TeamMember[]>('/api/team/members');
   },
 
   // Invite team member
-  inviteMember: async (data: InviteMemberData): Promise<void> => {
-    return http.post<void>('/api/team/invite', data);
+  inviteMember: async (data: InviteMemberData) => {
+    console.log('Inviting team member:', data.email);
+    return http.post('/api/team/invite', data);
   },
 
   // Update member role
   updateMemberRole: async (memberId: string, role: string): Promise<TeamMember> => {
-    return http.put<TeamMember>(`/api/team/members/${memberId}`, { role });
+    console.log('Updating member role:', memberId, role);
+    return http.put<TeamMember>(`/api/team/members/${memberId}/role`, { role });
   },
 
   // Remove team member
-  removeMember: async (memberId: string): Promise<void> => {
-    return http.delete<void>(`/api/team/members/${memberId}`);
+  removeMember: async (memberId: string) => {
+    console.log('Removing team member:', memberId);
+    return http.delete(`/api/team/members/${memberId}`);
   },
 
   // Get chat rooms
   getChatRooms: async (): Promise<TeamChatRoom[]> => {
+    console.log('Fetching chat rooms');
     return http.get<TeamChatRoom[]>('/api/team/chat/rooms');
   },
 
   // Create chat room
   createChatRoom: async (data: { name: string; description?: string; type: 'group' | 'project'; members: string[] }): Promise<TeamChatRoom> => {
+    console.log('Creating chat room:', data.name);
     return http.post<TeamChatRoom>('/api/team/chat/rooms', data);
   },
 
   // Get room messages
   getRoomMessages: async (roomId: string): Promise<TeamChatMessage[]> => {
+    console.log('Fetching room messages:', roomId);
     return http.get<TeamChatMessage[]>(`/api/team/chat/rooms/${roomId}/messages`);
   },
 
-  // Send message to room
+  // Send room message
   sendRoomMessage: async (roomId: string, content: string): Promise<TeamChatMessage> => {
+    console.log('Sending room message:', roomId);
     return http.post<TeamChatMessage>(`/api/team/chat/rooms/${roomId}/messages`, { content });
   },
 
   // Join room
-  joinRoom: async (roomId: string): Promise<void> => {
-    return http.post<void>(`/api/team/chat/rooms/${roomId}/join`);
+  joinRoom: async (roomId: string) => {
+    console.log('Joining room:', roomId);
+    return http.post(`/api/team/chat/rooms/${roomId}/join`);
   },
 
   // Leave room
-  leaveRoom: async (roomId: string): Promise<void> => {
-    return http.post<void>(`/api/team/chat/rooms/${roomId}/leave`);
+  leaveRoom: async (roomId: string) => {
+    console.log('Leaving room:', roomId);
+    return http.post(`/api/team/chat/rooms/${roomId}/leave`);
   }
 };

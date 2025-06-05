@@ -5,18 +5,15 @@ export interface ActivityLog {
   id: string;
   action: string;
   description: string;
+  type: 'document' | 'team' | 'system' | 'chat';
   userId: string;
   userName: string;
-  userAvatar?: string;
   timestamp: string;
-  type: 'document' | 'team' | 'system' | 'chat';
   metadata?: Record<string, any>;
-  resourceId?: string;
-  resourceType?: string;
 }
 
 export interface ActivityFilters {
-  type?: 'document' | 'team' | 'system' | 'chat';
+  type?: string;
   userId?: string;
   startDate?: string;
   endDate?: string;
@@ -28,23 +25,36 @@ export interface ActivityFilters {
  * Activity API service
  */
 export const activityApi = {
-  // Get activity logs with filters
+  // Get activity logs with optional filters
   getLogs: async (filters?: ActivityFilters): Promise<ActivityLog[]> => {
-    return http.get<ActivityLog[]>('/api/activity', { params: filters });
+    console.log('Fetching activity logs with filters:', filters);
+    const params = new URLSearchParams();
+    if (filters?.type) params.append('type', filters.type);
+    if (filters?.userId) params.append('userId', filters.userId);
+    if (filters?.startDate) params.append('startDate', filters.startDate);
+    if (filters?.endDate) params.append('endDate', filters.endDate);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+    
+    const response = await http.get<ActivityLog[]>(`/api/activity?${params.toString()}`);
+    return response;
   },
 
-  // Get document-specific activity
+  // Log a new activity
+  logActivity: async (data: { action: string; description: string; type: string; metadata?: Record<string, any> }) => {
+    console.log('Logging activity:', data);
+    return http.post('/api/activity', data);
+  },
+
+  // Get activity for a specific document
   getDocumentActivity: async (documentId: string): Promise<ActivityLog[]> => {
-    return http.get<ActivityLog[]>(`/api/activity/documents/${documentId}`);
+    console.log('Fetching document activity:', documentId);
+    return http.get<ActivityLog[]>(`/api/activity/document/${documentId}`);
   },
 
-  // Get user activity
+  // Get activity for a specific user
   getUserActivity: async (userId: string): Promise<ActivityLog[]> => {
-    return http.get<ActivityLog[]>(`/api/activity/users/${userId}`);
-  },
-
-  // Log custom activity
-  logActivity: async (data: { action: string; description: string; type: string; metadata?: Record<string, any> }): Promise<void> => {
-    return http.post<void>('/api/activity', data);
+    console.log('Fetching user activity:', userId);
+    return http.get<ActivityLog[]>(`/api/activity/user/${userId}`);
   }
 };

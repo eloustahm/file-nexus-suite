@@ -8,8 +8,7 @@ export interface Notification {
   type: 'info' | 'success' | 'warning' | 'error';
   isRead: boolean;
   createdAt: string;
-  actionUrl?: string;
-  actionLabel?: string;
+  userId: string;
   metadata?: Record<string, any>;
 }
 
@@ -28,36 +27,43 @@ export interface NotificationSettings {
 export const notificationsApi = {
   // Get all notifications
   getAll: async (): Promise<Notification[]> => {
+    console.log('Fetching all notifications');
     return http.get<Notification[]>('/api/notifications');
   },
 
-  // Get unread notifications count
+  // Get unread count
   getUnreadCount: async (): Promise<{ count: number }> => {
+    console.log('Fetching unread notifications count');
     return http.get<{ count: number }>('/api/notifications/unread-count');
   },
 
   // Mark notification as read
-  markAsRead: async (notificationId: string): Promise<void> => {
-    return http.patch<void>(`/api/notifications/${notificationId}/read`);
+  markAsRead: async (notificationId: string) => {
+    console.log('Marking notification as read:', notificationId);
+    return http.put(`/api/notifications/${notificationId}/read`);
   },
 
-  // Mark all as read
-  markAllAsRead: async (): Promise<void> => {
-    return http.patch<void>('/api/notifications/mark-all-read');
+  // Mark all notifications as read
+  markAllAsRead: async () => {
+    console.log('Marking all notifications as read');
+    return http.put('/api/notifications/mark-all-read');
   },
 
   // Delete notification
-  delete: async (notificationId: string): Promise<void> => {
-    return http.delete<void>(`/api/notifications/${notificationId}`);
+  delete: async (notificationId: string) => {
+    console.log('Deleting notification:', notificationId);
+    return http.delete(`/api/notifications/${notificationId}`);
   },
 
   // Get notification settings
   getSettings: async (): Promise<NotificationSettings> => {
+    console.log('Fetching notification settings');
     return http.get<NotificationSettings>('/api/notifications/settings');
   },
 
   // Update notification settings
   updateSettings: async (settings: Partial<NotificationSettings>): Promise<NotificationSettings> => {
+    console.log('Updating notification settings:', settings);
     return http.put<NotificationSettings>('/api/notifications/settings', settings);
   }
 };
