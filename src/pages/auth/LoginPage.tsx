@@ -24,7 +24,7 @@ export const LoginPage = () => {
       await login({ email, password });
       navigate('/dashboard', { replace: true });
     } catch (err) {
-      // Error is handled by the mutation's onError
+      console.log(err)
     }
   };
 
