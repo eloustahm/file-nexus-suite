@@ -1,30 +1,18 @@
 
 import { http } from '@/lib/api';
-
-export interface Template {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  fields: TemplateField[];
-  content: string;
-}
-
-export interface TemplateField {
-  id: string;
-  name: string;
-  type: 'text' | 'textarea' | 'select' | 'checkbox';
-  required: boolean;
-  options?: string[];
-}
+import { Template, TemplateField } from '@/types';
 
 export interface GeneratedDocument {
   id: string;
   title: string;
   content: string;
-  templateId: string;
+  templateId?: string;
+  purpose: string;
+  instructions?: string;
   status: 'generating' | 'completed' | 'error';
   createdAt: string;
+  wordCount?: number;
+  isSelected?: boolean;
   metadata?: Record<string, any>;
 }
 
@@ -35,6 +23,9 @@ export interface DocumentFormData {
   templateId?: string;
   formData?: Record<string, any>;
 }
+
+// Export types for convenience
+export type { Template, TemplateField };
 
 /**
  * Document Generation API service

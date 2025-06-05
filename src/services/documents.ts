@@ -16,6 +16,9 @@ export interface ShareDocumentData {
   message?: string;
 }
 
+// Export Document type from this module for convenience
+export type { Document };
+
 /**
  * Documents API service
  */

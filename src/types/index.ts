@@ -32,11 +32,11 @@ export interface ChatMessage {
 export interface Agent {
   id: string;
   name: string;
-  type?: string;
+  type: string;
   description: string;
   avatar?: string;
   capabilities: string[];
-  personality?: string;
+  personality: string;
   icon?: string;
   color?: string;
   isActive: boolean;
@@ -70,7 +70,7 @@ export interface TemplateField {
   label: string;
   type: 'text' | 'textarea' | 'select' | 'checkbox' | 'date';
   required: boolean;
-  value?: string;
+  value: string;
   options?: string[];
 }
 
@@ -98,5 +98,5 @@ export interface Document {
   updatedAt: string;
   content?: string;
   folderId?: string;
-  isShared?: boolean;
+  isShared: boolean;
 }

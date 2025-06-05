@@ -10,7 +10,7 @@ export const useDocumentGeneration = () => {
   return {
     // Server data
     templates: docGenQuery.templates,
-    documents: docGenQuery.documents,
+    documents: docGenQuery.generatedDocuments,
     
     // Server state
     isLoadingTemplates: docGenQuery.isLoadingTemplates,

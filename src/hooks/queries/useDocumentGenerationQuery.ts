@@ -63,6 +63,25 @@ export const useDocumentGenerationQuery = () => {
     },
   });
 
+  // Select document mutation
+  const selectDocumentMutation = useMutation({
+    mutationFn: documentGenerationApi.selectDocument,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENT_GENERATION, 'documents'] });
+      toast({
+        title: 'Document selected',
+        description: 'Document has been selected successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error selecting document',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Delete document mutation
   const deleteDocumentMutation = useMutation({
     mutationFn: documentGenerationApi.deleteDocument,
@@ -87,22 +106,36 @@ export const useDocumentGenerationQuery = () => {
     templates: templatesQuery.data || [],
     generatedDocuments: generatedDocumentsQuery.data || [],
     
-    // States
+    // Loading states
     isLoading: templatesQuery.isLoading || generatedDocumentsQuery.isLoading,
+    isLoadingTemplates: templatesQuery.isLoading,
+    isLoadingDocuments: generatedDocumentsQuery.isLoading,
+    
+    // Error states
     error: templatesQuery.error || generatedDocumentsQuery.error,
+    templatesError: templatesQuery.error,
+    documentsError: generatedDocumentsQuery.error,
     
     // Actions
     generateDocument: generateDocumentMutation.mutate,
     regenerateDocument: regenerateDocumentMutation.mutate,
+    selectDocument: selectDocumentMutation.mutate,
     deleteDocument: deleteDocumentMutation.mutate,
+    getDocument: documentGenerationApi.getDocument,
+    downloadDocument: documentGenerationApi.downloadDocument,
+    
+    // Refetch functions
     refetch: () => {
       templatesQuery.refetch();
       generatedDocumentsQuery.refetch();
     },
+    refetchTemplates: templatesQuery.refetch,
+    refetchDocuments: generatedDocumentsQuery.refetch,
     
     // Mutation states
     isGenerating: generateDocumentMutation.isPending,
     isRegenerating: regenerateDocumentMutation.isPending,
+    isSelecting: selectDocumentMutation.isPending,
     isDeleting: deleteDocumentMutation.isPending,
   };
 };

@@ -66,9 +66,15 @@ export const usePaymentQuery = () => {
     plans: plansQuery.data || [],
     usage: usageQuery.data,
     
-    // States
+    // Loading states
     loading: plansQuery.isLoading || usageQuery.isLoading,
+    isLoadingPlans: plansQuery.isLoading,
+    isLoadingUsage: usageQuery.isLoading,
+    
+    // Error states
     error: plansQuery.error || usageQuery.error,
+    plansError: plansQuery.error,
+    usageError: usageQuery.error,
     
     // Actions
     createSubscription: createSubscriptionMutation.mutate,
@@ -77,9 +83,13 @@ export const usePaymentQuery = () => {
       plansQuery.refetch();
       usageQuery.refetch();
     },
+    refetchPlans: plansQuery.refetch,
+    refetchUsage: usageQuery.refetch,
     
     // Mutation states
     isCreating: createSubscriptionMutation.isPending,
     isCancelling: cancelSubscriptionMutation.isPending,
+    isCreatingSubscription: createSubscriptionMutation.isPending,
+    isCancellingSubscription: cancelSubscriptionMutation.isPending,
   };
 };
