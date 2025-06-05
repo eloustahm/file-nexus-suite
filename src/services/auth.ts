@@ -1,25 +1,23 @@
 
 import { http } from '@/lib/api';
+import { User } from '@/types';
 
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  avatar?: string;
-}
-
-export interface LoginCredentials {
+export interface LoginData {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface RegisterData {
-  email: string;
-  password: string;
   firstName: string;
   lastName: string;
+  email: string;
+  password: string;
+}
+
+export interface ResetPasswordData {
+  token: string;
+  password: string;
 }
 
 /**
@@ -27,44 +25,38 @@ export interface RegisterData {
  */
 export const authApi = {
   // Login user
-  login: async (credentials: LoginCredentials) => {
-    console.log('Login attempt:', credentials.email);
-    return http.post('/api/auth/login', credentials);
+  login: async (data: LoginData): Promise<{ user: User; token: string }> => {
+    console.log('Logging in user:', data.email);
+    return http.post<{ user: User; token: string }>('/api/auth/login', data);
   },
 
-  // Register new user
-  register: async (data: RegisterData) => {
-    console.log('Register attempt:', data.email);
-    return http.post('/api/auth/register', data);
+  // Register user
+  register: async (data: RegisterData): Promise<{ user: User; token: string }> => {
+    console.log('Registering user:', data.email);
+    return http.post<{ user: User; token: string }>('/api/auth/register', data);
+  },
+
+  // Get current user
+  getCurrentUser: async (): Promise<User> => {
+    console.log('Fetching current user');
+    return http.get<User>('/api/auth/me');
   },
 
   // Logout user
   logout: async () => {
-    console.log('Logout attempt');
+    console.log('Logging out user');
     return http.post('/api/auth/logout');
   },
 
-  // Get current user - simplified error handling
-  getCurrentUser: async (): Promise<User | null> => {
-    console.log('Checking current user authentication...');
-    try {
-      const response = await http.get<{ user: User }>('/api/auth/me');
-      console.log('Auth check successful:', response.user?.email);
-      return response.user;
-    } catch (error: any) {
-      console.log('Auth check failed:', error.response?.status, error.message);
-      // Always return null for any auth error - don't throw
-      return null;
-    }
+  // Forgot password
+  forgotPassword: async (email: string) => {
+    console.log('Sending reset password email:', email);
+    return http.post('/api/auth/forgot-password', { email });
   },
 
   // Reset password
-  resetPassword: async (email: string) => {
-    return http.post('/api/auth/reset-password', { email });
-  },
-
-  // Get CSRF token
-  csrf: async () => {
-    return http.get('/sanctum/csrf-cookie');
+  resetPassword: async (token: string, password: string) => {
+    console.log('Resetting password with token');
+    return http.post('/api/auth/reset-password', { token, password });
   }
 };

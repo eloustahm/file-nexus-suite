@@ -12,7 +12,9 @@ export const DocumentUpload = () => {
     const file = event.target.files?.[0];
     if (file) {
       try {
-        await uploadDocument(file);
+        const formData = new FormData();
+        formData.append('file', file);
+        await uploadDocument(formData);
         // Reset the input
         if (fileInputRef.current) {
           fileInputRef.current.value = '';

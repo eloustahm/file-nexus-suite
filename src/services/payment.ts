@@ -4,23 +4,20 @@ import { http } from '@/lib/api';
 export interface Plan {
   id: string;
   name: string;
+  description: string;
   price: number;
   interval: 'month' | 'year';
   features: string[];
-  limits: {
-    documents: number;
-    templates: number;
-    storage: string;
-  };
+  popular?: boolean;
 }
 
 export interface Usage {
-  documents: number;
-  templates: number;
-  storage: number;
-  maxDocuments: number;
-  maxTemplates: number;
-  maxStorage: number;
+  documentsUploaded: number;
+  documentsLimit: number;
+  storageUsed: number;
+  storageLimit: number;
+  apiCalls: number;
+  apiLimit: number;
 }
 
 /**
@@ -40,14 +37,14 @@ export const paymentApi = {
   },
 
   // Create subscription
-  createSubscription: async (planId: string) => {
-    console.log('Creating subscription for plan:', planId);
-    return http.post('/api/payment/subscription', { planId });
+  createSubscription: async (planId: string): Promise<{ subscriptionId: string }> => {
+    console.log('Creating subscription:', planId);
+    return http.post<{ subscriptionId: string }>('/api/payment/subscribe', { planId });
   },
 
   // Cancel subscription
-  cancelSubscription: async () => {
+  cancelSubscription: async (): Promise<void> => {
     console.log('Cancelling subscription');
-    return http.delete('/api/payment/subscription');
+    return http.post('/api/payment/cancel');
   }
 };

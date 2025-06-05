@@ -1,68 +1,86 @@
 
 import { Template } from '@/types';
 
-export const documentTemplates: Template[] = [
+export const templates: Template[] = [
   {
-    id: '1',
-    name: 'Business Proposal',
-    description: 'Professional business proposal template',
+    id: 'business-letter',
+    name: 'Business Letter',
+    description: 'Professional business correspondence template',
     category: 'Business',
+    content: 'Business letter template content...',
     fields: [
       {
-        name: 'companyName',
+        id: 'recipient_name',
+        name: 'recipient_name',
+        label: 'Recipient Name',
         type: 'text',
-        label: 'Company Name',
-        required: true
+        required: true,
+        value: ''
       },
       {
-        name: 'proposalTitle',
+        id: 'recipient_company',
+        name: 'recipient_company',
+        label: 'Recipient Company',
         type: 'text',
-        label: 'Proposal Title',
-        required: true
+        required: true,
+        value: ''
       },
       {
-        name: 'description',
+        id: 'letter_content',
+        name: 'letter_content',
+        label: 'Letter Content',
         type: 'textarea',
-        label: 'Project Description',
-        required: true
+        required: true,
+        value: ''
       },
       {
-        name: 'timeline',
+        id: 'sender_title',
+        name: 'sender_title',
+        label: 'Your Title',
         type: 'text',
-        label: 'Project Timeline',
-        required: false
+        required: false,
+        value: ''
       }
     ]
   },
   {
-    id: '2',
-    name: 'Meeting Minutes',
-    description: 'Template for recording meeting minutes',
-    category: 'Administrative',
+    id: 'project-proposal',
+    name: 'Project Proposal',
+    description: 'Comprehensive project proposal template',
+    category: 'Business',
+    content: 'Project proposal template content...',
     fields: [
       {
-        name: 'meetingTitle',
+        id: 'project_name',
+        name: 'project_name',
+        label: 'Project Name',
         type: 'text',
-        label: 'Meeting Title',
-        required: true
+        required: true,
+        value: ''
       },
       {
-        name: 'date',
+        id: 'project_deadline',
+        name: 'project_deadline',
+        label: 'Project Deadline',
         type: 'date',
-        label: 'Meeting Date',
-        required: true
+        required: true,
+        value: ''
       },
       {
-        name: 'attendees',
+        id: 'project_description',
+        name: 'project_description',
+        label: 'Project Description',
         type: 'textarea',
-        label: 'Attendees',
-        required: true
+        required: true,
+        value: ''
       },
       {
-        name: 'agenda',
+        id: 'project_objectives',
+        name: 'project_objectives',
+        label: 'Project Objectives',
         type: 'textarea',
-        label: 'Agenda Items',
-        required: true
+        required: true,
+        value: ''
       }
     ]
   }

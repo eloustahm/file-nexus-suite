@@ -1,429 +1,231 @@
 
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useSettings } from '@/hooks/useSettings';
 import { 
   Settings, 
-  ExternalLink, 
-  Check, 
-  X, 
-  Key, 
-  Eye, 
-  EyeOff,
-  RefreshCw,
-  Zap,
+  Search, 
+  Filter,
+  Globe,
   Database,
   Cloud,
-  Shield
+  Smartphone,
+  BarChart3,
+  MessageSquare,
+  Mail,
+  Calendar,
+  FileText,
+  Shield,
+  Zap
 } from 'lucide-react';
-import { toast } from 'sonner';
-
-interface LocalIntegration {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  enabled: boolean;
-  status: 'connected' | 'disconnected' | 'error';
-  category: string;
-  hasApiKey?: boolean;
-  apiKey?: string;
-}
-
-const defaultIntegrations: LocalIntegration[] = [
-  {
-    id: 'openai',
-    name: 'OpenAI',
-    description: 'Advanced AI text generation and analysis',
-    icon: '🤖',
-    enabled: false,
-    status: 'disconnected',
-    category: 'ai',
-    hasApiKey: true
-  },
-  {
-    id: 'google-drive',
-    name: 'Google Drive',
-    description: 'Cloud storage and document sync',
-    icon: '📁',
-    enabled: false,
-    status: 'disconnected',
-    category: 'storage'
-  },
-  {
-    id: 'microsoft-365',
-    name: 'Microsoft 365',
-    description: 'Office applications and cloud services',
-    icon: '📊',
-    enabled: false,
-    status: 'disconnected',
-    category: 'productivity'
-  },
-  {
-    id: 'slack',
-    name: 'Slack',
-    description: 'Team communication and notifications',
-    icon: '💬',
-    enabled: false,
-    status: 'disconnected',
-    category: 'communication'
-  },
-  {
-    id: 'notion',
-    name: 'Notion',
-    description: 'Knowledge management and documentation',
-    icon: '📝',
-    enabled: false,
-    status: 'disconnected',
-    category: 'productivity'
-  },
-  {
-    id: 'dropbox',
-    name: 'Dropbox',
-    description: 'File storage and sharing',
-    icon: '📦',
-    enabled: false,
-    status: 'disconnected',
-    category: 'storage'
-  }
-];
+import { Integration } from '@/types';
 
 export const Integrations = () => {
-  const [localIntegrations, setLocalIntegrations] = useState<LocalIntegration[]>(defaultIntegrations);
-  const [selectedIntegration, setSelectedIntegration] = useState<LocalIntegration | null>(null);
-  const [apiKey, setApiKey] = useState('');
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { integrations, isLoadingIntegrations, integrationsError, refetchIntegrations, updateIntegration } = useSettings();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  useEffect(() => {
-    refetchIntegrations();
-  }, [refetchIntegrations]);
-
-  useEffect(() => {
-    // Merge API integrations with default ones
-    const merged = defaultIntegrations.map(defaultInteg => {
-      const apiInteg = integrations.find(api => api.id === defaultInteg.id);
-      if (apiInteg) {
-        return {
-          ...defaultInteg,
-          enabled: apiInteg.enabled,
-          status: apiInteg.enabled ? 'connected' as const : 'disconnected' as const,
-          apiKey: apiInteg.config?.apiKey
-        };
-      }
-      return defaultInteg;
-    });
-    setLocalIntegrations(merged);
-  }, [integrations]);
-
-  const handleToggleIntegration = async (integration: LocalIntegration) => {
-    if (integration.hasApiKey && !integration.enabled && !integration.apiKey) {
-      setSelectedIntegration(integration);
-      return;
+  // Mock integrations data
+  const integrations: Integration[] = [
+    {
+      id: 'google-drive',
+      name: 'Google Drive',
+      description: 'Sync documents with Google Drive for seamless collaboration',
+      icon: 'Cloud',
+      category: 'Storage',
+      enabled: true,
+      settings: { syncFrequency: 'hourly' }
+    },
+    {
+      id: 'slack',
+      name: 'Slack',
+      description: 'Get notifications and share documents in Slack channels',
+      icon: 'MessageSquare',
+      category: 'Communication',
+      enabled: false
+    },
+    {
+      id: 'microsoft-365',
+      name: 'Microsoft 365',
+      description: 'Integrate with Word, Excel, and PowerPoint',
+      icon: 'FileText',
+      category: 'Productivity',
+      enabled: true
+    },
+    {
+      id: 'salesforce',
+      name: 'Salesforce',
+      description: 'Connect customer data with document workflows',
+      icon: 'Database',
+      category: 'CRM',
+      enabled: false
+    },
+    {
+      id: 'gmail',
+      name: 'Gmail',
+      description: 'Send and receive documents via email',
+      icon: 'Mail',
+      category: 'Communication',
+      enabled: true
+    },
+    {
+      id: 'calendar',
+      name: 'Google Calendar',
+      description: 'Schedule document reviews and deadlines',
+      icon: 'Calendar',
+      category: 'Productivity',
+      enabled: false
     }
+  ];
 
-    setIsLoading(true);
-    try {
-      await updateIntegration({ 
-        provider: integration.id, 
-        config: { 
-          enabled: !integration.enabled,
-          apiKey: integration.apiKey 
-        } 
-      });
-      
-      setLocalIntegrations(prev => 
-        prev.map(integ => 
-          integ.id === integration.id 
-            ? { 
-                ...integ, 
-                enabled: !integ.enabled, 
-                status: !integ.enabled ? 'connected' : 'disconnected' 
-              }
-            : integ
-        )
-      );
-      toast.success(`${integration.name} ${!integration.enabled ? 'connected' : 'disconnected'} successfully`);
-    } catch (error) {
-      toast.error(`Failed to ${!integration.enabled ? 'connect' : 'disconnect'} ${integration.name}`);
-    } finally {
-      setIsLoading(false);
-    }
+  const categories = [
+    { id: 'all', name: 'All Categories', count: integrations.length },
+    { id: 'Storage', name: 'Storage', count: integrations.filter(i => i.category === 'Storage').length },
+    { id: 'Communication', name: 'Communication', count: integrations.filter(i => i.category === 'Communication').length },
+    { id: 'Productivity', name: 'Productivity', count: integrations.filter(i => i.category === 'Productivity').length },
+    { id: 'CRM', name: 'CRM', count: integrations.filter(i => i.category === 'CRM').length }
+  ];
+
+  const filteredIntegrations = integrations.filter(integration => {
+    const matchesSearch = integration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         integration.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || integration.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const getIconComponent = (iconName: string) => {
+    const icons: Record<string, React.ElementType> = {
+      Cloud,
+      Database,
+      MessageSquare,
+      Mail,
+      Calendar,
+      FileText,
+      Shield,
+      Zap,
+      Globe,
+      Smartphone,
+      BarChart3
+    };
+    return icons[iconName] || Settings;
   };
 
-  const handleSaveApiKey = async () => {
-    if (!selectedIntegration || !apiKey.trim()) {
-      toast.error('Please enter a valid API key');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await updateIntegration({
-        provider: selectedIntegration.id,
-        config: { 
-          enabled: true,
-          apiKey: apiKey.trim()
-        }
-      });
-
-      setLocalIntegrations(prev =>
-        prev.map(integ =>
-          integ.id === selectedIntegration.id
-            ? { ...integ, enabled: true, status: 'connected', apiKey: apiKey.trim() }
-            : integ
-        )
-      );
-
-      toast.success(`${selectedIntegration.name} connected successfully`);
-      setSelectedIntegration(null);
-      setApiKey('');
-    } catch (error) {
-      toast.error(`Failed to connect ${selectedIntegration.name}`);
-    } finally {
-      setIsLoading(false);
-    }
+  const toggleIntegration = (integrationId: string) => {
+    console.log('Toggling integration:', integrationId);
+    // This would typically call an API to enable/disable the integration
   };
 
-  const testConnection = async (integration: LocalIntegration) => {
-    setIsLoading(true);
-    try {
-      // Simulate API test
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success(`${integration.name} connection test successful`);
-    } catch (error) {
-      toast.error(`${integration.name} connection test failed`);
-    } finally {
-      setIsLoading(false);
-    }
+  const configureIntegration = (integrationId: string) => {
+    console.log('Configuring integration:', integrationId);
+    // This would open a configuration modal or navigate to settings
   };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'connected': return 'bg-green-100 text-green-800';
-      case 'disconnected': return 'bg-gray-100 text-gray-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'connected': return Check;
-      case 'error': return X;
-      default: return Settings;
-    }
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'ai': return Zap;
-      case 'storage': return Database;
-      case 'productivity': return Cloud;
-      case 'communication': return Shield;
-      default: return Settings;
-    }
-  };
-
-  const categories = Array.from(new Set(localIntegrations.map(i => i.category)));
-
-  if (isLoadingIntegrations) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Integrations & Connections
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {integrationsError && (
-            <Alert className="mb-4">
-              <X className="h-4 w-4" />
-              <AlertDescription>{integrationsError}</AlertDescription>
-            </Alert>
-          )}
+    <div className="max-w-6xl mx-auto py-8 px-4">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Integrations</h1>
+        <p className="text-gray-600">Connect your favorite tools and services</p>
+      </div>
 
-          <Tabs defaultValue="all" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              {categories.map(category => (
-                <TabsTrigger key={category} value={category} className="capitalize">
-                  {category}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            <TabsContent value="all" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {localIntegrations.map((integration) => {
-                  const StatusIcon = getStatusIcon(integration.status);
-                  const CategoryIcon = getCategoryIcon(integration.category);
-                  
-                  return (
-                    <Card key={integration.id} className="border hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="text-2xl">{integration.icon}</div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-medium text-gray-900">{integration.name}</h4>
-                                <Badge className={getStatusColor(integration.status)}>
-                                  <StatusIcon className="h-3 w-3 mr-1" />
-                                  {integration.status}
-                                </Badge>
-                                <CategoryIcon className="h-4 w-4 text-gray-400" />
-                              </div>
-                              <p className="text-sm text-gray-600">{integration.description}</p>
-                              {integration.enabled && integration.hasApiKey && (
-                                <p className="text-xs text-green-600 mt-1">
-                                  API Key configured ✓
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {integration.enabled && (
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => testConnection(integration)}
-                                disabled={isLoading}
-                              >
-                                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                              </Button>
-                            )}
-                            <Switch
-                              checked={integration.enabled}
-                              onCheckedChange={() => handleToggleIntegration(integration)}
-                              disabled={isLoading}
-                            />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </TabsContent>
-
-            {categories.map(category => (
-              <TabsContent key={category} value={category} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {localIntegrations
-                    .filter(integration => integration.category === category)
-                    .map((integration) => {
-                      const StatusIcon = getStatusIcon(integration.status);
-                      
-                      return (
-                        <Card key={integration.id} className="border hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="text-2xl">{integration.icon}</div>
-                                <div>
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="font-medium text-gray-900">{integration.name}</h4>
-                                    <Badge className={getStatusColor(integration.status)}>
-                                      <StatusIcon className="h-3 w-3 mr-1" />
-                                      {integration.status}
-                                    </Badge>
-                                  </div>
-                                  <p className="text-sm text-gray-600">{integration.description}</p>
-                                </div>
-                              </div>
-                              <Switch
-                                checked={integration.enabled}
-                                onCheckedChange={() => handleToggleIntegration(integration)}
-                                disabled={isLoading}
-                              />
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                </div>
-              </TabsContent>
+      <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <TabsList>
+            {categories.map((category) => (
+              <TabsTrigger key={category.id} value={category.id} className="flex items-center gap-2">
+                {category.name}
+                <Badge variant="secondary" className="text-xs">
+                  {category.count}
+                </Badge>
+              </TabsTrigger>
             ))}
-          </Tabs>
-        </CardContent>
-      </Card>
+          </TabsList>
+          
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search integrations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-64"
+            />
+          </div>
+        </div>
+      </Tabs>
 
-      {/* API Key Configuration Modal */}
-      {selectedIntegration && (
-        <Card className="border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5" />
-              Configure {selectedIntegration.name}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="api-key">API Key</Label>
-              <div className="relative">
-                <Input
-                  id="api-key"
-                  type={showApiKey ? 'text' : 'password'}
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Enter your API key..."
-                  className="pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                >
-                  {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-
-            {selectedIntegration.id === 'openai' && (
-              <Alert>
-                <Key className="h-4 w-4" />
-                <AlertDescription>
-                  <p className="font-medium mb-1">How to get your OpenAI API key:</p>
-                  <ol className="text-sm space-y-1 list-decimal list-inside">
-                    <li>Visit <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenAI API Keys page</a></li>
-                    <li>Sign in to your OpenAI account</li>
-                    <li>Click "Create new secret key"</li>
-                    <li>Copy the key and paste it here</li>
-                  </ol>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <div className="flex gap-2">
-              <Button onClick={handleSaveApiKey} disabled={isLoading || !apiKey.trim()}>
-                {isLoading ? 'Connecting...' : 'Connect'}
-              </Button>
-              <Button variant="outline" onClick={() => setSelectedIntegration(null)}>
-                Cancel
-              </Button>
-            </div>
+      {filteredIntegrations.length === 0 ? (
+        <Card className="text-center p-8">
+          <CardContent>
+            <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Integrations Found</h3>
+            <p className="text-gray-600">Try adjusting your search or category filter.</p>
           </CardContent>
         </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredIntegrations.map((integration) => {
+            const IconComponent = getIconComponent(integration.icon);
+            return (
+              <Card key={integration.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <IconComponent className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{integration.name}</CardTitle>
+                        <Badge variant="outline" className="text-xs mt-1">
+                          {integration.category}
+                        </Badge>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={integration.enabled}
+                      onCheckedChange={() => toggleIntegration(integration.id)}
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="mb-4">
+                    {integration.description}
+                  </CardDescription>
+                  
+                  {integration.enabled && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Status</span>
+                        <Badge className="bg-green-100 text-green-800">
+                          Connected
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => configureIntegration(integration.id)}
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Configure
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {!integration.enabled && (
+                    <Button
+                      className="w-full"
+                      onClick={() => toggleIntegration(integration.id)}
+                    >
+                      Connect
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       )}
     </div>
   );

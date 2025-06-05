@@ -1,37 +1,15 @@
 
 import { http } from '@/lib/api';
-
-export interface Agent {
-  id: string;
-  name: string;
-  description: string;
-  avatar?: string;
-  capabilities: string[];
-  isActive: boolean;
-}
-
-export interface ChatSession {
-  id: string;
-  title: string;
-  documentId?: string;
-  agentId?: string;
-  messages: ChatMessage[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  content: string;
-  role: 'user' | 'assistant';
-  sender: string;
-  timestamp: string;
-  metadata?: Record<string, any>;
-}
+import { ChatSession, ChatMessage, Agent } from '@/types';
 
 export interface SendMessageData {
+  sessionId: string;
   content: string;
-  sessionId?: string;
+  agentId?: string;
+}
+
+export interface CreateSessionData {
+  title?: string;
   documentId?: string;
   agentId?: string;
 }
@@ -46,14 +24,14 @@ export const chatApi = {
     return http.get<ChatSession[]>('/api/chat/sessions');
   },
 
-  // Get available agents
-  getAgents: async (): Promise<Agent[]> => {
-    console.log('Fetching chat agents');
-    return http.get<Agent[]>('/api/chat/agents');
+  // Get chat session by ID
+  getSession: async (sessionId: string): Promise<ChatSession> => {
+    console.log('Fetching chat session:', sessionId);
+    return http.get<ChatSession>(`/api/chat/sessions/${sessionId}`);
   },
 
   // Create new chat session
-  createSession: async (data: { title?: string; documentId?: string; agentId?: string }): Promise<ChatSession> => {
+  createSession: async (data: CreateSessionData): Promise<ChatSession> => {
     console.log('Creating chat session:', data);
     return http.post<ChatSession>('/api/chat/sessions', data);
   },
@@ -64,10 +42,10 @@ export const chatApi = {
     return http.post<ChatMessage>('/api/chat/messages', data);
   },
 
-  // Get session by ID
-  getSession: async (sessionId: string): Promise<ChatSession> => {
-    console.log('Fetching session:', sessionId);
-    return http.get<ChatSession>(`/api/chat/sessions/${sessionId}`);
+  // Update session
+  updateSession: async (sessionId: string, data: { title: string }): Promise<ChatSession> => {
+    console.log('Updating session:', sessionId);
+    return http.put<ChatSession>(`/api/chat/sessions/${sessionId}`, data);
   },
 
   // Delete session
@@ -76,9 +54,9 @@ export const chatApi = {
     return http.delete(`/api/chat/sessions/${sessionId}`);
   },
 
-  // Update session
-  updateSession: async (sessionId: string, data: { title: string }): Promise<ChatSession> => {
-    console.log('Updating session:', sessionId, data);
-    return http.put<ChatSession>(`/api/chat/sessions/${sessionId}`, data);
+  // Get available agents
+  getAgents: async (): Promise<Agent[]> => {
+    console.log('Fetching chat agents');
+    return http.get<Agent[]>('/api/chat/agents');
   }
 };

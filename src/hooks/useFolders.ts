@@ -1,30 +1,50 @@
 
-import { useFoldersQuery } from '@/hooks/queries/useFoldersQuery';
+import { useFoldersUIStore } from '@/store/useFoldersUIStore';
 
 /**
- * Combined hook that provides server data for folders
- * Note: Folders don't need UI state management as they're simple CRUD operations
+ * Combined hook for folders (UI state only for now)
  */
 export const useFolders = () => {
-  const foldersQuery = useFoldersQuery();
+  const foldersUI = useFoldersUIStore();
 
   return {
-    // Server data
-    folders: foldersQuery.folders,
+    // Mock server data
+    folders: [],
+    isLoading: false,
+    error: null,
     
-    // Server state
-    isLoading: foldersQuery.isLoading,
-    error: foldersQuery.error?.message,
-    
-    // Folder actions
-    createFolder: foldersQuery.createFolder,
-    updateFolder: foldersQuery.updateFolder,
-    deleteFolder: foldersQuery.deleteFolder,
-    refetch: foldersQuery.refetch,
+    // Server actions (mock)
+    createFolder: async (name: string) => {
+      console.log('Creating folder:', name);
+    },
+    updateFolder: async (id: string, name: string) => {
+      console.log('Updating folder:', id, name);
+    },
+    deleteFolder: async (id: string) => {
+      console.log('Deleting folder:', id);
+    },
+    refetch: () => {
+      console.log('Refetching folders');
+    },
     
     // Mutation states
-    isCreating: foldersQuery.isCreating,
-    isUpdating: foldersQuery.isUpdating,
-    isDeleting: foldersQuery.isDeleting,
+    isCreating: false,
+    isUpdating: false,
+    isDeleting: false,
+    
+    // UI state
+    searchQuery: foldersUI.searchQuery,
+    viewMode: foldersUI.viewMode,
+    selectedFolderId: foldersUI.selectedFolderId,
+    showCreateModal: foldersUI.showCreateModal,
+    showDeleteConfirm: foldersUI.showDeleteConfirm,
+    
+    // UI actions
+    setSearchQuery: foldersUI.setSearchQuery,
+    setViewMode: foldersUI.setViewMode,
+    setSelectedFolderId: foldersUI.setSelectedFolderId,
+    setShowCreateModal: foldersUI.setShowCreateModal,
+    setShowDeleteConfirm: foldersUI.setShowDeleteConfirm,
+    clearFilters: foldersUI.clearFilters,
   };
 };

@@ -100,3 +100,75 @@ export interface Document {
   folderId?: string;
   isShared: boolean;
 }
+
+export interface Integration {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: string;
+  enabled: boolean;
+  settings?: Record<string, any>;
+}
+
+export interface Folder {
+  id: string;
+  name: string;
+  description?: string;
+  parentId?: string;
+  documentCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TeamMember {
+  id: string;
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: 'admin' | 'member' | 'viewer';
+  avatar?: string;
+  joinedAt: string;
+  lastActive: string;
+}
+
+export interface Workflow {
+  id: string;
+  name: string;
+  description: string;
+  steps: WorkflowStep[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkflowStep {
+  id: string;
+  name: string;
+  type: 'trigger' | 'action' | 'condition';
+  config: Record<string, any>;
+  order: number;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  isRead: boolean;
+  createdAt: string;
+  actionUrl?: string;
+}
+
+export interface ActivityLog {
+  id: string;
+  userId: string;
+  action: string;
+  resource: string;
+  resourceId: string;
+  details: Record<string, any>;
+  timestamp: string;
+  ipAddress?: string;
+  userAgent?: string;
+}
