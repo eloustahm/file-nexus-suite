@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,19 +20,18 @@ import {
   FileText
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useFoldersStore } from "@/store/useFoldersStore";
+import { useFolders } from "@/hooks/useFolders";
 
 export const Folders = () => {
   const { toast } = useToast();
-  const { 
-    folders, 
-    loading, 
+  const {
+    folders,
+    isLoading,
     error,
-    fetchFolders,
-    createFolder, 
+    createFolder,
     deleteFolder,
-    clearError
-  } = useFoldersStore();
+    isCreating,
+  } = useFolders();
   
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -42,15 +41,7 @@ export const Folders = () => {
     description: ''
   });
 
-  // Fetch folders on component mount
-  useEffect(() => {
-    fetchFolders();
-  }, [fetchFolders]);
-
-  // Clear errors when component unmounts
-  useEffect(() => {
-    return () => clearError();
-  }, [clearError]);
+  // Data is fetched automatically by React Query
 
   const handleCreateFolder = async () => {
     if (!newFolderData.name.trim()) {
@@ -104,7 +95,7 @@ export const Folders = () => {
     folder.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -184,8 +175,8 @@ export const Folders = () => {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleCreateFolder} disabled={loading}>
-                    {loading ? "Creating..." : "Create Folder"}
+                  <Button onClick={handleCreateFolder} disabled={isCreating}>
+                    {isCreating ? "Creating..." : "Create Folder"}
                   </Button>
                   <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
                     Cancel
@@ -301,7 +292,7 @@ export const Folders = () => {
         </Card>
       )}
 
-      {filteredFolders.length === 0 && !loading && (
+      {filteredFolders.length === 0 && !isLoading && (
         <Card>
           <CardContent className="text-center py-12">
             <Folder className="h-12 w-12 text-gray-400 mx-auto mb-4" />
