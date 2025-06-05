@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useDocumentGenerationStore } from '@/store/useDocumentGenerationStore';
+import { useDocumentGenerationQuery } from '@/hooks/queries/useDocumentGenerationQuery';
 import { FileText, Search, Eye, Clock } from 'lucide-react';
 import { useState } from 'react';
+import { formatRelativeTime } from '@/lib/dateUtils';
 
 interface GeneratedDocumentsListProps {
   onPreviewDocument: (documentId: string) => void;
@@ -14,7 +15,7 @@ interface GeneratedDocumentsListProps {
 
 export const GeneratedDocumentsList = ({ onPreviewDocument }: GeneratedDocumentsListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { generatedDocuments, loading } = useDocumentGenerationStore();
+  const { generatedDocuments, isLoading } = useDocumentGenerationQuery();
 
   const filteredDocuments = generatedDocuments.filter(doc =>
     doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -25,23 +26,12 @@ export const GeneratedDocumentsList = ({ onPreviewDocument }: GeneratedDocuments
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800';
       case 'generating': return 'bg-yellow-100 text-yellow-800';
-      case 'failed': return 'bg-red-100 text-red-800';
+      case 'error': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -96,7 +86,7 @@ export const GeneratedDocumentsList = ({ onPreviewDocument }: GeneratedDocuments
                   <p className="text-sm text-gray-600 mb-2">{doc.purpose}</p>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <Clock className="h-3 w-3" />
-                    <span>{formatDate(doc.createdAt)}</span>
+                    <span>{formatRelativeTime(doc.createdAt)}</span>
                     {doc.wordCount && (
                       <>
                         <span>•</span>

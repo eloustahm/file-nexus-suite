@@ -1,34 +1,44 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentApi } from '@/services/payment';
-import { toast } from 'sonner';
+import { QUERY_KEYS } from '@/constants';
+import { useToast } from '@/hooks/use-toast';
 
+/**
+ * React Query hooks for payment API
+ */
 export const usePaymentQuery = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  // Get plans query
+  // Get plans
   const plansQuery = useQuery({
-    queryKey: ['payment', 'plans'],
+    queryKey: [QUERY_KEYS.PAYMENT, 'plans'],
     queryFn: paymentApi.getPlans,
-    staleTime: 15 * 60 * 1000, // 15 minutes
   });
 
-  // Get usage query
+  // Get usage
   const usageQuery = useQuery({
-    queryKey: ['payment', 'usage'],
+    queryKey: [QUERY_KEYS.PAYMENT, 'usage'],
     queryFn: paymentApi.getUsage,
-    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
   // Create subscription mutation
   const createSubscriptionMutation = useMutation({
-    mutationFn: (planId: string) => paymentApi.createSubscription(planId),
+    mutationFn: paymentApi.createSubscription,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payment'] });
-      toast.success('Subscription created successfully');
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PAYMENT] });
+      toast({
+        title: 'Subscription created',
+        description: 'Your subscription has been created successfully',
+      });
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to create subscription');
+    onError: (error: Error) => {
+      toast({
+        title: 'Error creating subscription',
+        description: error.message,
+        variant: 'destructive',
+      });
     },
   });
 
@@ -36,11 +46,18 @@ export const usePaymentQuery = () => {
   const cancelSubscriptionMutation = useMutation({
     mutationFn: paymentApi.cancelSubscription,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payment'] });
-      toast.success('Subscription cancelled successfully');
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PAYMENT] });
+      toast({
+        title: 'Subscription cancelled',
+        description: 'Your subscription has been cancelled',
+      });
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to cancel subscription');
+    onError: (error: Error) => {
+      toast({
+        title: 'Error cancelling subscription',
+        description: error.message,
+        variant: 'destructive',
+      });
     },
   });
 
@@ -48,25 +65,21 @@ export const usePaymentQuery = () => {
     // Data
     plans: plansQuery.data || [],
     usage: usageQuery.data,
-
-    // Loading states
-    isLoadingPlans: plansQuery.isLoading,
-    isLoadingUsage: usageQuery.isLoading,
-
-    // Errors
-    plansError: plansQuery.error,
-    usageError: usageQuery.error,
-
-    // Mutations
-    createSubscription: createSubscriptionMutation.mutateAsync,
-    cancelSubscription: cancelSubscriptionMutation.mutateAsync,
-
-    // Loading states
-    isCreatingSubscription: createSubscriptionMutation.isPending,
-    isCancellingSubscription: cancelSubscriptionMutation.isPending,
-
-    // Refetch
-    refetchPlans: plansQuery.refetch,
-    refetchUsage: usageQuery.refetch,
+    
+    // States
+    loading: plansQuery.isLoading || usageQuery.isLoading,
+    error: plansQuery.error || usageQuery.error,
+    
+    // Actions
+    createSubscription: createSubscriptionMutation.mutate,
+    cancelSubscription: cancelSubscriptionMutation.mutate,
+    refetch: () => {
+      plansQuery.refetch();
+      usageQuery.refetch();
+    },
+    
+    // Mutation states
+    isCreating: createSubscriptionMutation.isPending,
+    isCancelling: cancelSubscriptionMutation.isPending,
   };
 };

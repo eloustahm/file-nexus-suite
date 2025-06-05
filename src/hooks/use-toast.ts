@@ -14,4 +14,9 @@ export const toast = ({ title, description, variant }: {
   }
 };
 
-export { toast as useToast };
+export const useToast = () => {
+  return {
+    toast,
+    toasts: [] // For compatibility with shadcn components
+  };
+};

@@ -1,17 +1,6 @@
 
 import { http } from '@/lib/api';
-
-export interface Document {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  content?: string;
-  folderId?: string;
-}
+import { Document } from '@/types';
 
 export interface CreateDocumentData {
   name: string;

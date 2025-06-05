@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import { useDocumentGenerationStore } from '@/store/useDocumentGenerationStore';
+import React, { useState } from 'react';
 import { GenerateDocumentForm } from './components/GenerateDocumentForm';
 import { GeneratedDocumentsList } from './components/GeneratedDocumentsList';
 import { DocumentPreviewer } from './components/DocumentPreviewer';
@@ -12,13 +11,6 @@ export const ModernGenerateDocument = () => {
   const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(null);
   const [regenerateDocumentId, setRegenerateDocumentId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('generate');
-
-  const { fetchTemplates, fetchGeneratedDocuments } = useDocumentGenerationStore();
-
-  useEffect(() => {
-    fetchTemplates();
-    fetchGeneratedDocuments();
-  }, [fetchTemplates, fetchGeneratedDocuments]);
 
   const handlePreviewDocument = (documentId: string) => {
     setPreviewDocumentId(documentId);

@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useDocumentGenerationStore } from '@/store/useDocumentGenerationStore';
+import { useDocumentGenerationQuery } from '@/hooks/queries/useDocumentGenerationQuery';
 import { RotateCcw, Loader2 } from 'lucide-react';
 
 interface RegenerateModalProps {
@@ -18,15 +17,12 @@ export const RegenerateModal = ({ documentId, onClose }: RegenerateModalProps) =
   const [title, setTitle] = useState('');
   const [purpose, setPurpose] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState('');
 
   const { 
     generatedDocuments,
-    templates, 
-    isGenerating, 
     regenerateDocument,
-    error 
-  } = useDocumentGenerationStore();
+    isRegenerating 
+  } = useDocumentGenerationQuery();
 
   const document = documentId ? generatedDocuments.find(doc => doc.id === documentId) : null;
 
@@ -35,7 +31,6 @@ export const RegenerateModal = ({ documentId, onClose }: RegenerateModalProps) =
       setTitle(document.title);
       setPurpose(document.purpose);
       setInstructions(document.instructions || '');
-      setSelectedTemplate(document.templateId || '');
     }
   }, [document]);
 
@@ -43,16 +38,17 @@ export const RegenerateModal = ({ documentId, onClose }: RegenerateModalProps) =
     e.preventDefault();
     if (!document || !title.trim() || !purpose.trim()) return;
 
-    await regenerateDocument(document.id, {
-      title: title.trim(),
-      purpose: purpose.trim(),
-      instructions: instructions.trim(),
-      templateId: selectedTemplate || undefined
+    regenerateDocument({
+      documentId: document.id,
+      data: {
+        title: title.trim(),
+        purpose: purpose.trim(),
+        instructions: instructions.trim(),
+        templateId: document.templateId
+      }
     });
 
-    if (!error) {
-      onClose();
-    }
+    onClose();
   };
 
   if (!document) return null;
@@ -101,37 +97,15 @@ export const RegenerateModal = ({ documentId, onClose }: RegenerateModalProps) =
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="template">Template (Optional)</Label>
-            <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a template..." />
-              </SelectTrigger>
-              <SelectContent>
-                {templates.map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          )}
-
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button 
               type="submit" 
-              disabled={isGenerating || !title.trim() || !purpose.trim()}
+              disabled={isRegenerating || !title.trim() || !purpose.trim()}
             >
-              {isGenerating ? (
+              {isRegenerating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Regenerating...

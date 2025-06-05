@@ -3,7 +3,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useDocumentGenerationStore } from '@/store/useDocumentGenerationStore';
+import { useDocumentGenerationQuery } from '@/hooks/queries/useDocumentGenerationQuery';
 import { Eye, Download, RotateCcw, X } from 'lucide-react';
 
 interface DocumentPreviewerProps {
@@ -13,7 +13,7 @@ interface DocumentPreviewerProps {
 }
 
 export const DocumentPreviewer = ({ document: documentId, onClose, onRegenerate }: DocumentPreviewerProps) => {
-  const { generatedDocuments } = useDocumentGenerationStore();
+  const { generatedDocuments } = useDocumentGenerationQuery();
   
   const document = documentId ? generatedDocuments.find(doc => doc.id === documentId) : null;
 

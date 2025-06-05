@@ -5,41 +5,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useDocumentGenerationStore } from '@/store/useDocumentGenerationStore';
 import { Wand2, Loader2 } from 'lucide-react';
+import { useDocumentGenerationQuery } from '@/hooks/queries/useDocumentGenerationQuery';
+import { useDocumentGenerationStore } from '@/store/useDocumentGenerationStore';
 
 export const GenerateDocumentForm = () => {
   const [title, setTitle] = useState('');
   const [purpose, setPurpose] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState('');
 
-  const { 
-    templates, 
-    isGenerating, 
-    generateDocumentFromForm,
-    error 
-  } = useDocumentGenerationStore();
+  const { generateDocument, isGenerating } = useDocumentGenerationQuery();
+  const { selectedTemplate, formData, resetFormData } = useDocumentGenerationStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !purpose.trim()) return;
 
-    await generateDocumentFromForm({
+    generateDocument({
       title: title.trim(),
       purpose: purpose.trim(),
       instructions: instructions.trim(),
-      templateId: selectedTemplate || undefined
+      templateId: selectedTemplate?.id,
+      formData
     });
 
     // Clear form on success
-    if (!error) {
-      setTitle('');
-      setPurpose('');
-      setInstructions('');
-      setSelectedTemplate('');
-    }
+    setTitle('');
+    setPurpose('');
+    setInstructions('');
+    resetFormData();
   };
 
   return (
@@ -84,28 +78,6 @@ export const GenerateDocumentForm = () => {
               rows={4}
             />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="template">Template (Optional)</Label>
-            <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a template..." />
-              </SelectTrigger>
-              <SelectContent>
-                {templates.map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          )}
 
           <Button 
             type="submit" 
