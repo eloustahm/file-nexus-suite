@@ -5,15 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Progress } from "@/components/ui/progress";
-import { 
-  ArrowRight, 
-  CheckCircle, 
-  Zap, 
-  Shield, 
-  Users, 
-  Bot, 
-  FileText, 
-  Workflow, 
+import {
+  ArrowRight,
+  CheckCircle,
+  Zap,
+  Shield,
+  Users,
+  Bot,
+  FileText,
+  Workflow,
   Star,
   Play,
   ChevronRight,
@@ -59,7 +59,7 @@ export const LandingPageEnhanced = () => {
     intervals.forEach(({ key, target, duration }) => {
       let start = 0;
       const increment = target / (duration / 16);
-      
+
       const timer = setInterval(() => {
         start += increment;
         if (start >= target) {
@@ -287,25 +287,25 @@ export const LandingPageEnhanced = () => {
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
           <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-purple-200/20 rounded-full blur-2xl animate-pulse delay-500"></div>
         </div>
-        
+
         <div className="max-w-7xl mx-auto text-center relative">
           <Badge className="mb-6 bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200 animate-fade-in">
             <Sparkles className="h-3 w-3 mr-1" />
             AI-Powered Document Revolution
           </Badge>
-          
+
           <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent leading-tight animate-fade-in">
             Transform Your
             <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Document Workflow
             </span>
           </h1>
-          
+
           <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in">
             Harness the power of AI to create, manage, and automate your documents.
             Experience the future of productivity with intelligent workflows that adapt to your needs.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 animate-fade-in">
             <Link to="/register">
               <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-4 h-auto shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
@@ -391,7 +391,7 @@ export const LandingPageEnhanced = () => {
               Comprehensive tools designed to revolutionize how you create, manage, and collaborate on documents
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group hover:scale-105 relative overflow-hidden">
@@ -555,7 +555,7 @@ export const LandingPageEnhanced = () => {
               See what our customers are saying about their experience
             </p>
           </div>
-          
+
           {/* Featured Testimonial */}
           <div className="mb-16">
             <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm max-w-4xl mx-auto">
@@ -569,8 +569,8 @@ export const LandingPageEnhanced = () => {
                   "{testimonials[currentTestimonial].content}"
                 </blockquote>
                 <div className="flex items-center justify-center gap-4">
-                  <img 
-                    src={testimonials[currentTestimonial].avatar} 
+                  <img
+                    src={testimonials[currentTestimonial].avatar}
                     alt={testimonials[currentTestimonial].name}
                     className="w-16 h-16 rounded-full border-4 border-white shadow-lg"
                   />
@@ -613,8 +613,8 @@ export const LandingPageEnhanced = () => {
                     "{testimonial.content.substring(0, 120)}..."
                   </p>
                   <div className="flex items-center">
-                    <img 
-                      src={testimonial.avatar} 
+                    <img
+                      src={testimonial.avatar}
                       alt={testimonial.name}
                       className="w-12 h-12 rounded-full mr-4 border-2 border-gray-100"
                     />
@@ -645,7 +645,7 @@ export const LandingPageEnhanced = () => {
             <p className="text-xl text-gray-600 mb-8">
               Start free, scale as you grow. No hidden fees.
             </p>
-            
+
             {/* Billing Toggle */}
             <div className="flex items-center justify-center gap-4 mb-8">
               <span className="text-gray-600">Monthly</span>
@@ -791,7 +791,12 @@ export const LandingPageEnhanced = () => {
       {/* CTA Section */}
       <section className="py-24 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.05\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+        <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+        ></div>
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative">
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
             Ready to Transform Your Workflow?
@@ -800,7 +805,7 @@ export const LandingPageEnhanced = () => {
             Join thousands of teams already using DocuFlow AI to streamline their document processes.
             Start your free trial today and experience the future of document management.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link to="/register">
               <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4 h-auto shadow-xl hover:scale-105 transition-all duration-300">
@@ -888,7 +893,7 @@ export const LandingPageEnhanced = () => {
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-center md:text-left">
               &copy; 2024 DocuFlow AI. All rights reserved. Built with ❤️ for the future of work.
