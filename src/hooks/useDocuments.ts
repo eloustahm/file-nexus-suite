@@ -1,6 +1,5 @@
-
 import { useDocumentsQuery } from '@/hooks/queries/useDocumentsQuery';
-import { useDocumentsUIStore } from '@/store/useDocumentsUIStore';
+import { useDocumentsUI } from '@/hooks/useDocumentsUI';
 import { useMemo } from 'react';
 
 /**
@@ -8,7 +7,7 @@ import { useMemo } from 'react';
  */
 export const useDocuments = () => {
   const documentsQuery = useDocumentsQuery();
-  const documentsUI = useDocumentsUIStore();
+  const documentsUI = useDocumentsUI();
 
   // Apply client-side filtering based on UI state
   const filteredDocuments = useMemo(() => {
@@ -102,7 +101,7 @@ export const useDocuments = () => {
     
     // UI actions
     setSearchQuery: documentsUI.setSearchQuery,
-    setSelectedDocuments: documentsUI.setSelectedDocuments,
+    setSelectedDocuments: documentsUI.setSelectedDocumentIds,
     toggleDocumentSelection: documentsUI.toggleDocumentSelection,
     setViewMode: documentsUI.setViewMode,
     setSorting: documentsUI.setSorting,

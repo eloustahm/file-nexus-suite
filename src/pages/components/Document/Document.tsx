@@ -1,4 +1,3 @@
-
 import { useDocuments } from '@/hooks/useDocuments';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Filter, Grid3X3, List } from "lucide-react";
 import { DocumentUpload } from "@/pages/components/Document/DocumentUpload.tsx";
 import { DocumentGrid } from "@/pages/components/Document/DocumentGrid.tsx";
+import { SectionLoading } from '@/components/LoadingStates';
 
 export const Document = () => {
   const { 
@@ -24,14 +24,7 @@ export const Document = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading documents...</p>
-        </div>
-      </div>
-    );
+    return <SectionLoading message="Loading documents..." />;
   }
 
   if (error) {

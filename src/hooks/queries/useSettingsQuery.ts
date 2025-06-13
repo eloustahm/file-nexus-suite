@@ -1,6 +1,6 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { settingsApi, type Profile } from '@/services/settings';
+import { settingsService } from '@/services/settings';
+import type { Profile } from '@/types';
 import { toast } from 'sonner';
 
 export const useSettingsQuery = () => {
@@ -8,23 +8,22 @@ export const useSettingsQuery = () => {
 
   // Get profile query
   const profileQuery = useQuery({
-    queryKey: ['settings', 'profile'],
-    queryFn: settingsApi.getProfile,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    queryKey: ['profile'],
+    queryFn: settingsService.getProfile,
   });
 
   // Get integrations query
   const integrationsQuery = useQuery({
     queryKey: ['settings', 'integrations'],
-    queryFn: settingsApi.getIntegrations,
+    queryFn: settingsService.getIntegrations,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: (data: Partial<Profile>) => settingsApi.updateProfile(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings', 'profile'] });
+    mutationFn: settingsService.updateProfile,
+    onSuccess: (updatedProfile) => {
+      queryClient.setQueryData(['profile'], updatedProfile);
       toast.success('Profile updated successfully');
     },
     onError: (error: any) => {
@@ -34,8 +33,7 @@ export const useSettingsQuery = () => {
 
   // Update password mutation
   const updatePasswordMutation = useMutation({
-    mutationFn: (data: { currentPassword: string; newPassword: string }) => 
-      settingsApi.updatePassword(data),
+    mutationFn: settingsService.updatePassword,
     onSuccess: () => {
       toast.success('Password updated successfully');
     },
@@ -47,7 +45,7 @@ export const useSettingsQuery = () => {
   // Update integration mutation
   const updateIntegrationMutation = useMutation({
     mutationFn: ({ provider, config }: { provider: string; config: any }) => 
-      settingsApi.updateIntegration(provider, config),
+      settingsService.updateIntegration(provider, config),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings', 'integrations'] });
       toast.success('Integration updated successfully');
@@ -70,12 +68,12 @@ export const useSettingsQuery = () => {
     profileError: profileQuery.error,
     integrationsError: integrationsQuery.error,
 
-    // Mutations
-    updateProfile: updateProfileMutation.mutateAsync,
-    updatePassword: updatePasswordMutation.mutateAsync,
-    updateIntegration: updateIntegrationMutation.mutateAsync,
+    // Actions
+    updateProfile: updateProfileMutation.mutate,
+    updatePassword: updatePasswordMutation.mutate,
+    updateIntegration: updateIntegrationMutation.mutate,
 
-    // Loading states
+    // Mutation states
     isUpdatingProfile: updateProfileMutation.isPending,
     isUpdatingPassword: updatePasswordMutation.isPending,
     isUpdatingIntegration: updateIntegrationMutation.isPending,

@@ -1,50 +1,46 @@
-
 import { http } from '@/lib/api';
-import type { ChatMessage, ChatSession, Agent } from '@/types';
+import type { ChatSession, ChatMessage, ChatAgent } from '@/types/chat';
 
-export interface SendMessageData {
-  content: string;
-  sessionId?: string;
-  documentId?: string;
-  agentId?: string;
-}
-
-/**
- * Chat API service
- */
-export const chatApi = {
-  // Get all chat sessions
-  getSessions: async (): Promise<ChatSession[]> => {
-    return http.get<ChatSession[]>('/api/chat/sessions');
+export const chatService = {
+  // Chat Sessions
+  async getSessions(): Promise<ChatSession[]> {
+    const response = await http.get<{ sessions: ChatSession[] }>('/chat/sessions');
+    return response.sessions;
   },
 
-  // Get session by ID
-  getSession: async (sessionId: string): Promise<ChatSession> => {
-    return http.get<ChatSession>(`/api/chat/sessions/${sessionId}`);
+  async getSession(sessionId: string): Promise<ChatSession> {
+    const response = await http.get<{ session: ChatSession }>(`/chat/sessions/${sessionId}`);
+    return response.session;
   },
 
-  // Create new chat session
-  createSession: async (data: { title?: string; documentId?: string; agentId?: string }): Promise<ChatSession> => {
-    return http.post<ChatSession>('/api/chat/sessions', data);
+  async createSession(data: { title: string; agentId?: string }): Promise<ChatSession> {
+    const response = await http.post<{ session: ChatSession }>('/chat/sessions', data);
+    return response.session;
   },
 
-  // Send message
-  sendMessage: async (data: SendMessageData): Promise<ChatMessage> => {
-    return http.post<ChatMessage>('/api/chat/messages', data);
+  async updateSession(sessionId: string, data: Partial<ChatSession>): Promise<ChatSession> {
+    const response = await http.patch<{ session: ChatSession }>(`/chat/sessions/${sessionId}`, data);
+    return response.session;
   },
 
-  // Get available agents
-  getAgents: async (): Promise<Agent[]> => {
-    return http.get<Agent[]>('/api/chat/agents');
+  async deleteSession(sessionId: string): Promise<void> {
+    await http.delete<void>(`/chat/sessions/${sessionId}`);
   },
 
-  // Delete session
-  deleteSession: async (sessionId: string): Promise<void> => {
-    return http.delete<void>(`/api/chat/sessions/${sessionId}`);
+  // Chat Messages
+  async getMessages(sessionId: string): Promise<ChatMessage[]> {
+    const response = await http.get<{ messages: ChatMessage[] }>(`/chat/sessions/${sessionId}/messages`);
+    return response.messages;
   },
 
-  // Update session title
-  updateSession: async (sessionId: string, data: { title: string }): Promise<ChatSession> => {
-    return http.put<ChatSession>(`/api/chat/sessions/${sessionId}`, data);
+  async sendMessage(sessionId: string, content: string): Promise<ChatMessage> {
+    const response = await http.post<{ message: ChatMessage }>(`/chat/sessions/${sessionId}/messages`, { content });
+    return response.message;
+  },
+
+  // Chat Agents
+  async getAgents(): Promise<ChatAgent[]> {
+    const response = await http.get<{ agents: ChatAgent[] }>('/chat/agents');
+    return response.agents;
   }
 };

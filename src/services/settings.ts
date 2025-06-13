@@ -1,47 +1,25 @@
-
 import { http } from '@/lib/api';
+import type { Profile } from '@/types';
+import type { Integration } from '@/types/integration';
 
-export interface Profile {
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar?: string;
-  phone?: string;
-}
+export const settingsService = {
+  async getProfile(): Promise<Profile> {
+    return http.get<Profile>('/settings/profile');
+  },
 
-export interface Integration {
-  id: string;
-  name: string;
-  enabled: boolean;
-  config?: any;
-}
+  async updateProfile(profileData: Partial<Profile>): Promise<Profile> {
+    return http.patch<Profile>('/settings/profile', profileData);
+  },
 
-/**
- * Settings API service
- */
-export const settingsApi = {
-  // Get user profile
-  getProfile: async (): Promise<Profile> => {
-    return http.get<Profile>('/api/settings/profile');
+  async updatePassword(passwordData: { currentPassword: string; newPassword: string }): Promise<void> {
+    await http.patch<void>('/settings/password', passwordData);
   },
-  
-  // Update user profile
-  updateProfile: async (profileData: Partial<Profile>): Promise<Profile> => {
-    return http.put<Profile>('/api/settings/profile', profileData);
+
+  async getIntegrations(): Promise<Integration[]> {
+    return http.get<Integration[]>('/settings/integrations');
   },
-  
-  // Update password
-  updatePassword: async (passwordData: { currentPassword: string; newPassword: string }): Promise<void> => {
-    return http.put<void>('/api/settings/password', passwordData);
-  },
-  
-  // Get integrations
-  getIntegrations: async (): Promise<Integration[]> => {
-    return http.get<Integration[]>('/api/settings/integrations');
-  },
-  
-  // Update integration
-  updateIntegration: async (provider: string, config: any): Promise<void> => {
-    return http.put<void>(`/api/settings/integrations/${provider}`, config);
+
+  async updateIntegration(provider: string, config: any): Promise<void> {
+    await http.patch<void>(`/settings/integrations/${provider}`, config);
   }
 };

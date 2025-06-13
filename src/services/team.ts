@@ -1,96 +1,84 @@
-
 import { http } from '@/lib/api';
+import type { TeamMember, TeamSettings, TeamRoom, ChatMessage } from '@/types/team';
 
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'editor' | 'viewer';
-  avatar?: string;
-  joinedAt: string;
-  lastActive: string;
-  status: 'active' | 'pending' | 'suspended';
-}
-
-export interface InviteMemberData {
-  email: string;
-  role: 'admin' | 'editor' | 'viewer';
-  message?: string;
-}
-
-export interface TeamChatRoom {
-  id: string;
-  name: string;
-  description?: string;
-  type: 'group' | 'project';
-  members: string[];
-  createdAt: string;
-  lastActivity: string;
-  isPrivate: boolean;
-}
-
-export interface TeamChatMessage {
-  id: string;
-  content: string;
-  senderId: string;
-  senderName: string;
-  roomId: string;
-  timestamp: string;
-  type: 'text' | 'file' | 'system';
-  fileUrl?: string;
-}
-
-/**
- * Team API service
- */
-export const teamApi = {
-  // Get team members
-  getMembers: async (): Promise<TeamMember[]> => {
-    return http.get<TeamMember[]>('/api/team/members');
+export const teamService = {
+  // Team Members
+  async getMembers(): Promise<TeamMember[]> {
+    const response = await http.get<{ members: TeamMember[] }>('/team/members');
+    return response.members;
   },
 
-  // Invite team member
-  inviteMember: async (data: InviteMemberData): Promise<void> => {
-    return http.post<void>('/api/team/invite', data);
+  async inviteMember(data: { email: string; role: string }): Promise<TeamMember> {
+    const response = await http.post<{ member: TeamMember }>('/team/members/invite', data);
+    return response.member;
   },
 
-  // Update member role
-  updateMemberRole: async (memberId: string, role: string): Promise<TeamMember> => {
-    return http.put<TeamMember>(`/api/team/members/${memberId}`, { role });
+  async updateMemberRole(memberId: string, role: string): Promise<TeamMember> {
+    const response = await http.patch<{ member: TeamMember }>(`/team/members/${memberId}/role`, { role });
+    return response.member;
   },
 
-  // Remove team member
-  removeMember: async (memberId: string): Promise<void> => {
-    return http.delete<void>(`/api/team/members/${memberId}`);
+  async removeMember(memberId: string): Promise<void> {
+    await http.delete<void>(`/team/members/${memberId}`);
   },
 
-  // Get chat rooms
-  getChatRooms: async (): Promise<TeamChatRoom[]> => {
-    return http.get<TeamChatRoom[]>('/api/team/chat/rooms');
+  // Team Settings
+  async getSettings(): Promise<TeamSettings> {
+    const response = await http.get<{ settings: TeamSettings }>('/team/settings');
+    return response.settings;
   },
 
-  // Create chat room
-  createChatRoom: async (data: { name: string; description?: string; type: 'group' | 'project'; members: string[] }): Promise<TeamChatRoom> => {
-    return http.post<TeamChatRoom>('/api/team/chat/rooms', data);
+  async updateSettings(settings: Partial<TeamSettings>): Promise<TeamSettings> {
+    const response = await http.patch<{ settings: TeamSettings }>('/team/settings', settings);
+    return response.settings;
   },
 
-  // Get room messages
-  getRoomMessages: async (roomId: string): Promise<TeamChatMessage[]> => {
-    return http.get<TeamChatMessage[]>(`/api/team/chat/rooms/${roomId}/messages`);
+  // Team Rooms
+  async getRooms(): Promise<TeamRoom[]> {
+    const response = await http.get<{ rooms: TeamRoom[] }>('/team/rooms');
+    return response.rooms;
   },
 
-  // Send message to room
-  sendRoomMessage: async (roomId: string, content: string): Promise<TeamChatMessage> => {
-    return http.post<TeamChatMessage>(`/api/team/chat/rooms/${roomId}/messages`, { content });
+  async createRoom(data: { name: string; members: string[]; type: string }): Promise<TeamRoom> {
+    const response = await http.post<{ room: TeamRoom }>('/team/rooms', data);
+    return response.room;
   },
 
-  // Join room
-  joinRoom: async (roomId: string): Promise<void> => {
-    return http.post<void>(`/api/team/chat/rooms/${roomId}/join`);
+  async updateRoom(roomId: string, data: Partial<TeamRoom>): Promise<TeamRoom> {
+    const response = await http.patch<{ room: TeamRoom }>(`/team/rooms/${roomId}`, data);
+    return response.room;
   },
 
-  // Leave room
-  leaveRoom: async (roomId: string): Promise<void> => {
-    return http.post<void>(`/api/team/chat/rooms/${roomId}/leave`);
+  async deleteRoom(roomId: string): Promise<void> {
+    await http.delete<void>(`/team/rooms/${roomId}`);
+  },
+
+  async leaveRoom(roomId: string): Promise<void> {
+    await http.post<void>(`/team/rooms/${roomId}/leave`);
+  },
+
+  // Chat
+  async getChatRooms(): Promise<TeamRoom[]> {
+    const response = await http.get<{ rooms: TeamRoom[] }>('/team/chat/rooms');
+    return response.rooms;
+  },
+
+  async createChatRoom(data: { name: string; members: string[] }): Promise<TeamRoom> {
+    const response = await http.post<{ room: TeamRoom }>('/team/chat/rooms', data);
+    return response.room;
+  },
+
+  async getChatMessages(roomId: string): Promise<ChatMessage[]> {
+    const response = await http.get<{ messages: ChatMessage[] }>(`/team/chat/rooms/${roomId}/messages`);
+    return response.messages;
+  },
+
+  async sendChatMessage(roomId: string, content: string): Promise<ChatMessage> {
+    const response = await http.post<{ message: ChatMessage }>(`/team/chat/rooms/${roomId}/messages`, { content });
+    return response.message;
+  },
+
+  async joinChatRoom(roomId: string): Promise<void> {
+    await http.post<void>(`/team/chat/rooms/${roomId}/join`);
   }
 };

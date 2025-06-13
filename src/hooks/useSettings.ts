@@ -1,13 +1,12 @@
-
 import { useSettingsQuery } from '@/hooks/queries/useSettingsQuery';
-import { useSettingsUIStore } from '@/store/useSettingsUIStore';
+import { useSettingsUI } from '@/hooks/useSettingsUI';
 
 /**
  * Combined hook that provides both UI state and server data for settings
  */
 export const useSettings = () => {
   const settingsQuery = useSettingsQuery();
-  const settingsUI = useSettingsUIStore();
+  const settingsUI = useSettingsUI();
 
   return {
     // Server data

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,10 +31,13 @@ import {
   Upload,
   Eye,
   Lock,
-  Smartphone
+  Smartphone,
+  Check
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { TESTIMONIALS, INTEGRATIONS, LANDING_PRICING_PLANS, LANDING_FAQS } from "@/constants/landing";
+import { FEATURES } from "@/constants/features";
 
 export const LandingPageEnhanced = () => {
   const [stats, setStats] = useState({
@@ -75,174 +77,19 @@ export const LandingPageEnhanced = () => {
   // Auto-rotate testimonials
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+      setCurrentTestimonial((prev) => (prev + 1) % TESTIMONIALS.length);
     }, 5000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const features = [
-    {
-      icon: <Bot className="h-6 w-6" />,
-      title: "AI-Powered Generation",
-      description: "Create documents instantly with advanced AI that understands your needs and context.",
-      gradient: "from-blue-500 to-cyan-500",
-      details: ["Natural language processing", "Context-aware generation", "Multi-format support"]
-    },
-    {
-      icon: <Workflow className="h-6 w-6" />,
-      title: "Smart Workflows",
-      description: "Automate your document processes with intelligent workflow management and routing.",
-      gradient: "from-purple-500 to-pink-500",
-      details: ["Automated routing", "Approval workflows", "Integration ready"]
-    },
-    {
-      icon: <Shield className="h-6 w-6" />,
-      title: "Enterprise Security",
-      description: "Bank-grade security with end-to-end encryption and compliance standards.",
-      gradient: "from-green-500 to-emerald-500",
-      details: ["End-to-end encryption", "SOC 2 compliant", "GDPR ready"]
-    },
-    {
-      icon: <Users className="h-6 w-6" />,
-      title: "Team Collaboration",
-      description: "Work together seamlessly with real-time collaboration tools and shared workspaces.",
-      gradient: "from-orange-500 to-red-500",
-      details: ["Real-time editing", "Comment system", "Version control"]
-    },
-    {
-      icon: <BarChart3 className="h-6 w-6" />,
-      title: "Advanced Analytics",
-      description: "Get insights into your document performance and team productivity.",
-      gradient: "from-indigo-500 to-purple-500",
-      details: ["Usage analytics", "Performance metrics", "Custom reports"]
-    },
-    {
-      icon: <Brain className="h-6 w-6" />,
-      title: "Smart Templates",
-      description: "Intelligent templates that adapt to your content and industry requirements.",
-      gradient: "from-teal-500 to-cyan-500",
-      details: ["Industry-specific", "Auto-formatting", "Dynamic fields"]
-    }
-  ];
+  const testimonials = TESTIMONIALS;
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "Operations Manager",
-      company: "TechCorp",
-      content: "DocuFlow transformed our document workflow. We're 3x faster now and our team loves the AI assistance. The time saved allows us to focus on strategic initiatives.",
-      rating: 5,
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b302?w=64&h=64&fit=crop&crop=face",
-      metrics: "300% faster workflows"
-    },
-    {
-      name: "Michael Chen",
-      role: "Legal Director",
-      company: "LawFirm Pro",
-      content: "The AI accuracy is incredible. It saves us hours of manual work daily and catches details we might miss. Our document quality has significantly improved.",
-      rating: 5,
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face",
-      metrics: "15 hours saved weekly"
-    },
-    {
-      name: "Emily Rodriguez",
-      role: "Content Manager",
-      company: "Creative Studio",
-      content: "From concept to completion, DocuFlow streamlines everything. Our content production has doubled while maintaining high quality standards.",
-      rating: 5,
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face",
-      metrics: "200% productivity increase"
-    }
-  ];
+  const pricingPlans = LANDING_PRICING_PLANS;
 
-  const pricingPlans = [
-    {
-      name: "Starter",
-      price: "Free",
-      description: "Perfect for individuals getting started",
-      features: [
-        "5 documents per month",
-        "3 templates",
-        "Basic AI assistance",
-        "250MB storage",
-        "Email support"
-      ],
-      highlighted: false,
-      cta: "Get Started Free"
-    },
-    {
-      name: "Professional",
-      price: "$29",
-      description: "Best for growing teams and businesses",
-      features: [
-        "100 documents per month",
-        "Unlimited templates",
-        "Advanced AI features",
-        "10GB storage",
-        "Priority support",
-        "Team collaboration",
-        "Custom workflows",
-        "Analytics dashboard"
-      ],
-      highlighted: true,
-      cta: "Start 14-Day Trial"
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      description: "For large organizations with specific needs",
-      features: [
-        "Unlimited documents",
-        "Custom integrations",
-        "Advanced security",
-        "Unlimited storage",
-        "24/7 phone support",
-        "Dedicated account manager",
-        "Custom training",
-        "API access",
-        "White-label options"
-      ],
-      highlighted: false,
-      cta: "Contact Sales"
-    }
-  ];
+  const faqs = LANDING_FAQS;
 
-  const faqs = [
-    {
-      question: "How does the AI document generation work?",
-      answer: "Our AI uses advanced natural language processing to understand your requirements and generate documents that match your style, tone, and format preferences. It learns from your feedback to improve over time and can handle various document types from technical specifications to creative content."
-    },
-    {
-      question: "Is my data secure?",
-      answer: "Absolutely. We use enterprise-grade encryption, comply with GDPR and SOC 2 standards, and never share your data with third parties. Your documents are processed securely and stored with bank-level security. We also offer on-premise deployment for enterprise customers."
-    },
-    {
-      question: "Can I integrate DocuFlow with my existing tools?",
-      answer: "Yes! We offer integrations with popular tools like Google Drive, Microsoft 365, Slack, Notion, Salesforce, and many more. Our REST API also allows for custom integrations, and we provide webhooks for real-time synchronization."
-    },
-    {
-      question: "What kind of documents can I create?",
-      answer: "DocuFlow can help create a wide variety of documents including reports, proposals, contracts, marketing content, technical documentation, legal briefs, project plans, and more. Our AI adapts to different document types and industries with specialized templates and formatting."
-    },
-    {
-      question: "Do you offer training and support?",
-      answer: "Yes! We provide comprehensive onboarding, video tutorials, documentation, and dedicated support. Professional and Enterprise customers get access to live training sessions, a dedicated customer success manager, and priority support with guaranteed response times."
-    },
-    {
-      question: "Can I try DocuFlow before purchasing?",
-      answer: "Absolutely! We offer a free tier with 5 documents per month, and our Professional plan comes with a 14-day free trial with no credit card required. You can explore all features and see how DocuFlow fits your workflow before making any commitment."
-    }
-  ];
-
-  const integrations = [
-    { name: "Google Drive", logo: "https://developers.google.com/drive/images/drive_icon.png" },
-    { name: "Microsoft 365", logo: "https://img.icons8.com/color/48/microsoft-office-2019.png" },
-    { name: "Slack", logo: "https://img.icons8.com/color/48/slack-new.png" },
-    { name: "Notion", logo: "https://img.icons8.com/color/48/notion.png" },
-    { name: "Salesforce", logo: "https://img.icons8.com/color/48/salesforce.png" },
-    { name: "Dropbox", logo: "https://img.icons8.com/color/48/dropbox.png" }
-  ];
+  const integrations = INTEGRATIONS;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -393,32 +240,37 @@ export const LandingPageEnhanced = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group hover:scale-105 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity duration-300" style={{
-                  background: `linear-gradient(135deg, ${feature.gradient.split(' ')[1]}, ${feature.gradient.split(' ')[3]})`
-                }}></div>
-                <CardHeader className="text-center pb-4 relative z-10">
-                  <div className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center mx-auto mb-4 text-white group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                    {feature.icon}
-                  </div>
-                  <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="relative z-10">
-                  <CardDescription className="text-gray-600 text-center mb-4">
-                    {feature.description}
-                  </CardDescription>
-                  <ul className="space-y-2">
-                    {feature.details.map((detail, detailIndex) => (
-                      <li key={detailIndex} className="flex items-center text-sm text-gray-600">
-                        <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                        {detail}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
+            {FEATURES.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 group hover:scale-105 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity duration-300" style={{
+                    backgroundImage: `linear-gradient(to bottom right, ${feature.gradient})`
+                  }} />
+                  <CardHeader>
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-lg bg-gradient-to-br ${feature.gradient} text-white`}>
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
+                        <CardDescription className="text-gray-600">{feature.description}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2">
+                      {feature.details.map((detail, i) => (
+                        <li key={i} className="flex items-center gap-2 text-gray-600">
+                          <Check className="h-4 w-4 text-green-500" />
+                          {detail}
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -561,7 +413,7 @@ export const LandingPageEnhanced = () => {
             <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm max-w-4xl mx-auto">
               <CardContent className="p-12 text-center">
                 <div className="flex justify-center mb-6">
-                  {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
+                  {[...Array(Math.round(testimonials[currentTestimonial].rating))].map((_, i) => (
                     <Star key={i} className="h-6 w-6 text-yellow-400 fill-current" />
                   ))}
                 </div>
@@ -571,11 +423,11 @@ export const LandingPageEnhanced = () => {
                 <div className="flex items-center justify-center gap-4">
                   <img
                     src={testimonials[currentTestimonial].avatar}
-                    alt={testimonials[currentTestimonial].name}
+                    alt={testimonials[currentTestimonial].author}
                     className="w-16 h-16 rounded-full border-4 border-white shadow-lg"
                   />
                   <div className="text-left">
-                    <p className="font-semibold text-gray-900 text-lg">{testimonials[currentTestimonial].name}</p>
+                    <p className="font-semibold text-gray-900 text-lg">{testimonials[currentTestimonial].author}</p>
                     <p className="text-gray-600">{testimonials[currentTestimonial].role} at {testimonials[currentTestimonial].company}</p>
                     <Badge variant="secondary" className="mt-1 bg-green-100 text-green-800">
                       {testimonials[currentTestimonial].metrics}
@@ -605,8 +457,15 @@ export const LandingPageEnhanced = () => {
               <Card key={index} className={`border-0 shadow-xl bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:scale-105 ${index === currentTestimonial ? 'ring-2 ring-blue-500' : ''}`}>
                 <CardContent className="p-8">
                   <div className="flex mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-5 w-5 ${
+                          i < Math.floor(testimonial.rating)
+                            ? 'text-yellow-400'
+                            : 'text-gray-300'
+                        }`}
+                      />
                     ))}
                   </div>
                   <p className="text-gray-700 mb-6 text-lg leading-relaxed italic">
@@ -615,11 +474,11 @@ export const LandingPageEnhanced = () => {
                   <div className="flex items-center">
                     <img
                       src={testimonial.avatar}
-                      alt={testimonial.name}
+                      alt={testimonial.author}
                       className="w-12 h-12 rounded-full mr-4 border-2 border-gray-100"
                     />
                     <div>
-                      <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                      <p className="font-semibold text-gray-900">{testimonial.author}</p>
                       <p className="text-gray-600 text-sm">{testimonial.role}</p>
                       <p className="text-gray-500 text-sm">{testimonial.company}</p>
                     </div>

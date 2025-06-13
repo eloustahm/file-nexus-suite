@@ -1,32 +1,33 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { chatApi, type SendMessageData } from '@/services/chat';
+import { chatService } from '@/services/chat';
+import type { ChatSession, ChatMessage, ChatAgent } from '@/types';
 import { toast } from 'sonner';
+import { QUERY_KEYS } from '@/constants';
 
 export const useChatQuery = () => {
   const queryClient = useQueryClient();
 
-  // Get all chat sessions query
+  // Get chat sessions query
   const sessionsQuery = useQuery({
-    queryKey: ['chat', 'sessions'],
-    queryFn: chatApi.getSessions,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    queryKey: [QUERY_KEYS.CHAT, 'sessions'],
+    queryFn: chatService.getSessions,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Get available agents query
+  // Get chat agents query
   const agentsQuery = useQuery({
-    queryKey: ['chat', 'agents'],
-    queryFn: chatApi.getAgents,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    queryKey: [QUERY_KEYS.CHAT, 'agents'],
+    queryFn: chatService.getAgents,
+    staleTime: 15 * 60 * 1000, // 15 minutes
   });
 
   // Create session mutation
   const createSessionMutation = useMutation({
-    mutationFn: (data: { title?: string; documentId?: string; agentId?: string }) => 
-      chatApi.createSession(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['chat', 'sessions'] });
-      toast.success('Chat session created');
+    mutationFn: (data: { title: string; agentId?: string }) => chatService.createSession(data),
+    onSuccess: (newSession) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHAT, 'sessions'] });
+      queryClient.setQueryData([QUERY_KEYS.CHAT, 'sessions', newSession.id], newSession);
+      toast.success('Chat session created successfully');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to create chat session');
@@ -35,9 +36,11 @@ export const useChatQuery = () => {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: (data: SendMessageData) => chatApi.sendMessage(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['chat', 'sessions'] });
+    mutationFn: ({ sessionId, content }: { sessionId: string; content: string }) => 
+      chatService.sendMessage(sessionId, content),
+    onSuccess: (message, { sessionId }) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHAT, 'sessions', sessionId, 'messages'] });
+      queryClient.setQueryData([QUERY_KEYS.CHAT, 'sessions', sessionId, 'messages', message.id], message);
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to send message');
@@ -46,10 +49,11 @@ export const useChatQuery = () => {
 
   // Delete session mutation
   const deleteSessionMutation = useMutation({
-    mutationFn: (sessionId: string) => chatApi.deleteSession(sessionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['chat', 'sessions'] });
-      toast.success('Chat session deleted');
+    mutationFn: (sessionId: string) => chatService.deleteSession(sessionId),
+    onSuccess: (_, sessionId) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHAT, 'sessions'] });
+      queryClient.removeQueries({ queryKey: [QUERY_KEYS.CHAT, 'sessions', sessionId] });
+      toast.success('Chat session deleted successfully');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to delete chat session');
@@ -58,11 +62,12 @@ export const useChatQuery = () => {
 
   // Update session mutation
   const updateSessionMutation = useMutation({
-    mutationFn: ({ sessionId, data }: { sessionId: string; data: { title: string } }) => 
-      chatApi.updateSession(sessionId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['chat', 'sessions'] });
-      toast.success('Chat session updated');
+    mutationFn: ({ sessionId, data }: { sessionId: string; data: Partial<ChatSession> }) => 
+      chatService.updateSession(sessionId, data),
+    onSuccess: (updatedSession) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHAT, 'sessions'] });
+      queryClient.setQueryData([QUERY_KEYS.CHAT, 'sessions', updatedSession.id], updatedSession);
+      toast.success('Chat session updated successfully');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to update chat session');
@@ -70,35 +75,28 @@ export const useChatQuery = () => {
   });
 
   return {
-    // Data
+    // Server data
     sessions: sessionsQuery.data || [],
     agents: agentsQuery.data || [],
-
-    // Loading states
+    
+    // Server state
     isLoadingSessions: sessionsQuery.isLoading,
     isLoadingAgents: agentsQuery.isLoading,
-
-    // Errors
-    sessionsError: sessionsQuery.error,
-    agentsError: agentsQuery.error,
-
-    // Mutations
-    createSession: createSessionMutation.mutateAsync,
-    sendMessage: sendMessageMutation.mutateAsync,
-    deleteSession: deleteSessionMutation.mutateAsync,
-    updateSession: updateSessionMutation.mutateAsync,
-
-    // Loading states
+    sessionsError: sessionsQuery.error?.message,
+    agentsError: agentsQuery.error?.message,
+    
+    // Chat actions
+    createSession: createSessionMutation.mutate,
+    sendMessage: sendMessageMutation.mutate,
+    deleteSession: deleteSessionMutation.mutate,
+    updateSession: updateSessionMutation.mutate,
+    refetchSessions: sessionsQuery.refetch,
+    refetchAgents: agentsQuery.refetch,
+    
+    // Mutation states
     isCreatingSession: createSessionMutation.isPending,
     isSendingMessage: sendMessageMutation.isPending,
     isDeletingSession: deleteSessionMutation.isPending,
     isUpdatingSession: updateSessionMutation.isPending,
-
-    // Refetch
-    refetchSessions: sessionsQuery.refetch,
-    refetchAgents: agentsQuery.refetch,
-
-    // Helper function for getting session by ID
-    getSession: (sessionId: string) => chatApi.getSession(sessionId),
   };
 };

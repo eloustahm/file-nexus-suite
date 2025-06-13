@@ -1,6 +1,5 @@
-
 import { useTeamQuery } from '@/hooks/queries/useTeamQuery';
-import { useTeamUIStore } from '@/store/useTeamUIStore';
+import { useTeamUI } from '@/hooks/useTeamUI';
 import { useMemo } from 'react';
 
 /**
@@ -8,7 +7,7 @@ import { useMemo } from 'react';
  */
 export const useTeam = () => {
   const teamQuery = useTeamQuery();
-  const teamUI = useTeamUIStore();
+  const teamUI = useTeamUI();
 
   // Apply client-side filtering based on UI state
   const filteredMembers = useMemo(() => {
@@ -68,10 +67,10 @@ export const useTeam = () => {
     refetchChatRooms: teamQuery.refetchChatRooms,
     
     // Mutation states
-    isInviting: teamQuery.isInviting,
+    isInviting: teamQuery.isInvitingMember,
     isUpdatingRole: teamQuery.isUpdatingRole,
-    isRemoving: teamQuery.isRemoving,
-    isCreatingRoom: teamQuery.isCreatingRoom,
+    isRemoving: teamQuery.isRemovingMember,
+    isCreatingRoom: teamQuery.isCreatingChatRoom,
     
     // UI state
     showInviteModal: teamUI.showInviteModal,
@@ -90,10 +89,10 @@ export const useTeam = () => {
     setShowRoleUpdateModal: teamUI.setShowRoleUpdateModal,
     setShowCreateRoomModal: teamUI.setShowCreateRoomModal,
     setMemberFilter: teamUI.setMemberFilter,
-    setSelectedMembers: teamUI.setSelectedMembers,
+    setSelectedMembers: teamUI.setSelectedMemberIds,
     toggleMemberSelection: teamUI.toggleMemberSelection,
     setRoleFilter: teamUI.setRoleFilter,
-    setSelectedRoom: teamUI.setSelectedRoom,
+    setSelectedRoom: teamUI.setSelectedRoomId,
     setRoomFilter: teamUI.setRoomFilter,
     clearFilters: teamUI.clearFilters,
     clearSelections: teamUI.clearSelections,

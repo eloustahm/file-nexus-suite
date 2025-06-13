@@ -1,22 +1,44 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { activityApi, type ActivityFilters } from '@/services/activity';
+import { activityService } from '@/services/activity';
+import type { ActivityLog, ActivityFilter, ActivityLogData } from '@/types';
 import { toast } from 'sonner';
 
-export const useActivityQuery = (filters?: ActivityFilters) => {
+export const useActivityQuery = () => {
   const queryClient = useQueryClient();
 
   // Get activity logs query
-  const logsQuery = useQuery({
-    queryKey: ['activity', filters],
-    queryFn: () => activityApi.getLogs(filters),
-    staleTime: 2 * 60 * 1000, // 2 minutes
+  const activityLogsQuery = useQuery({
+    queryKey: ['activity'],
+    queryFn: () => activityService.getLogs(),
   });
+
+  // Get filtered activity logs query
+  const getFilteredLogs = (filters: ActivityFilter) => {
+    return useQuery({
+      queryKey: ['activity', 'filtered', filters],
+      queryFn: () => activityService.getLogs(filters),
+    });
+  };
+
+  // Get document activity query
+  const getDocumentActivity = (documentId: string) => {
+    return useQuery({
+      queryKey: ['activity', 'document', documentId],
+      queryFn: () => activityService.getDocumentActivity(documentId),
+    });
+  };
+
+  // Get user activity query
+  const getUserActivity = (userId: string) => {
+    return useQuery({
+      queryKey: ['activity', 'user', userId],
+      queryFn: () => activityService.getUserActivity(userId),
+    });
+  };
 
   // Log activity mutation
   const logActivityMutation = useMutation({
-    mutationFn: (data: { action: string; description: string; type: string; metadata?: Record<string, any> }) => 
-      activityApi.logActivity(data),
+    mutationFn: (data: ActivityLogData) => activityService.logActivity(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activity'] });
     },
@@ -26,23 +48,22 @@ export const useActivityQuery = (filters?: ActivityFilters) => {
   });
 
   return {
-    logs: logsQuery.data || [],
-    isLoading: logsQuery.isLoading,
-    error: logsQuery.error,
-
-    // Mutations
-    logActivity: logActivityMutation.mutateAsync,
+    // Data
+    activityLogs: activityLogsQuery.data || [],
 
     // Loading states
-    isLogging: logActivityMutation.isPending,
+    isLoadingActivity: activityLogsQuery.isLoading,
 
-    // Refetch
-    refetch: logsQuery.refetch,
+    // Errors
+    activityError: activityLogsQuery.error,
 
-    // Helper functions
-    getDocumentActivity: (documentId: string) => 
-      activityApi.getDocumentActivity(documentId),
-    getUserActivity: (userId: string) => 
-      activityApi.getUserActivity(userId),
+    // Actions
+    getFilteredLogs,
+    getDocumentActivity,
+    getUserActivity,
+    logActivity: logActivityMutation.mutate,
+
+    // Mutation states
+    isLoggingActivity: logActivityMutation.isPending,
   };
 };

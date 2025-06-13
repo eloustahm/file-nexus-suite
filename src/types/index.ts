@@ -1,3 +1,11 @@
+// Export all types from their respective files
+export * from './activity';
+export * from './chat';
+export * from './file';
+export * from './payment';
+export * from './profile';
+export * from './team';
+export * from './integration';
 
 // Unified type definitions for the application
 
@@ -210,3 +218,66 @@ export interface PaginatedResponse<T> {
     totalPages: number;
   };
 }
+
+// --- Auth Types ---
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+// --- Document Generation Types ---
+export interface DocumentFormData {
+  title: string;
+  purpose: string;
+  instructions?: string;
+  templateId?: string;
+}
+
+// --- Document Types ---
+export interface CreateDocumentData {
+  name: string;
+  content: string;
+  type: string;
+  folderId?: string;
+  tags?: string[];
+}
+
+export interface ShareDocumentData {
+  userIds: string[];
+  permissions: 'read' | 'write' | 'admin';
+  expiresAt?: string;
+}
+
+export interface DocumentVersion {
+  id: string;
+  documentId: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  changes: string;
+}
+
+// --- Activity Types ---
+export interface ActivityLogData {
+  action: string;
+  description: string;
+  type: string;
+  metadata?: Record<string, any>;
+}
+
+export interface ProfileActivity {
+  id: string;
+  type: string;
+  timestamp: string;
+  details: Record<string, unknown>;
+}
+
+// Re-export ActivityFilter for ActivityFilters usage
+export type { ActivityFilter } from './activity';

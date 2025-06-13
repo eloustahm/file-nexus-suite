@@ -1,6 +1,5 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { documentsApi, type CreateDocumentData, type ShareDocumentData } from '@/services/documents';
+import { documentsService, type Document, type CreateDocumentData, type ShareDocumentData } from '@/services/documents';
 import { toast } from '@/hooks/use-toast';
 import { QUERY_KEYS } from '@/constants';
 
@@ -10,13 +9,13 @@ export const useDocumentsQuery = () => {
   // Get all documents query
   const documentsQuery = useQuery({
     queryKey: [QUERY_KEYS.DOCUMENTS],
-    queryFn: documentsApi.getAll,
+    queryFn: documentsService.getAll,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
   // Create document mutation
   const createDocumentMutation = useMutation({
-    mutationFn: (data: CreateDocumentData) => documentsApi.create(data),
+    mutationFn: (data: CreateDocumentData) => documentsService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
       toast({
@@ -38,7 +37,7 @@ export const useDocumentsQuery = () => {
     mutationFn: (file: File) => {
       const formData = new FormData();
       formData.append('file', file);
-      return documentsApi.upload(formData);
+      return documentsService.upload(formData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
@@ -59,7 +58,7 @@ export const useDocumentsQuery = () => {
   // Update document mutation
   const updateDocumentMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<any> }) => 
-      documentsApi.update(id, data),
+      documentsService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
       toast({
@@ -78,7 +77,7 @@ export const useDocumentsQuery = () => {
 
   // Delete document mutation
   const deleteDocumentMutation = useMutation({
-    mutationFn: (id: string) => documentsApi.delete(id),
+    mutationFn: (id: string) => documentsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
       toast({
@@ -98,7 +97,7 @@ export const useDocumentsQuery = () => {
   // Share document mutation
   const shareDocumentMutation = useMutation({
     mutationFn: ({ id, shareData }: { id: string; shareData: ShareDocumentData }) => 
-      documentsApi.share(id, shareData),
+      documentsService.share(id, shareData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
       toast({

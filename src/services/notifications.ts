@@ -1,17 +1,5 @@
-
 import { http } from '@/lib/api';
-
-export interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  isRead: boolean;
-  createdAt: string;
-  actionUrl?: string;
-  actionLabel?: string;
-  metadata?: Record<string, any>;
-}
+import type { Notification } from '@/types';
 
 export interface NotificationSettings {
   emailNotifications: boolean;
@@ -25,39 +13,39 @@ export interface NotificationSettings {
 /**
  * Notifications API service
  */
-export const notificationsApi = {
+export const notificationsService = {
   // Get all notifications
-  getAll: async (): Promise<Notification[]> => {
-    return http.get<Notification[]>('/api/notifications');
+  async getAll(): Promise<Notification[]> {
+    return http.get<Notification[]>('/notifications');
   },
 
   // Get unread notifications count
-  getUnreadCount: async (): Promise<{ count: number }> => {
-    return http.get<{ count: number }>('/api/notifications/unread-count');
+  async getUnreadCount(): Promise<{ count: number }> {
+    return http.get<{ count: number }>('/notifications/unread-count');
   },
 
   // Mark notification as read
-  markAsRead: async (notificationId: string): Promise<void> => {
-    return http.patch<void>(`/api/notifications/${notificationId}/read`);
+  async markAsRead(notificationId: string): Promise<void> {
+    await http.patch<void>(`/notifications/${notificationId}/read`);
   },
 
   // Mark all as read
-  markAllAsRead: async (): Promise<void> => {
-    return http.patch<void>('/api/notifications/mark-all-read');
+  async markAllAsRead(): Promise<void> {
+    await http.patch<void>('/notifications/mark-all-read');
   },
 
   // Delete notification
-  delete: async (notificationId: string): Promise<void> => {
-    return http.delete<void>(`/api/notifications/${notificationId}`);
+  async delete(notificationId: string): Promise<void> {
+    await http.delete<void>(`/notifications/${notificationId}`);
   },
 
   // Get notification settings
-  getSettings: async (): Promise<NotificationSettings> => {
-    return http.get<NotificationSettings>('/api/notifications/settings');
+  async getSettings(): Promise<NotificationSettings> {
+    return http.get<NotificationSettings>('/notifications/settings');
   },
 
   // Update notification settings
-  updateSettings: async (settings: Partial<NotificationSettings>): Promise<NotificationSettings> => {
-    return http.put<NotificationSettings>('/api/notifications/settings', settings);
+  async updateSettings(settings: Partial<NotificationSettings>): Promise<NotificationSettings> {
+    return http.patch<NotificationSettings>('/notifications/settings', settings);
   }
 };

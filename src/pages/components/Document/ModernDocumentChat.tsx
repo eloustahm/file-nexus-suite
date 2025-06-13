@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useDocumentChatStore } from '@/store/useDocumentChatStore';
+import { useDocumentChat } from '@/hooks/useDocumentChat';
 import { useChatAgents } from '@/hooks/useChatAgents';
 
 interface DocumentTab {
@@ -44,7 +43,7 @@ export const ModernDocumentChat = () => {
     setSelectedAgent,
     sendMessage,
     clearError
-  } = useDocumentChatStore();
+  } = useDocumentChat();
 
   // Mock documents
   const availableDocuments = [

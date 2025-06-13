@@ -1,58 +1,28 @@
-
 import { mockApiService } from '@/lib/mockApi';
+import type { User, LoginCredentials, RegisterData } from '@/types';
 
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  avatar?: string;
-}
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-
-/**
- * Mock Authentication API service for development
- */
-export const mockAuthApi = {
-  // Login user
-  login: async (credentials: LoginCredentials) => {
+export const mockAuthService = {
+  async login(credentials: LoginCredentials): Promise<{ user: User; token: string }> {
     return mockApiService.login(credentials);
   },
-  
-  // Register new user
-  register: async (data: RegisterData) => {
+
+  async register(data: RegisterData): Promise<{ user: User; token: string }> {
     return mockApiService.register(data);
   },
-  
-  // Logout user
-  logout: async () => {
-    return mockApiService.logout();
+
+  async logout(): Promise<void> {
+    await mockApiService.logout();
   },
-  
-  // Get current user
-  getCurrentUser: async (): Promise<User> => {
+
+  async getCurrentUser(): Promise<User> {
     return mockApiService.getCurrentUser();
   },
-  
-  // Reset password
-  resetPassword: async (email: string) => {
-    return mockApiService.resetPassword(email);
+
+  async resetPassword(email: string): Promise<void> {
+    await mockApiService.resetPassword(email);
   },
-  
-  // Get CSRF token
-  csrf: async () => {
-    return mockApiService.csrf();
+
+  async csrf(): Promise<void> {
+    await mockApiService.csrf();
   }
 };

@@ -1,15 +1,13 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { FileText, Clock, ArrowRight } from 'lucide-react';
-import { ChatHistory } from '@/types';
-import { formatRelativeTime } from '@/lib/dateUtils';
+import { ChatSession } from '@/services/chat';
 
 interface ChatListItemProps {
-  chat: ChatHistory;
+  chat: ChatSession;
   onResumeChat: (chatId: string) => void;
   formatTimeAgo: (date: Date) => string;
 }
@@ -32,15 +30,12 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-gray-900 truncate">{chat.name}</h3>
               <Badge variant="outline" className="text-xs">
-                {chat.messageCount} messages
+                {chat.agentId}
               </Badge>
             </div>
-            <p className="text-sm text-gray-600 truncate mb-1">
-              {chat.lastMessage}
-            </p>
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Clock className="h-3 w-3" />
-              <span>{formatRelativeTime(chat.timestamp)}</span>
+              <span>{formatTimeAgo(new Date(chat.lastMessageAt || chat.updatedAt))}</span>
             </div>
           </div>
         </div>

@@ -1,13 +1,12 @@
-
 import { useChatQuery } from '@/hooks/queries/useChatQuery';
-import { useChatUIStore } from '@/store/useChatUIStore';
+import { useChatUI } from '@/hooks/useChatUI';
 
 /**
  * Combined hook that provides both UI state and server data for chat
  */
 export const useChat = () => {
   const chatQuery = useChatQuery();
-  const chatUI = useChatUIStore();
+  const chatUI = useChatUI();
 
   return {
     // Server data
@@ -17,8 +16,8 @@ export const useChat = () => {
     // Server state
     isLoadingSessions: chatQuery.isLoadingSessions,
     isLoadingAgents: chatQuery.isLoadingAgents,
-    sessionsError: chatQuery.sessionsError?.message,
-    agentsError: chatQuery.agentsError?.message,
+    sessionsError: chatQuery.sessionsError,
+    agentsError: chatQuery.agentsError,
     
     // Chat actions
     createSession: chatQuery.createSession,
@@ -27,7 +26,6 @@ export const useChat = () => {
     updateSession: chatQuery.updateSession,
     refetchSessions: chatQuery.refetchSessions,
     refetchAgents: chatQuery.refetchAgents,
-    getSession: chatQuery.getSession,
     
     // Mutation states
     isCreatingSession: chatQuery.isCreatingSession,

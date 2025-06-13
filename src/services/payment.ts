@@ -1,56 +1,36 @@
-
 import { http } from '@/lib/api';
+import type { Plan, Subscription, Usage } from '@/types/payment';
 
-export interface Plan {
-  id: string;
-  name: string;
-  price: number;
-  interval: 'month' | 'year';
-  features: string[];
-  limits: {
-    documents: number;
-    templates: number;
-    storage: string;
-  };
-}
-
-export interface Subscription {
-  id: string;
-  planId: string;
-  status: 'active' | 'cancelled' | 'past_due';
-  currentPeriodEnd: string;
-}
-
-export interface Usage {
-  documents: number;
-  templates: number;
-  storage: number;
-  maxDocuments: number;
-  maxTemplates: number;
-  maxStorage: number;
-}
-
-/**
- * Payment API service
- */
-export const paymentApi = {
-  // Get available plans
-  getPlans: async (): Promise<Plan[]> => {
-    return http.get<Plan[]>('/api/payment/plans');
+export const paymentService = {
+  // Plans
+  async getPlans(): Promise<Plan[]> {
+    const response = await http.get<{ plans: Plan[] }>('/payment/plans');
+    return response.plans;
   },
-  
-  // Create subscription
-  createSubscription: async (planId: string): Promise<Subscription> => {
-    return http.post<Subscription>('/api/payment/subscribe', { planId });
+
+  // Subscription
+  async getSubscription(): Promise<Subscription> {
+    const response = await http.get<{ subscription: Subscription }>('/payment/subscription');
+    return response.subscription;
   },
-  
-  // Cancel subscription
-  cancelSubscription: async (): Promise<void> => {
-    return http.post<void>('/api/payment/cancel');
+
+  async createSubscription(planId: string): Promise<Subscription> {
+    const response = await http.post<{ subscription: Subscription }>('/payment/subscription', { planId });
+    return response.subscription;
   },
-  
-  // Get usage statistics
-  getUsage: async (): Promise<Usage> => {
-    return http.get<Usage>('/api/payment/usage');
+
+  async cancelSubscription(): Promise<void> {
+    await http.delete<void>('/payment/subscription');
+  },
+
+  async updatePaymentMethod(paymentMethodId: string): Promise<Subscription> {
+    const response = await http.patch<{ subscription: Subscription }>('/payment/subscription/payment-method', { paymentMethodId });
+    return response.subscription;
+  },
+
+  // Usage
+  async getUsage(): Promise<Usage> {
+    const response = await http.get<{ usage: Usage }>('/payment/usage');
+    return response.usage;
   }
 };

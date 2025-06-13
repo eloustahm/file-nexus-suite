@@ -1,63 +1,34 @@
-
 import { http } from '@/lib/api';
+import type { Workflow, WorkflowStep } from '@/types';
 
-export interface WorkflowStep {
-  id: string;
-  name: string;
-  type: 'approval' | 'review' | 'automation' | 'notification';
-  assignedTo?: string;
-  completed: boolean;
-  completedAt?: string;
-  notes?: string;
-}
-
-export interface Workflow {
-  id: string;
-  name: string;
-  description: string;
-  status: 'draft' | 'active' | 'paused' | 'completed';
-  steps: WorkflowStep[];
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  documentIds: string[];
-  priority: 'low' | 'medium' | 'high';
-  dueDate?: string;
-  trigger?: string;
-  lastRun?: string;
-}
-
-/**
- * Workflows API service
- */
-export const workflowsApi = {
+export const workflowsService = {
   // Get all workflows
-  getAll: async (): Promise<Workflow[]> => {
-    return http.get<Workflow[]>('/api/workflows');
+  async getAll(): Promise<Workflow[]> {
+    return http.get<Workflow[]>('/workflows');
   },
   
   // Get workflow by ID
-  getById: async (id: string): Promise<Workflow> => {
-    return http.get<Workflow>(`/api/workflows/${id}`);
+  async getById(id: string): Promise<Workflow> {
+    return http.get<Workflow>(`/workflows/${id}`);
   },
   
   // Create workflow
-  create: async (workflowData: Partial<Workflow>): Promise<Workflow> => {
-    return http.post<Workflow>('/api/workflows', workflowData);
+  async create(workflowData: Partial<Workflow>): Promise<Workflow> {
+    return http.post<Workflow>('/workflows', workflowData);
   },
   
   // Update workflow
-  update: async (id: string, data: Partial<Workflow>): Promise<Workflow> => {
-    return http.put<Workflow>(`/api/workflows/${id}`, data);
+  async update(id: string, data: Partial<Workflow>): Promise<Workflow> {
+    return http.patch<Workflow>(`/workflows/${id}`, data);
   },
   
   // Delete workflow
-  delete: async (id: string): Promise<void> => {
-    return http.delete<void>(`/api/workflows/${id}`);
+  async delete(id: string): Promise<void> {
+    await http.delete<void>(`/workflows/${id}`);
   },
   
   // Execute workflow
-  execute: async (id: string, documentId: string) => {
-    return http.post(`/api/workflows/${id}/execute`, { documentId });
+  async execute(id: string, documentId: string): Promise<void> {
+    await http.post<void>(`/workflows/${id}/execute`, { documentId });
   }
 };

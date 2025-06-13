@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  Folder, 
+  Folder as FolderIcon, 
   FolderPlus, 
   MoreVertical, 
   Search, 
@@ -20,19 +19,28 @@ import {
   FileText
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useFoldersStore } from "@/store/useFoldersStore";
+import { useFolders } from "@/hooks/useFolders";
+import type { Folder } from "@/types";
+
+// Loading component
+const LoadingComponent = () => (
+  <div className="flex justify-center items-center min-h-[60vh]">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+);
 
 export const Folders = () => {
   const { toast } = useToast();
-  const { 
-    folders, 
-    loading, 
+  const {
+    folders,
+    isLoading,
     error,
-    fetchFolders,
-    createFolder, 
+    createFolder,
     deleteFolder,
-    clearError
-  } = useFoldersStore();
+    isCreating,
+    isDeleting,
+    refetch
+  } = useFolders();
   
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -41,16 +49,6 @@ export const Folders = () => {
     name: '',
     description: ''
   });
-
-  // Fetch folders on component mount
-  useEffect(() => {
-    fetchFolders();
-  }, [fetchFolders]);
-
-  // Clear errors when component unmounts
-  useEffect(() => {
-    return () => clearError();
-  }, [clearError]);
 
   const handleCreateFolder = async () => {
     if (!newFolderData.name.trim()) {
@@ -67,14 +65,13 @@ export const Folders = () => {
         name: newFolderData.name,
         description: newFolderData.description
       });
-      
       toast({
         title: "Folder created",
         description: `Folder "${newFolderData.name}" created successfully.`,
       });
-      
       setNewFolderData({ name: '', description: '' });
       setIsCreateOpen(false);
+      refetch();
     } catch (error) {
       toast({
         title: "Error",
@@ -91,6 +88,7 @@ export const Folders = () => {
         title: "Folder deleted",
         description: "Folder has been deleted successfully.",
       });
+      refetch();
     } catch (error) {
       toast({
         title: "Error",
@@ -100,16 +98,12 @@ export const Folders = () => {
     }
   };
 
-  const filteredFolders = folders.filter(folder =>
+  const filteredFolders = (folders as Folder[]).filter(folder =>
     folder.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+  if (isLoading) {
+    return <LoadingComponent />;
   }
 
   return (
@@ -184,8 +178,8 @@ export const Folders = () => {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleCreateFolder} disabled={loading}>
-                    {loading ? "Creating..." : "Create Folder"}
+                  <Button onClick={handleCreateFolder} disabled={isCreating}>
+                    {isCreating ? "Creating..." : "Create Folder"}
                   </Button>
                   <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
                     Cancel
@@ -211,7 +205,7 @@ export const Folders = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
-                      <Folder className="h-6 w-6 text-blue-600" />
+                      <FolderIcon className="h-6 w-6 text-blue-600" />
                     </div>
                     <div className="min-w-0">
                       <CardTitle className="text-lg truncate">{folder.name}</CardTitle>
@@ -248,6 +242,7 @@ export const Folders = () => {
                     size="sm"
                     onClick={() => handleDeleteFolder(folder.id)}
                     className="text-red-600 hover:text-red-700"
+                    disabled={isDeleting}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -257,54 +252,61 @@ export const Folders = () => {
           ))}
         </div>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>All Folders</CardTitle>
-            <CardDescription>{filteredFolders.length} folders found</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {filteredFolders.map((folder) => (
-                <div key={folder.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Folder className="h-5 w-5 text-blue-600" />
+        <div className="space-y-4">
+          {filteredFolders.map((folder) => (
+            <Card key={folder.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <FolderIcon className="h-6 w-6 text-blue-600" />
+                    </div>
                     <div>
-                      <p className="font-medium">{folder.name}</p>
+                      <CardTitle className="text-lg">{folder.name}</CardTitle>
                       {folder.description && (
-                        <p className="text-sm text-gray-500">{folder.description}</p>
+                        <CardDescription>{folder.description}</CardDescription>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary">{folder.documentCount || 0} docs</Badge>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Share className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteFolder(folder.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <FileText className="h-4 w-4" />
+                      <span>{folder.documentCount || 0} documents</span>
                     </div>
+                    <Badge variant="secondary">{folder.type || 'General'}</Badge>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div className="flex items-center gap-2 mt-4">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Share className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteFolder(folder.id)}
+                    className="text-red-600 hover:text-red-700"
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
 
-      {filteredFolders.length === 0 && !loading && (
+      {filteredFolders.length === 0 && !isLoading && (
         <Card>
           <CardContent className="text-center py-12">
-            <Folder className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <FolderIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No folders found</h3>
             <p className="text-gray-500 mb-4">
               {searchQuery ? "No folders match your search." : "Get started by creating your first folder."}

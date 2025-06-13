@@ -1,6 +1,5 @@
-
 import { useNotificationsQuery } from '@/hooks/queries/useNotificationsQuery';
-import { useNotificationsUIStore } from '@/store/useNotificationsUIStore';
+import { useNotificationsUI } from '@/hooks/useNotificationsUI';
 import { useMemo } from 'react';
 
 /**
@@ -8,7 +7,7 @@ import { useMemo } from 'react';
  */
 export const useNotifications = () => {
   const notificationsQuery = useNotificationsQuery();
-  const notificationsUI = useNotificationsUIStore();
+  const notificationsUI = useNotificationsUI();
 
   // Apply client-side filtering based on UI state
   const filteredNotifications = useMemo(() => {
@@ -36,10 +35,10 @@ export const useNotifications = () => {
     
     // Server state
     isLoading: notificationsQuery.isLoading,
-    isLoadingCount: notificationsQuery.isLoadingCount,
+    isLoadingCount: notificationsQuery.isLoadingUnreadCount,
     isLoadingSettings: notificationsQuery.isLoadingSettings,
     error: notificationsQuery.error?.message,
-    countError: notificationsQuery.countError?.message,
+    countError: notificationsQuery.unreadCountError?.message,
     settingsError: notificationsQuery.settingsError?.message,
     
     // Notification actions
@@ -48,7 +47,7 @@ export const useNotifications = () => {
     deleteNotification: notificationsQuery.deleteNotification,
     updateSettings: notificationsQuery.updateSettings,
     refetch: notificationsQuery.refetch,
-    refetchCount: notificationsQuery.refetchCount,
+    refetchCount: notificationsQuery.refetchUnreadCount,
     refetchSettings: notificationsQuery.refetchSettings,
     
     // Mutation states
@@ -67,7 +66,7 @@ export const useNotifications = () => {
     // UI actions
     setTypeFilter: notificationsUI.setTypeFilter,
     setShowOnlyUnread: notificationsUI.setShowOnlyUnread,
-    setSelectedNotifications: notificationsUI.setSelectedNotifications,
+    setSelectedNotifications: notificationsUI.setSelectedNotificationIds,
     toggleNotificationSelection: notificationsUI.toggleNotificationSelection,
     setShowDeleteConfirm: notificationsUI.setShowDeleteConfirm,
     setShowSettingsModal: notificationsUI.setShowSettingsModal,

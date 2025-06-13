@@ -1,13 +1,12 @@
-
 import { useActivityQuery } from '@/hooks/queries/useActivityQuery';
-import { useActivityUIStore } from '@/store/useActivityUIStore';
+import { useActivityUI } from '@/hooks/useActivityUI';
 import { useMemo } from 'react';
 
 /**
  * Combined hook that provides both UI state and server data for activity logs
  */
 export const useActivity = () => {
-  const activityUI = useActivityUIStore();
+  const activityUI = useActivityUI();
   
   // Build filters for React Query based on UI state
   const filters = useMemo(() => ({

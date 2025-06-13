@@ -1,6 +1,6 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authApi, type LoginCredentials, type RegisterData } from '@/services/auth';
+import { authService } from '@/services/auth';
+import type { LoginCredentials, RegisterData } from '@/types';
 import { toast } from 'sonner';
 
 export const useAuthQuery = () => {
@@ -9,7 +9,7 @@ export const useAuthQuery = () => {
   // Get current user query - simple configuration
   const userQuery = useQuery({
     queryKey: ['auth', 'user'],
-    queryFn: authApi.getCurrentUser,
+    queryFn: authService.getCurrentUser,
     retry: false, // Never retry auth calls
     staleTime: Infinity, // Cache auth result until manually invalidated
     gcTime: Infinity, // Keep in cache
@@ -21,7 +21,7 @@ export const useAuthQuery = () => {
 
   // Login mutation
   const loginMutation = useMutation({
-    mutationFn: (credentials: LoginCredentials) => authApi.login(credentials),
+    mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['auth', 'user'] });
       toast.success('Login successful');
@@ -33,7 +33,7 @@ export const useAuthQuery = () => {
 
   // Register mutation
   const registerMutation = useMutation({
-    mutationFn: (data: RegisterData) => authApi.register(data),
+    mutationFn: (data: RegisterData) => authService.register(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['auth', 'user'] });
       toast.success('Registration successful');
@@ -45,7 +45,7 @@ export const useAuthQuery = () => {
 
   // Logout mutation
   const logoutMutation = useMutation({
-    mutationFn: authApi.logout,
+    mutationFn: authService.logout,
     onSuccess: () => {
       queryClient.setQueryData(['auth', 'user'], null);
       queryClient.clear(); // Clear all cached data on logout

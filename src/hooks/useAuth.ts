@@ -1,13 +1,12 @@
-
 import { useAuthQuery } from '@/hooks/queries/useAuthQuery';
-import { useAuthUIStore } from '@/store/useAuthUIStore';
+import { useAuthUI } from '@/hooks/useAuthUI';
 
 /**
  * Combined hook that provides both UI state and server data for authentication
  */
 export const useAuth = () => {
   const authQuery = useAuthQuery();
-  const authUI = useAuthUIStore();
+  const authUI = useAuthUI();
 
   return {
     // Server data from React Query
@@ -38,7 +37,7 @@ export const useAuth = () => {
     setRememberMe: authUI.setRememberMe,
     
     // UI actions
-    setLoading: authUI.setLoading,
+    setLoading: authUI.setIsLoading,
     setError: authUI.setError,
     clearError: authUI.clearError,
   };

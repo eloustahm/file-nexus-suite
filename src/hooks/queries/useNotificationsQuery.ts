@@ -1,38 +1,39 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notificationsApi } from '@/services/notifications';
+import { notificationsService } from '@/services/notifications';
+import type { Notification, NotificationSettings } from '@/types';
 import { toast } from 'sonner';
+import { QUERY_KEYS } from '@/constants';
 
 export const useNotificationsQuery = () => {
   const queryClient = useQueryClient();
 
   // Get all notifications query
   const notificationsQuery = useQuery({
-    queryKey: ['notifications'],
-    queryFn: notificationsApi.getAll,
+    queryKey: [QUERY_KEYS.NOTIFICATIONS],
+    queryFn: notificationsService.getAll,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
   // Get unread count query
   const unreadCountQuery = useQuery({
-    queryKey: ['notifications', 'unreadCount'],
-    queryFn: notificationsApi.getUnreadCount,
+    queryKey: [QUERY_KEYS.NOTIFICATIONS, 'unreadCount'],
+    queryFn: notificationsService.getUnreadCount,
     staleTime: 30 * 1000, // 30 seconds
   });
 
   // Get notification settings query
   const settingsQuery = useQuery({
-    queryKey: ['notifications', 'settings'],
-    queryFn: notificationsApi.getSettings,
+    queryKey: [QUERY_KEYS.NOTIFICATIONS, 'settings'],
+    queryFn: notificationsService.getSettings,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Mark as read mutation
   const markAsReadMutation = useMutation({
-    mutationFn: (notificationId: string) => notificationsApi.markAsRead(notificationId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unreadCount'] });
+    mutationFn: notificationsService.markAsRead,
+    onSuccess: (_, notificationId) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.NOTIFICATIONS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.NOTIFICATIONS, 'unreadCount'] });
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to mark notification as read');
@@ -41,10 +42,10 @@ export const useNotificationsQuery = () => {
 
   // Mark all as read mutation
   const markAllAsReadMutation = useMutation({
-    mutationFn: notificationsApi.markAllAsRead,
+    mutationFn: notificationsService.markAllAsRead,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unreadCount'] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.NOTIFICATIONS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.NOTIFICATIONS, 'unreadCount'] });
       toast.success('All notifications marked as read');
     },
     onError: (error: any) => {
@@ -54,10 +55,10 @@ export const useNotificationsQuery = () => {
 
   // Delete notification mutation
   const deleteNotificationMutation = useMutation({
-    mutationFn: (notificationId: string) => notificationsApi.delete(notificationId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unreadCount'] });
+    mutationFn: notificationsService.delete,
+    onSuccess: (_, notificationId) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.NOTIFICATIONS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.NOTIFICATIONS, 'unreadCount'] });
       toast.success('Notification deleted');
     },
     onError: (error: any) => {
@@ -67,9 +68,9 @@ export const useNotificationsQuery = () => {
 
   // Update settings mutation
   const updateSettingsMutation = useMutation({
-    mutationFn: (settings: any) => notificationsApi.updateSettings(settings),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'settings'] });
+    mutationFn: notificationsService.updateSettings,
+    onSuccess: (updatedSettings) => {
+      queryClient.setQueryData([QUERY_KEYS.NOTIFICATIONS, 'settings'], updatedSettings);
       toast.success('Notification settings updated');
     },
     onError: (error: any) => {
@@ -85,19 +86,19 @@ export const useNotificationsQuery = () => {
 
     // Loading states
     isLoading: notificationsQuery.isLoading,
-    isLoadingCount: unreadCountQuery.isLoading,
+    isLoadingUnreadCount: unreadCountQuery.isLoading,
     isLoadingSettings: settingsQuery.isLoading,
 
     // Errors
     error: notificationsQuery.error,
-    countError: unreadCountQuery.error,
+    unreadCountError: unreadCountQuery.error,
     settingsError: settingsQuery.error,
 
     // Mutations
-    markAsRead: markAsReadMutation.mutateAsync,
-    markAllAsRead: markAllAsReadMutation.mutateAsync,
-    deleteNotification: deleteNotificationMutation.mutateAsync,
-    updateSettings: updateSettingsMutation.mutateAsync,
+    markAsRead: markAsReadMutation.mutate,
+    markAllAsRead: markAllAsReadMutation.mutate,
+    deleteNotification: deleteNotificationMutation.mutate,
+    updateSettings: updateSettingsMutation.mutate,
 
     // Loading states
     isMarkingAsRead: markAsReadMutation.isPending,
@@ -107,7 +108,7 @@ export const useNotificationsQuery = () => {
 
     // Refetch
     refetch: notificationsQuery.refetch,
-    refetchCount: unreadCountQuery.refetch,
+    refetchUnreadCount: unreadCountQuery.refetch,
     refetchSettings: settingsQuery.refetch,
   };
 };

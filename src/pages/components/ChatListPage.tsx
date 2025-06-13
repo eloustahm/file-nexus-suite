@@ -1,7 +1,6 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDocumentChatStore } from '@/store/useDocumentChatStore';
+import { useChat } from '@/hooks/useChat';
 import { ChatListHeader } from './ChatList/ChatListHeader';
 import { ChatSearchAndFilters } from './ChatList/ChatSearchAndFilters';
 import { EmptyState } from './ChatList/EmptyState';
@@ -12,18 +11,18 @@ export const ChatListPage = () => {
   const [filterType, setFilterType] = useState<'all' | 'recent'>('all');
   const navigate = useNavigate();
 
-  const { chatHistories, loading, error, fetchSessions } = useDocumentChatStore();
+  const { 
+    sessions,
+    isLoadingSessions,
+    sessionsError,
+    refetchSessions
+  } = useChat();
 
-  useEffect(() => {
-    fetchSessions();
-  }, [fetchSessions]);
-
-  const filteredChats = chatHistories.filter(chat => {
-    const matchesSearch = chat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredChats = sessions.filter(chat => {
+    const matchesSearch = chat.name.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (filterType === 'recent') {
-      const isRecent = new Date().getTime() - new Date(chat.timestamp).getTime() < 86400000 * 7;
+      const isRecent = new Date().getTime() - new Date(chat.updatedAt).getTime() < 86400000 * 7;
       return matchesSearch && isRecent;
     }
 
@@ -50,7 +49,7 @@ export const ChatListPage = () => {
     return 'Just now';
   };
 
-  if (loading) {
+  if (isLoadingSessions) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -58,13 +57,13 @@ export const ChatListPage = () => {
     );
   }
 
-  if (error) {
+  if (sessionsError) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="text-red-600 text-center">
-          <p>Error loading chat history: {error}</p>
+          <p>Error loading chat history: {sessionsError}</p>
           <button 
-            onClick={fetchSessions}
+            onClick={() => refetchSessions()}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Try Again
