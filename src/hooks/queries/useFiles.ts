@@ -135,4 +135,40 @@ export const useRestoreVersionMutation = () => {
       toast.error(error.message || 'Failed to restore version');
     },
   });
+};
+
+// Utility functions
+export const useFileUtils = (files: File[] = []) => {
+  const getFileById = (id: string) => {
+    return files.find(file => file.id === id);
+  };
+
+  const getFilesByType = (type: File['type']) => {
+    return files.filter(file => file.type === type);
+  };
+
+  const getActiveFiles = () => {
+    return files.filter(file => file.status === 'active');
+  };
+
+  const getArchivedFiles = () => {
+    return files.filter(file => file.status === 'archived');
+  };
+
+  const getFilesByTag = (tag: string) => {
+    return files.filter(file => file.tags?.includes(tag));
+  };
+
+  const getFilesByParent = (parentId: string) => {
+    return files.filter(file => file.parentId === parentId);
+  };
+
+  return {
+    getFileById,
+    getFilesByType,
+    getActiveFiles,
+    getArchivedFiles,
+    getFilesByTag,
+    getFilesByParent,
+  };
 }; 

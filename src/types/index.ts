@@ -1,11 +1,11 @@
 // Export all types from their respective files
-export * from './activity';
-export * from './chat';
-export * from './file';
-export * from './payment';
-export * from './profile';
-export * from './team';
-export * from './integration';
+export * from '@/types/activity';
+export * from '@/types/chat';
+export * from '@/types/file';
+export * from '@/types/payment';
+export * from '@/types/profile';
+export * from '@/types/team';
+export * from '@/types/integration';
 
 // Unified type definitions for the application
 
@@ -280,4 +280,4 @@ export interface ProfileActivity {
 }
 
 // Re-export ActivityFilter for ActivityFilters usage
-export type { ActivityFilter } from './activity';
+export type { ActivityFilter } from '@/types/activity';

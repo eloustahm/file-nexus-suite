@@ -1,6 +1,7 @@
 import { http } from '@/lib/api';
 import type { Profile } from '@/types';
 import type { Integration } from '@/types/integration';
+import type { PrivacySetting } from '@/constants/privacy';
 
 export const settingsService = {
   async getProfile(): Promise<Profile> {
@@ -21,5 +22,13 @@ export const settingsService = {
 
   async updateIntegration(provider: string, config: any): Promise<void> {
     await http.patch<void>(`/settings/integrations/${provider}`, config);
+  },
+
+  async getPrivacySettings(): Promise<PrivacySetting[]> {
+    return http.get<PrivacySetting[]>('/settings/privacy');
+  },
+
+  async updatePrivacySetting(id: string, enabled: boolean): Promise<PrivacySetting> {
+    return http.patch<PrivacySetting>(`/settings/privacy/${id}`, { enabled });
   }
 };

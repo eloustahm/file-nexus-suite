@@ -1,55 +1,87 @@
-import { useActivityQuery } from '@/hooks/queries/useActivityQuery';
-import { useActivityUI } from '@/hooks/useActivityUI';
-import { useMemo } from 'react';
+import { useActivityLogsQuery, useCreateActivityLogMutation, useClearActivityLogsMutation } from '@/hooks/queries/useActivityLogs';
+import { useMemo, useState } from 'react';
+
+type ActivityType = 'all' | 'document' | 'team' | 'system' | 'chat';
+
+interface ActivityUIState {
+  typeFilter: ActivityType;
+  userFilter: string;
+  dateRange: {
+    startDate: string | null;
+    endDate: string | null;
+  };
+  currentPage: number;
+  itemsPerPage: number;
+}
 
 /**
  * Combined hook that provides both UI state and server data for activity logs
  */
 export const useActivity = () => {
-  const activityUI = useActivityUI();
-  
+  // UI state
+  const [typeFilter, setTypeFilter] = useState<ActivityType>('all');
+  const [userFilter, setUserFilter] = useState('');
+  const [dateRange, setDateRange] = useState<{ startDate: string | null; endDate: string | null }>({
+    startDate: null,
+    endDate: null,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+
   // Build filters for React Query based on UI state
   const filters = useMemo(() => ({
-    type: activityUI.typeFilter !== 'all' ? activityUI.typeFilter : undefined,
-    userId: activityUI.userFilter || undefined,
-    startDate: activityUI.dateRange.startDate || undefined,
-    endDate: activityUI.dateRange.endDate || undefined,
-    limit: activityUI.itemsPerPage,
-    offset: (activityUI.currentPage - 1) * activityUI.itemsPerPage,
-  }), [activityUI]);
+    type: typeFilter !== 'all' ? typeFilter : undefined,
+    userId: userFilter || undefined,
+    startDate: dateRange.startDate || undefined,
+    endDate: dateRange.endDate || undefined,
+    limit: itemsPerPage,
+    offset: (currentPage - 1) * itemsPerPage,
+  }), [typeFilter, userFilter, dateRange, currentPage, itemsPerPage]);
 
-  const activityQuery = useActivityQuery(filters);
+  // Queries and mutations
+  const activityLogsQuery = useActivityLogsQuery(filters);
+  const createActivityMutation = useCreateActivityLogMutation();
+  const clearActivityMutation = useClearActivityLogsMutation();
+
+  const clearFilters = () => {
+    setTypeFilter('all');
+    setUserFilter('');
+    setDateRange({
+      startDate: null,
+      endDate: null,
+    });
+    setCurrentPage(1);
+  };
 
   return {
     // Server data
-    logs: activityQuery.logs,
+    logs: activityLogsQuery.data || [],
     
     // Server state
-    isLoading: activityQuery.isLoading,
-    error: activityQuery.error?.message,
+    isLoading: activityLogsQuery.isLoading,
+    error: activityLogsQuery.error?.message,
     
     // Activity actions
-    logActivity: activityQuery.logActivity,
-    refetch: activityQuery.refetch,
-    getDocumentActivity: activityQuery.getDocumentActivity,
-    getUserActivity: activityQuery.getUserActivity,
+    logActivity: createActivityMutation.mutate,
+    clearLogs: clearActivityMutation.mutate,
     
     // Mutation states
-    isLogging: activityQuery.isLogging,
+    isLogging: createActivityMutation.isPending,
+    isClearing: clearActivityMutation.isPending,
     
     // UI state
-    typeFilter: activityUI.typeFilter,
-    userFilter: activityUI.userFilter,
-    dateRange: activityUI.dateRange,
-    currentPage: activityUI.currentPage,
-    itemsPerPage: activityUI.itemsPerPage,
+    typeFilter,
+    userFilter,
+    dateRange,
+    currentPage,
+    itemsPerPage,
     
     // UI actions
-    setTypeFilter: activityUI.setTypeFilter,
-    setUserFilter: activityUI.setUserFilter,
-    setDateRange: activityUI.setDateRange,
-    setCurrentPage: activityUI.setCurrentPage,
-    setItemsPerPage: activityUI.setItemsPerPage,
-    clearFilters: activityUI.clearFilters,
+    setTypeFilter,
+    setUserFilter,
+    setDateRange,
+    setCurrentPage,
+    setItemsPerPage,
+    clearFilters,
   };
 };

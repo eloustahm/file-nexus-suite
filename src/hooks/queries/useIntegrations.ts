@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { integrationService } from '@/services/integrationService';
+import { settingsService } from '@/services/settings';
+import { DEFAULT_INTEGRATIONS, type IntegrationDefinition } from '@/constants/integrations';
 import type { Integration } from '@/types/integration';
 
 // Query keys
@@ -14,10 +16,26 @@ export const integrationKeys = {
 
 // Query hooks
 export const useIntegrationsQuery = () => {
-  return useQuery({
+  const { data: apiIntegrations = [], isLoading, error } = useQuery({
     queryKey: integrationKeys.lists(),
-    queryFn: () => integrationService.getIntegrations(),
+    queryFn: () => settingsService.getIntegrations(),
   });
+
+  // Combine default and API integrations
+  const integrations = DEFAULT_INTEGRATIONS.map(def => {
+    const apiIntegration = apiIntegrations.find(api => api.id === def.id);
+    return {
+      ...def,
+      status: apiIntegration?.status || 'disconnected',
+      config: apiIntegration?.config || {},
+    };
+  });
+
+  return {
+    integrations,
+    isLoading,
+    error,
+  };
 };
 
 export const useIntegrationQuery = (id: string) => {
@@ -50,7 +68,7 @@ export const useUpdateIntegrationMutation = () => {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Integration> }) =>
-      integrationService.updateIntegration(id, data),
+      settingsService.updateIntegration(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: integrationKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: integrationKeys.lists() });

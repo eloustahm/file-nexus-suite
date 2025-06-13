@@ -1,40 +1,35 @@
 import { useQuery } from '@tanstack/react-query';
-import { PRICING_PLANS, PRICING_FAQS, type PricingPlan } from '@/constants/pricing';
-
-// Mock API function - replace with actual API call
-const fetchPricingData = async () => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  return {
-    plans: PRICING_PLANS,
-    faqs: PRICING_FAQS
-  };
-};
+import { pricingService } from '@/services/pricing';
+import type { PricingPlan } from '@/constants/pricing';
 
 export const usePricing = () => {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['pricing'],
-    queryFn: fetchPricingData
+  const { data: plans, isLoading: isLoadingPlans, error: plansError } = useQuery({
+    queryKey: ['pricing', 'plans'],
+    queryFn: pricingService.getPlans
+  });
+
+  const { data: faqs, isLoading: isLoadingFaqs, error: faqsError } = useQuery({
+    queryKey: ['pricing', 'faqs'],
+    queryFn: pricingService.getFaqs
   });
 
   const getPlan = (id: string) => {
-    return data?.plans.find(plan => plan.id === id);
+    return plans?.find(plan => plan.id === id);
   };
 
   const getPopularPlan = () => {
-    return data?.plans.find(plan => plan.isPopular);
+    return plans?.find(plan => plan.isPopular);
   };
 
   const getFaq = (id: string) => {
-    return data?.faqs.find(faq => faq.id === id);
+    return faqs?.find(faq => faq.id === id);
   };
 
   return {
-    plans: data?.plans ?? [],
-    faqs: data?.faqs ?? [],
-    isLoading,
-    error,
+    plans: plans ?? [],
+    faqs: faqs ?? [],
+    isLoading: isLoadingPlans || isLoadingFaqs,
+    error: plansError || faqsError,
     getPlan,
     getPopularPlan,
     getFaq

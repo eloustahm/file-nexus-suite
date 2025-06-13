@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useActivityLogs } from '@/hooks/useActivityLogs';
+import { useActivity } from '@/hooks/useActivity';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,17 +10,16 @@ import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 export function ActivityLog() {
-  const { activities, isLoading, clearActivityLogs } = useActivityLogs();
+  const { logs, isLoading, typeFilter, setTypeFilter, clearFilters } = useActivity();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('all');
 
-  const filteredActivities = activities.filter(activity => {
+  const filteredActivities = logs.filter(activity => {
     const matchesSearch = activity.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       activity.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       activity.user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       activity.details?.fileName?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesFilter = selectedFilter === 'all' || activity.type === selectedFilter;
+    const matchesFilter = typeFilter === 'all' || activity.type === typeFilter;
 
     return matchesSearch && matchesFilter;
   });
@@ -39,9 +38,9 @@ export function ActivityLog() {
         <h2 className="text-2xl font-bold">Activity Log</h2>
         <Button
           variant="outline"
-          onClick={() => clearActivityLogs()}
+          onClick={clearFilters}
         >
-          Clear Log
+          Clear Filters
         </Button>
       </div>
 
@@ -54,7 +53,7 @@ export function ActivityLog() {
         />
       </div>
 
-      <Tabs defaultValue="all" onValueChange={setSelectedFilter}>
+      <Tabs value={typeFilter} onValueChange={(value) => setTypeFilter(value as any)}>
         <TabsList>
           {ACTIVITY_FILTERS.map(filter => (
             <TabsTrigger
@@ -66,7 +65,7 @@ export function ActivityLog() {
           ))}
         </TabsList>
 
-        <TabsContent value={selectedFilter} className="mt-4">
+        <TabsContent value={typeFilter} className="mt-4">
           <div className="space-y-4">
             {filteredActivities.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">

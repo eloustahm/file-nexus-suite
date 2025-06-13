@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDocumentGeneration } from '@/hooks/useDocumentGeneration';
-import { GenerateDocumentForm } from './components/GenerateDocumentForm';
-import { GeneratedDocumentsList } from './components/GeneratedDocumentsList';
-import { DocumentPreviewer } from './components/DocumentPreviewer';
-import { RegenerateModal } from './components/RegenerateModal';
+import { GenerateDocumentForm } from '@/pages/components/Document/components/GenerateDocumentForm';
+import { GeneratedDocumentsList } from '@/pages/components/Document/components/GeneratedDocumentsList';
+import { DocumentPreviewer } from '@/pages/components/Document/components/DocumentPreviewer';
+import { RegenerateModal } from '@/pages/components/Document/components/RegenerateModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Wand2, FileText } from 'lucide-react';
 

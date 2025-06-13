@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChatHistory } from './ChatHistory';
+import { ChatHistory } from '@/pages/components/ChatHistory';
 
 export const ChatHistoryWrapper = () => {
   const navigate = useNavigate();

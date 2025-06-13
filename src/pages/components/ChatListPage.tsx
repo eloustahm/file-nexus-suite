@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useChat } from '@/hooks/useChat';
-import { ChatListHeader } from './ChatList/ChatListHeader';
-import { ChatSearchAndFilters } from './ChatList/ChatSearchAndFilters';
-import { EmptyState } from './ChatList/EmptyState';
-import { ChatList } from './ChatList/ChatList';
+import { ChatListHeader } from '@/pages/components/ChatList/ChatListHeader';
+import { ChatSearchAndFilters } from '@/pages/components/ChatList/ChatSearchAndFilters';
+import { EmptyState } from '@/pages/components/ChatList/EmptyState';
+import { ChatList } from '@/pages/components/ChatList/ChatList';
 
 export const ChatListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');

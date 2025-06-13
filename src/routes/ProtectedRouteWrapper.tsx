@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { ProtectedRoutes } from './ProtectedRoutes';
+import { ProtectedRoutes } from '@/routes/ProtectedRoutes';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 export const ProtectedRouteWrapper = () => {

@@ -1,11 +1,12 @@
-
 import { useDocumentGenerationQuery } from '@/hooks/queries/useDocumentGenerationQuery';
+import { useDocumentsUI } from '@/hooks/useDocumentsUI';
 
 /**
  * Combined hook that provides server data for document generation
  */
 export const useDocumentGeneration = () => {
   const docGenQuery = useDocumentGenerationQuery();
+  const documentsUI = useDocumentsUI();
 
   return {
     // Server data
@@ -29,9 +30,19 @@ export const useDocumentGeneration = () => {
     downloadDocument: docGenQuery.downloadDocument,
     
     // Mutation states
-    isGenerating: docGenQuery.isGenerating,
-    isRegenerating: docGenQuery.isRegenerating,
-    isSelecting: docGenQuery.isSelecting,
-    isDeleting: docGenQuery.isDeleting,
+    isGeneratingDocument: docGenQuery.isGeneratingDocument,
+    isRegeneratingDocument: docGenQuery.isRegeneratingDocument,
+    isSelectingDocument: docGenQuery.isSelectingDocument,
+    isDeletingDocument: docGenQuery.isDeletingDocument,
+    isDownloadingDocument: docGenQuery.isDownloadingDocument,
+
+    // UI state
+    showGenerateModal: documentsUI.showGenerateModal,
+    showRegenerateModal: documentsUI.showRegenerateModal,
+    selectedTemplate: documentsUI.selectedTemplate,
+    setShowGenerateModal: documentsUI.setShowGenerateModal,
+    setShowRegenerateModal: documentsUI.setShowRegenerateModal,
+    setSelectedTemplate: documentsUI.setSelectedTemplate,
+    resetGenerationState: documentsUI.resetGenerationState,
   };
 };

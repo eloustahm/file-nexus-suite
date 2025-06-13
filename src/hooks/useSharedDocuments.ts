@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useDocuments } from './useDocuments';
+import { useDocuments } from '@/hooks/useDocuments';
 
 export const useSharedDocuments = () => {
   const { documents, isLoading, error, refetch } = useDocuments();

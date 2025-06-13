@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChatSession } from '@/services/chat';
-import { ChatListItem } from './ChatListItem';
+import { ChatListItem } from '@/pages/components/ChatList/ChatListItem';
 
 interface ChatListProps {
   chats: ChatSession[];

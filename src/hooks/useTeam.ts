@@ -1,26 +1,48 @@
 import { useTeamQuery } from '@/hooks/queries/useTeamQuery';
-import { useTeamUI } from '@/hooks/useTeamUI';
-import { useMemo } from 'react';
+import { useTeamCollaborationQuery } from '@/hooks/queries/useTeamCollaborationQuery';
+import { useState, useMemo } from 'react';
+
+type RoleFilter = 'all' | 'admin' | 'editor' | 'viewer';
 
 /**
  * Combined hook that provides both UI state and server data for team management
  */
 export const useTeam = () => {
   const teamQuery = useTeamQuery();
-  const teamUI = useTeamUI();
+  const collaborationQuery = useTeamCollaborationQuery();
+
+  // Modal and dialog UI state
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState<string | null>(null);
+  const [showRoleUpdateModal, setShowRoleUpdateModal] = useState<string | null>(null);
+  const [showCreateRoomModal, setShowCreateRoomModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  
+  // UI filters and selection
+  const [memberFilter, setMemberFilter] = useState('');
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
+  
+  // Chat room UI
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [roomFilter, setRoomFilter] = useState('');
+
+  // Settings UI
+  const [isEditingSettings, setIsEditingSettings] = useState(false);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
 
   // Apply client-side filtering based on UI state
   const filteredMembers = useMemo(() => {
     let filtered = teamQuery.members;
 
     // Apply role filter
-    if (teamUI.roleFilter !== 'all') {
-      filtered = filtered.filter(member => member.role === teamUI.roleFilter);
+    if (roleFilter !== 'all') {
+      filtered = filtered.filter(member => member.role === roleFilter);
     }
 
     // Apply search filter
-    if (teamUI.memberFilter) {
-      const query = teamUI.memberFilter.toLowerCase();
+    if (memberFilter) {
+      const query = memberFilter.toLowerCase();
       filtered = filtered.filter(member => 
         member.name.toLowerCase().includes(query) ||
         member.email.toLowerCase().includes(query)
@@ -28,14 +50,14 @@ export const useTeam = () => {
     }
 
     return filtered;
-  }, [teamQuery.members, teamUI.roleFilter, teamUI.memberFilter]);
+  }, [teamQuery.members, roleFilter, memberFilter]);
 
   // Apply client-side filtering for chat rooms
-  const filteredChatRooms = useMemo(() => {
-    let filtered = teamQuery.chatRooms;
+  const filteredRooms = useMemo(() => {
+    let filtered = teamQuery.rooms;
 
-    if (teamUI.roomFilter) {
-      const query = teamUI.roomFilter.toLowerCase();
+    if (roomFilter) {
+      const query = roomFilter.toLowerCase();
       filtered = filtered.filter(room => 
         room.name.toLowerCase().includes(query) ||
         (room.description && room.description.toLowerCase().includes(query))
@@ -43,58 +65,110 @@ export const useTeam = () => {
     }
 
     return filtered;
-  }, [teamQuery.chatRooms, teamUI.roomFilter]);
+  }, [teamQuery.rooms, roomFilter]);
+
+  const toggleMemberSelection = (id: string) => {
+    setSelectedMemberIds(prev => {
+      const isSelected = prev.includes(id);
+      return isSelected
+        ? prev.filter(memberId => memberId !== id)
+        : [...prev, id];
+    });
+  };
+
+  const clearFilters = () => {
+    setMemberFilter('');
+    setRoleFilter('all');
+    setRoomFilter('');
+  };
+
+  const clearSelections = () => {
+    setSelectedMemberIds([]);
+    setSelectedRoomId(null);
+  };
+
+  const reset = () => {
+    setShowInviteModal(false);
+    setShowSettingsModal(false);
+    setShowRemoveConfirm(null);
+    setShowRoleUpdateModal(null);
+    setShowCreateRoomModal(false);
+    setIsEditingSettings(false);
+    setUnsavedChanges(false);
+    clearFilters();
+    clearSelections();
+  };
+
+  // Helper function to get error message
+  const getErrorMessage = (error: Error | string | null | undefined): string | undefined => {
+    if (!error) return undefined;
+    if (typeof error === 'string') return error;
+    return error.message;
+  };
 
   return {
     // Server data with client-side filtering
     members: teamQuery.members,
     filteredMembers,
-    chatRooms: teamQuery.chatRooms,
-    filteredChatRooms,
+    rooms: teamQuery.rooms,
+    filteredRooms,
+    settings: collaborationQuery.settings,
     
     // Server state
-    isLoadingMembers: teamQuery.isLoadingMembers,
-    isLoadingChatRooms: teamQuery.isLoadingChatRooms,
-    membersError: teamQuery.membersError?.message,
-    chatRoomsError: teamQuery.chatRoomsError?.message,
+    isLoadingMembers: teamQuery.isLoadingMembers || collaborationQuery.isLoadingMembers,
+    isLoadingRooms: teamQuery.isLoadingRooms,
+    isLoadingSettings: collaborationQuery.isLoadingSettings,
+    membersError: getErrorMessage(teamQuery.membersError) || getErrorMessage(collaborationQuery.membersError),
+    roomsError: getErrorMessage(teamQuery.roomsError),
+    settingsError: getErrorMessage(collaborationQuery.settingsError),
     
     // Team actions
     inviteMember: teamQuery.inviteMember,
     updateMemberRole: teamQuery.updateMemberRole,
     removeMember: teamQuery.removeMember,
     createChatRoom: teamQuery.createChatRoom,
+    updateSettings: collaborationQuery.updateSettings,
     refetchMembers: teamQuery.refetchMembers,
-    refetchChatRooms: teamQuery.refetchChatRooms,
+    refetchRooms: teamQuery.refetchRooms,
+    refetchSettings: collaborationQuery.refetchSettings,
     
     // Mutation states
     isInviting: teamQuery.isInvitingMember,
-    isUpdatingRole: teamQuery.isUpdatingRole,
+    isUpdatingMemberRole: teamQuery.isUpdatingMemberRole,
     isRemoving: teamQuery.isRemovingMember,
-    isCreatingRoom: teamQuery.isCreatingChatRoom,
+    isCreatingChatRoom: teamQuery.isCreatingChatRoom,
+    isUpdatingSettings: collaborationQuery.isUpdatingSettings,
     
     // UI state
-    showInviteModal: teamUI.showInviteModal,
-    showRemoveConfirm: teamUI.showRemoveConfirm,
-    showRoleUpdateModal: teamUI.showRoleUpdateModal,
-    showCreateRoomModal: teamUI.showCreateRoomModal,
-    memberFilter: teamUI.memberFilter,
-    selectedMemberIds: teamUI.selectedMemberIds,
-    roleFilter: teamUI.roleFilter,
-    selectedRoomId: teamUI.selectedRoomId,
-    roomFilter: teamUI.roomFilter,
+    showInviteModal,
+    showRemoveConfirm,
+    showRoleUpdateModal,
+    showCreateRoomModal,
+    showSettingsModal,
+    memberFilter,
+    selectedMemberIds,
+    roleFilter,
+    selectedRoomId,
+    roomFilter,
+    isEditingSettings,
+    unsavedChanges,
     
     // UI actions
-    setShowInviteModal: teamUI.setShowInviteModal,
-    setShowRemoveConfirm: teamUI.setShowRemoveConfirm,
-    setShowRoleUpdateModal: teamUI.setShowRoleUpdateModal,
-    setShowCreateRoomModal: teamUI.setShowCreateRoomModal,
-    setMemberFilter: teamUI.setMemberFilter,
-    setSelectedMembers: teamUI.setSelectedMemberIds,
-    toggleMemberSelection: teamUI.toggleMemberSelection,
-    setRoleFilter: teamUI.setRoleFilter,
-    setSelectedRoom: teamUI.setSelectedRoomId,
-    setRoomFilter: teamUI.setRoomFilter,
-    clearFilters: teamUI.clearFilters,
-    clearSelections: teamUI.clearSelections,
+    setShowInviteModal,
+    setShowRemoveConfirm,
+    setShowRoleUpdateModal,
+    setShowCreateRoomModal,
+    setShowSettingsModal,
+    setMemberFilter,
+    setSelectedMemberIds,
+    toggleMemberSelection,
+    setRoleFilter,
+    setSelectedRoomId,
+    setRoomFilter,
+    setIsEditingSettings,
+    setUnsavedChanges,
+    clearFilters,
+    clearSelections,
+    reset,
   };
 };

@@ -1,66 +1,61 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { AI_MODULES, type AIModule } from '@/constants/ai-modules';
+import { useAIModulesQuery, useUpdateAIModuleMutation, useTestAIModuleMutation } from '@/hooks/queries/useAIModules';
+import type { AIModule } from '@/types/ai-module';
 
-// Mock API function - replace with actual API call
-const fetchAIModules = async () => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  return AI_MODULES;
-};
-
+/**
+ * Combined hook that provides both UI state and server data for AI modules
+ */
 export const useAIModules = () => {
-  const queryClient = useQueryClient();
+  // Queries
+  const { data: modules = [], isLoading, error } = useAIModulesQuery();
 
-  const { data: modules, isLoading, error } = useQuery({
-    queryKey: ['ai-modules'],
-    queryFn: fetchAIModules
-  });
-
-  const updateModuleStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: AIModule['status'] }) => {
-      // In a real app, this would call the API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return { id, status };
-    },
-    onSuccess: (data) => {
-      queryClient.setQueryData(['ai-modules'], (old: any) =>
-        old.map((module: AIModule) =>
-          module.id === data.id ? { ...module, status: data.status } : module
-        )
-      );
-      toast.success('Module status updated successfully');
-    },
-    onError: () => {
-      toast.error('Failed to update module status');
-    }
-  });
+  // Mutations
+  const updateModuleMutation = useUpdateAIModuleMutation();
+  const testModuleMutation = useTestAIModuleMutation();
 
   const getModule = (id: string) => {
-    return modules?.find(module => module.id === id);
+    return modules.find(module => module.id === id);
   };
 
   const getActiveModules = () => {
-    return modules?.filter(module => module.status === 'active') ?? [];
+    return modules.filter(module => module.status === 'active');
   };
 
   const getInactiveModules = () => {
-    return modules?.filter(module => module.status === 'inactive') ?? [];
+    return modules.filter(module => module.status === 'inactive');
   };
 
   const getPendingModules = () => {
-    return modules?.filter(module => module.status === 'pending') ?? [];
+    return modules.filter(module => module.status === 'pending');
+  };
+
+  const updateModuleStatus = (id: string, status: AIModule['status']) => {
+    updateModuleMutation.mutate({ id, data: { status } });
+  };
+
+  const testModuleConnection = (id: string) => {
+    testModuleMutation.mutate(id);
   };
 
   return {
-    modules: modules ?? [],
+    // Data
+    modules,
+    
+    // Loading states
     isLoading,
-    error,
-    updateModuleStatus,
+    isUpdating: updateModuleMutation.isPending,
+    isTesting: testModuleMutation.isPending,
+    
+    // Errors
+    error: error?.message,
+    updateError: updateModuleMutation.error?.message,
+    testError: testModuleMutation.error?.message,
+    
+    // Actions
     getModule,
     getActiveModules,
     getInactiveModules,
-    getPendingModules
+    getPendingModules,
+    updateModuleStatus,
+    testModuleConnection,
   };
 }; 
