@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,18 +17,32 @@ import {
   User
 } from "lucide-react";
 import { useDocuments } from "@/hooks/useDocuments";
+import { useSharedDocuments } from '@/hooks/useSharedDocuments';
+import { SectionLoading } from '@/components/LoadingStates';
 
 export const Shared = () => {
   const { documents, isLoading, error, refetch } = useDocuments();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterRole, setFilterRole] = useState("all");
+  const { 
+    sharedDocuments,
+    isLoading: sharedDocumentsLoading, 
+    error: sharedDocumentsError, 
+    refetch: sharedDocumentsRefetch,
+    searchTerm,
+    filterRole,
+    setSearchTerm,
+    setFilterRole
+  } = useSharedDocuments();
 
   useEffect(() => {
     refetch();
   }, [refetch]);
 
+  const handleRetry = () => {
+    sharedDocumentsRefetch();
+  };
+
   // Mock shared documents data
-  const sharedDocuments = [
+  const mockSharedDocuments = [
     {
       id: 1,
       name: "Project Proposal 2024.pdf",
@@ -78,15 +91,8 @@ export const Shared = () => {
     return matchesSearch && matchesRole;
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading shared documents...</p>
-        </div>
-      </div>
-    );
+  if (isLoading || sharedDocumentsLoading) {
+    return <SectionLoading message="Loading shared documents..." />;
   }
 
   return (

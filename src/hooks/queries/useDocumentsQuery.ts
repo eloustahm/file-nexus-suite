@@ -1,140 +1,139 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { documentsApi } from '@/services/documents';
+import { documentsService, type Document, type CreateDocumentData, type ShareDocumentData } from '@/services/documents';
+import { toast } from '@/hooks/use-toast';
 import { QUERY_KEYS } from '@/constants';
-import { useToast } from '@/hooks/use-toast';
-import type { Document, CreateDocumentData, ShareDocumentData } from '@/services/documents';
 
-/**
- * React Query hooks for documents API
- */
 export const useDocumentsQuery = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
-  // Get all documents
+  // Get all documents query
   const documentsQuery = useQuery({
     queryKey: [QUERY_KEYS.DOCUMENTS],
-    queryFn: documentsApi.getAll,
+    queryFn: documentsService.getAll,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
   // Create document mutation
   const createDocumentMutation = useMutation({
-    mutationFn: documentsApi.create,
+    mutationFn: (data: CreateDocumentData) => documentsService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
       toast({
-        title: 'Document created',
-        description: 'Document has been created successfully',
+        title: "Success",
+        description: "Document created successfully",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
-        title: 'Error creating document',
-        description: error.message,
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || 'Failed to create document',
+        variant: "destructive",
       });
     },
   });
 
   // Upload document mutation
   const uploadDocumentMutation = useMutation({
-    mutationFn: documentsApi.upload,
+    mutationFn: (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return documentsService.upload(formData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
       toast({
-        title: 'Document uploaded',
-        description: 'Document has been uploaded successfully',
+        title: "Success",
+        description: "Document uploaded successfully",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
-        title: 'Error uploading document',
-        description: error.message,
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || 'Failed to upload document',
+        variant: "destructive",
       });
     },
   });
 
   // Update document mutation
   const updateDocumentMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Document> }) =>
-      documentsApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<any> }) => 
+      documentsService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
       toast({
-        title: 'Document updated',
-        description: 'Document has been updated successfully',
+        title: "Success",
+        description: "Document updated successfully",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
-        title: 'Error updating document',
-        description: error.message,
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || 'Failed to update document',
+        variant: "destructive",
       });
     },
   });
 
   // Delete document mutation
   const deleteDocumentMutation = useMutation({
-    mutationFn: documentsApi.delete,
+    mutationFn: (id: string) => documentsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
       toast({
-        title: 'Document deleted',
-        description: 'Document has been deleted successfully',
+        title: "Success",
+        description: "Document deleted successfully",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
-        title: 'Error deleting document',
-        description: error.message,
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || 'Failed to delete document',
+        variant: "destructive",
       });
     },
   });
 
   // Share document mutation
   const shareDocumentMutation = useMutation({
-    mutationFn: ({ id, shareData }: { id: string; shareData: ShareDocumentData }) =>
-      documentsApi.share(id, shareData),
+    mutationFn: ({ id, shareData }: { id: string; shareData: ShareDocumentData }) => 
+      documentsService.share(id, shareData),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENTS] });
       toast({
-        title: 'Document shared',
-        description: 'Document has been shared successfully',
+        title: "Success",
+        description: "Document shared successfully",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
-        title: 'Error sharing document',
-        description: error.message,
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || 'Failed to share document',
+        variant: "destructive",
       });
     },
   });
 
   return {
-    // Data
     documents: documentsQuery.data || [],
-    
-    // States
     isLoading: documentsQuery.isLoading,
     error: documentsQuery.error,
     
-    // Actions
-    createDocument: createDocumentMutation.mutate,
-    uploadDocument: uploadDocumentMutation.mutate,
-    updateDocument: updateDocumentMutation.mutate,
-    deleteDocument: deleteDocumentMutation.mutate,
-    shareDocument: shareDocumentMutation.mutate,
-    refetch: documentsQuery.refetch,
+    // Mutations
+    createDocument: createDocumentMutation.mutateAsync,
+    uploadDocument: uploadDocumentMutation.mutateAsync,
+    updateDocument: updateDocumentMutation.mutateAsync,
+    deleteDocument: deleteDocumentMutation.mutateAsync,
+    shareDocument: shareDocumentMutation.mutateAsync,
     
-    // Mutation states
+    // Loading states
     isCreating: createDocumentMutation.isPending,
     isUploading: uploadDocumentMutation.isPending,
     isUpdating: updateDocumentMutation.isPending,
     isDeleting: deleteDocumentMutation.isPending,
     isSharing: shareDocumentMutation.isPending,
+    
+    // Refetch
+    refetch: documentsQuery.refetch,
   };
 };

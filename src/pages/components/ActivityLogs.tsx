@@ -1,10 +1,11 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActivity } from '@/hooks/useActivity';
 import { Clock, User, FileText, Users, Settings } from 'lucide-react';
+
+type ActivityType = 'all' | 'document' | 'team' | 'system' | 'chat';
 
 const getActivityIcon = (type: string) => {
   switch (type) {
@@ -77,7 +78,7 @@ export const ActivityLogs = () => {
           <p className="text-gray-600 mt-1">Track all system activities and changes</p>
         </div>
         <div className="flex items-center gap-3">
-          <Select value={typeFilter} onValueChange={(value: any) => setTypeFilter(value)}>
+          <Select value={typeFilter} onValueChange={(value: ActivityType) => setTypeFilter(value)}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>

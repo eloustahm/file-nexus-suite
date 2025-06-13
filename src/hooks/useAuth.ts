@@ -1,22 +1,31 @@
-
+import { useState } from 'react';
 import { useAuthQuery } from '@/hooks/queries/useAuthQuery';
-import { useAuthUIStore } from '@/store/useAuthUIStore';
 
 /**
  * Combined hook that provides both UI state and server data for authentication
  */
 export const useAuth = () => {
   const authQuery = useAuthQuery();
-  const authUI = useAuthUIStore();
+
+  // Form UI state
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  
+  // Loading and error states
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const clearError = () => setError(null);
 
   return {
     // Server data from React Query
     user: authQuery.user,
     isAuthenticated: authQuery.isAuthenticated,
     
-    // Simple loading state - only true during initial load
-    isLoading: authQuery.isLoading,
-    error: authQuery.error?.message || authUI.error,
+    // Loading states
+    isLoading: authQuery.isLoading || isLoading,
+    error: authQuery.error?.message || error,
     
     // Auth actions
     login: authQuery.login,
@@ -29,17 +38,17 @@ export const useAuth = () => {
     isRegistering: authQuery.isRegistering,
     isLoggingOut: authQuery.isLoggingOut,
     
-    // UI state and actions
-    showLoginForm: authUI.showLoginForm,
-    showRegisterForm: authUI.showRegisterForm,
-    rememberMe: authUI.rememberMe,
-    setShowLoginForm: authUI.setShowLoginForm,
-    setShowRegisterForm: authUI.setShowRegisterForm,
-    setRememberMe: authUI.setRememberMe,
+    // UI state
+    showLoginForm,
+    showRegisterForm,
+    rememberMe,
     
     // UI actions
-    setLoading: authUI.setLoading,
-    setError: authUI.setError,
-    clearError: authUI.clearError,
+    setShowLoginForm,
+    setShowRegisterForm,
+    setRememberMe,
+    setIsLoading,
+    setError,
+    clearError,
   };
 };

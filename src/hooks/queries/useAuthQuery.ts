@@ -1,142 +1,81 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authApi } from '@/services/auth';
-import { QUERY_KEYS } from '@/constants';
-import { useToast } from '@/hooks/use-toast';
-import type { LoginData, RegisterData } from '@/services/auth';
+import { authService } from '@/services/auth';
+import type { LoginCredentials, RegisterData } from '@/types';
+import { toast } from 'sonner';
 
-/**
- * React Query hooks for authentication API
- */
 export const useAuthQuery = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
-  // Get current user
+  // Get current user query - simple configuration
   const userQuery = useQuery({
-    queryKey: [QUERY_KEYS.AUTH, 'user'],
-    queryFn: authApi.getCurrentUser,
-    retry: false,
+    queryKey: ['auth', 'user'],
+    queryFn: authService.getCurrentUser,
+    retry: false, // Never retry auth calls
+    staleTime: Infinity, // Cache auth result until manually invalidated
+    gcTime: Infinity, // Keep in cache
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
   });
 
   // Login mutation
   const loginMutation = useMutation({
-    mutationFn: authApi.login,
+    mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.AUTH] });
-      toast({
-        title: 'Login successful',
-        description: 'Welcome back!',
-      });
+      queryClient.invalidateQueries({ queryKey: ['auth', 'user'] });
+      toast.success('Login successful');
     },
-    onError: (error: Error) => {
-      toast({
-        title: 'Login failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+    onError: (error: any) => {
+      toast.error(error.message || 'Login failed');
     },
   });
 
   // Register mutation
   const registerMutation = useMutation({
-    mutationFn: authApi.register,
+    mutationFn: (data: RegisterData) => authService.register(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.AUTH] });
-      toast({
-        title: 'Registration successful',
-        description: 'Welcome to the platform!',
-      });
+      queryClient.invalidateQueries({ queryKey: ['auth', 'user'] });
+      toast.success('Registration successful');
     },
-    onError: (error: Error) => {
-      toast({
-        title: 'Registration failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+    onError: (error: any) => {
+      toast.error(error.message || 'Registration failed');
     },
   });
 
   // Logout mutation
   const logoutMutation = useMutation({
-    mutationFn: authApi.logout,
+    mutationFn: authService.logout,
     onSuccess: () => {
+      queryClient.setQueryData(['auth', 'user'], null);
+      queryClient.clear(); // Clear all cached data on logout
+      toast.success('Logged out successfully');
+    },
+    onError: (error: any) => {
+      // Even if logout fails, clear local state
+      queryClient.setQueryData(['auth', 'user'], null);
       queryClient.clear();
-      toast({
-        title: 'Logged out',
-        description: 'You have been logged out successfully',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Logout failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-
-  // Forgot password mutation
-  const forgotPasswordMutation = useMutation({
-    mutationFn: authApi.forgotPassword,
-    onSuccess: () => {
-      toast({
-        title: 'Reset email sent',
-        description: 'Check your email for reset instructions',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Reset email failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-
-  // Reset password mutation
-  const resetPasswordMutation = useMutation({
-    mutationFn: ({ token, password }: { token: string; password: string }) =>
-      authApi.resetPassword(token, password),
-    onSuccess: () => {
-      toast({
-        title: 'Password reset successful',
-        description: 'Your password has been updated',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Password reset failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Logout failed');
     },
   });
 
   return {
-    // Data
     user: userQuery.data,
-    isAuthenticated: !!userQuery.data,
+    isLoading: userQuery.isLoading,
+    error: userQuery.error,
+    isAuthenticated: userQuery.data !== null && userQuery.data !== undefined,
+    
+    // Mutations
+    login: loginMutation.mutateAsync,
+    register: registerMutation.mutateAsync,
+    logout: logoutMutation.mutateAsync,
     
     // Loading states
-    isLoading: userQuery.isLoading,
     isLoggingIn: loginMutation.isPending,
     isRegistering: registerMutation.isPending,
     isLoggingOut: logoutMutation.isPending,
-    isSendingReset: forgotPasswordMutation.isPending,
-    isResettingPassword: resetPasswordMutation.isPending,
     
-    // Error states
-    error: userQuery.error,
-    loginError: loginMutation.error,
-    registerError: registerMutation.error,
-    
-    // Actions
-    login: loginMutation.mutate,
-    register: registerMutation.mutate,
-    logout: logoutMutation.mutate,
-    forgotPassword: forgotPasswordMutation.mutate,
-    resetPassword: resetPasswordMutation.mutate,
-    refetch: userQuery.refetch,
+    // Refetch - only call when explicitly needed
+    refetchUser: userQuery.refetch,
   };
 };

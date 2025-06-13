@@ -1,61 +1,75 @@
-
 import { http } from '@/lib/api';
-import { Document } from '@/types';
+import type { Document, CreateDocumentData, ShareDocumentData, DocumentVersion } from '@/types';
+
+export interface Document {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  content: string;
+  url?: string;
+  createdAt: string;
+  updatedAt: string;
+  folderId?: string;
+  isShared: boolean;
+  sharedWith: string[];
+  tags: string[];
+  status: 'active' | 'archived' | 'deleted';
+}
 
 export interface CreateDocumentData {
   name: string;
+  content: string;
   type: string;
-  content?: string;
   folderId?: string;
   tags?: string[];
 }
 
 export interface ShareDocumentData {
-  permissions: 'view' | 'edit';
-  emails: string[];
-  message?: string;
+  userIds: string[];
+  permissions: 'read' | 'write' | 'admin';
+  expiresAt?: string;
 }
-
-// Export Document type from this module for convenience
-export type { Document };
 
 /**
  * Documents API service
  */
-export const documentsApi = {
-  // Get all documents
-  getAll: async (): Promise<Document[]> => {
-    console.log('Fetching all documents');
-    return http.get<Document[]>('/api/documents');
+export const documentsService = {
+  async getAll(): Promise<Document[]> {
+    return http.get<Document[]>('/documents');
   },
 
-  // Create document
-  create: async (data: CreateDocumentData): Promise<Document> => {
-    console.log('Creating document:', data.name);
-    return http.post<Document>('/api/documents', data);
+  async getById(id: string): Promise<Document> {
+    return http.get<Document>(`/documents/${id}`);
   },
 
-  // Upload document
-  upload: async (formData: FormData): Promise<Document> => {
-    console.log('Uploading document');
-    return http.post<Document>('/api/documents/upload', formData);
+  async create(data: CreateDocumentData): Promise<Document> {
+    return http.post<Document>('/documents', data);
   },
 
-  // Update document
-  update: async (id: string, data: Partial<Document>): Promise<Document> => {
-    console.log('Updating document:', id);
-    return http.put<Document>(`/api/documents/${id}`, data);
+  async upload(file: FormData): Promise<Document> {
+    return http.upload<Document>('/documents/upload', file);
   },
 
-  // Delete document
-  delete: async (id: string) => {
-    console.log('Deleting document:', id);
-    return http.delete(`/api/documents/${id}`);
+  async update(id: string, data: Partial<Document>): Promise<Document> {
+    return http.put<Document>(`/documents/${id}`, data);
   },
 
-  // Share document
-  share: async (id: string, shareData: ShareDocumentData) => {
-    console.log('Sharing document:', id);
-    return http.post(`/api/documents/${id}/share`, shareData);
+  async delete(id: string): Promise<void> {
+    await http.delete<void>(`/documents/${id}`);
+  },
+
+  async share(id: string, shareData: ShareDocumentData): Promise<void> {
+    await http.post<void>(`/documents/${id}/share`, shareData);
+  },
+
+  async getVersions(id: string): Promise<DocumentVersion[]> {
+    return http.get<DocumentVersion[]>(`/documents/${id}/versions`);
+  },
+
+  async download(id: string): Promise<Blob> {
+    return http.get<Blob>(`/documents/${id}/download`, {
+      responseType: 'blob'
+    });
   }
 };

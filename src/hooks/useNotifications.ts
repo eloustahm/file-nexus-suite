@@ -1,31 +1,57 @@
-
 import { useNotificationsQuery } from '@/hooks/queries/useNotificationsQuery';
-import { useNotificationsUIStore } from '@/store/useNotificationsUIStore';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+
+type NotificationType = 'all' | 'info' | 'success' | 'warning' | 'error';
 
 /**
  * Combined hook that provides both UI state and server data for notifications
  */
 export const useNotifications = () => {
   const notificationsQuery = useNotificationsQuery();
-  const notificationsUI = useNotificationsUIStore();
+
+  // Filter and display UI state
+  const [typeFilter, setTypeFilter] = useState<NotificationType>('all');
+  const [showOnlyUnread, setShowOnlyUnread] = useState(false);
+  const [selectedNotificationIds, setSelectedNotificationIds] = useState<string[]>([]);
+  
+  // Modal and dialog UI state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  const toggleNotificationSelection = (id: string) => {
+    setSelectedNotificationIds(prev => {
+      const isSelected = prev.includes(id);
+      return isSelected
+        ? prev.filter(notifId => notifId !== id)
+        : [...prev, id];
+    });
+  };
+
+  const clearFilters = () => {
+    setTypeFilter('all');
+    setShowOnlyUnread(false);
+  };
+
+  const clearSelections = () => {
+    setSelectedNotificationIds([]);
+  };
 
   // Apply client-side filtering based on UI state
   const filteredNotifications = useMemo(() => {
     let filtered = notificationsQuery.notifications;
 
     // Apply type filter
-    if (notificationsUI.typeFilter !== 'all') {
-      filtered = filtered.filter(notification => notification.type === notificationsUI.typeFilter);
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(notification => notification.type === typeFilter);
     }
 
     // Apply unread filter
-    if (notificationsUI.showOnlyUnread) {
+    if (showOnlyUnread) {
       filtered = filtered.filter(notification => !notification.isRead);
     }
 
     return filtered;
-  }, [notificationsQuery.notifications, notificationsUI.typeFilter, notificationsUI.showOnlyUnread]);
+  }, [notificationsQuery.notifications, typeFilter, showOnlyUnread]);
 
   return {
     // Server data with client-side filtering
@@ -36,10 +62,10 @@ export const useNotifications = () => {
     
     // Server state
     isLoading: notificationsQuery.isLoading,
-    isLoadingCount: notificationsQuery.isLoadingCount,
+    isLoadingCount: notificationsQuery.isLoadingUnreadCount,
     isLoadingSettings: notificationsQuery.isLoadingSettings,
     error: notificationsQuery.error?.message,
-    countError: notificationsQuery.countError?.message,
+    countError: notificationsQuery.unreadCountError?.message,
     settingsError: notificationsQuery.settingsError?.message,
     
     // Notification actions
@@ -48,7 +74,7 @@ export const useNotifications = () => {
     deleteNotification: notificationsQuery.deleteNotification,
     updateSettings: notificationsQuery.updateSettings,
     refetch: notificationsQuery.refetch,
-    refetchCount: notificationsQuery.refetchCount,
+    refetchCount: notificationsQuery.refetchUnreadCount,
     refetchSettings: notificationsQuery.refetchSettings,
     
     // Mutation states
@@ -58,20 +84,20 @@ export const useNotifications = () => {
     isUpdatingSettings: notificationsQuery.isUpdatingSettings,
     
     // UI state
-    typeFilter: notificationsUI.typeFilter,
-    showOnlyUnread: notificationsUI.showOnlyUnread,
-    selectedNotificationIds: notificationsUI.selectedNotificationIds,
-    showDeleteConfirm: notificationsUI.showDeleteConfirm,
-    showSettingsModal: notificationsUI.showSettingsModal,
+    typeFilter,
+    showOnlyUnread,
+    selectedNotificationIds,
+    showDeleteConfirm,
+    showSettingsModal,
     
     // UI actions
-    setTypeFilter: notificationsUI.setTypeFilter,
-    setShowOnlyUnread: notificationsUI.setShowOnlyUnread,
-    setSelectedNotifications: notificationsUI.setSelectedNotifications,
-    toggleNotificationSelection: notificationsUI.toggleNotificationSelection,
-    setShowDeleteConfirm: notificationsUI.setShowDeleteConfirm,
-    setShowSettingsModal: notificationsUI.setShowSettingsModal,
-    clearFilters: notificationsUI.clearFilters,
-    clearSelections: notificationsUI.clearSelections,
+    setTypeFilter,
+    setShowOnlyUnread,
+    setSelectedNotifications: setSelectedNotificationIds,
+    toggleNotificationSelection,
+    setShowDeleteConfirm,
+    setShowSettingsModal,
+    clearFilters,
+    clearSelections,
   };
 };

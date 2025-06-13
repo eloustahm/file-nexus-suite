@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +16,8 @@ import {
   ZoomOut
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useDocumentChatStore } from '@/store/useDocumentChatStore';
+import { useChat } from '@/hooks/useChat';
+import { ChatMessage } from '@/types';
 
 interface Message {
   id: string;
@@ -36,7 +36,7 @@ export const ChatWithDocumentAgent = () => {
   const navigate = useNavigate();
   const { documentId } = useParams();
 
-  const { sendMessage, currentMessages, isAgentTyping } = useDocumentChatStore();
+  const { sendMessage, isSendingMessage } = useChat();
 
   // Mock document data
   const document = {
@@ -89,18 +89,26 @@ export const ChatWithDocumentAgent = () => {
     setMessage('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
+    try {
+      await sendMessage({
+        sessionId: documentId || 'default',
+        content: message
+      });
+
+      // For now, we'll create a mock response since the actual response is not typed
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
         content: `Based on the document, I can help you with that. The project proposal mentions ${message.toLowerCase().includes('budget') ? 'a total estimated cost of $250,000' : message.toLowerCase().includes('timeline') ? 'a 10-month timeline across 3 phases' : 'comprehensive objectives including AI-powered analysis'}.`,
         sender: 'assistant',
-        timestamp: new Date(),
-        documentReferences: ['Project Proposal.pdf']
+        timestamp: new Date()
       };
-      setMessages(prev => [...prev, aiMessage]);
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -110,143 +118,98 @@ export const ChatWithDocumentAgent = () => {
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 10, 200));
   };
 
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 25, 200));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 25, 50));
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 10, 50));
+  };
 
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/chats')}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <FileText className="h-5 w-5" />
+      <div className="border-b p-4 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <div>
             <h1 className="text-xl font-semibold">{document.name}</h1>
+            <p className="text-sm text-gray-500">{document.type} • {document.size}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <Share className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Download
-            </Button>
-          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm" onClick={handleZoomOut}>
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <span className="text-sm">{zoom}%</span>
+          <Button variant="outline" size="sm" onClick={handleZoomIn}>
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Download
+          </Button>
+          <Button variant="outline" size="sm">
+            <Share className="h-4 w-4 mr-2" />
+            Share
+          </Button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Chat Panel */}
-        <div className="w-1/2 flex flex-col">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-4">
-              {messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex gap-3 max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className={msg.sender === 'user' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}>
-                        {msg.sender === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
-                    <Card className={`p-3 ${msg.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
-                      <p className="text-sm">{msg.content}</p>
-                      {msg.documentReferences && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {msg.documentReferences.map((ref, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {ref}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      <p className="text-xs opacity-70 mt-2">
-                        {formatTime(msg.timestamp)}
-                      </p>
-                    </Card>
-                  </div>
-                </div>
-              ))}
-              
-              {/* Typing Indicator */}
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="flex gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-gray-100 text-gray-600">
-                        <Bot className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <Card className="p-3 bg-gray-100">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      </div>
-                    </Card>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Message Input */}
-          <div className="p-4 border-t">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Ask about the document..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="flex-1"
-              />
-              <Button
-                onClick={handleSendMessage}
-                disabled={!message.trim() || isTyping}
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
+      <div className="flex-1 flex">
+        {/* Document Preview */}
+        <div className="w-1/2 border-r p-4 overflow-auto">
+          <div className="prose max-w-none" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top left' }}>
+            <pre className="whitespace-pre-wrap font-mono text-sm">{document.content}</pre>
           </div>
         </div>
 
-        {/* Document Preview Panel */}
-        <div className="w-1/2 border-l flex flex-col">
-          <div className="p-4 border-b bg-gray-50">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold">Document Preview</h3>
-                <p className="text-sm text-gray-600">{document.type} • {document.size}</p>
+        {/* Chat Section */}
+        <div className="w-1/2 flex flex-col">
+          {/* Messages */}
+          <div className="flex-1 p-4 overflow-auto">
+            {messages.map((msg) => (
+              <div key={msg.id} className={`mb-4 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
+                <div className={`inline-block max-w-[80%] ${msg.sender === 'user' ? 'bg-blue-100' : 'bg-gray-100'} rounded-lg p-3`}>
+                  <p className="text-sm">{msg.content}</p>
+                  <span className="text-xs text-gray-500">
+                    {msg.timestamp.toLocaleTimeString()}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={handleZoomOut} disabled={zoom <= 50}>
-                  <ZoomOut className="h-4 w-4" />
-                </Button>
-                <span className="text-sm px-2">{zoom}%</span>
-                <Button variant="outline" size="sm" onClick={handleZoomIn} disabled={zoom >= 200}>
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
+            ))}
+            {isTyping && (
+              <div className="text-left mb-4">
+                <div className="inline-block max-w-[80%] bg-gray-100 rounded-lg p-3">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
-          <div className="flex-1 overflow-auto p-4">
-            <Card className="p-6 bg-gray-50 min-h-full">
-              <pre 
-                className="whitespace-pre-wrap font-mono text-sm leading-relaxed"
-                style={{ fontSize: `${zoom}%` }}
-              >
-                {document.content}
-              </pre>
-            </Card>
+
+          {/* Input */}
+          <div className="border-t p-4">
+            <div className="flex space-x-2">
+              <Input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask about the document..."
+                className="flex-1"
+              />
+              <Button onClick={handleSendMessage} disabled={!message.trim() || isTyping}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

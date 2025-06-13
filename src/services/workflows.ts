@@ -1,54 +1,34 @@
-
 import { http } from '@/lib/api';
+import type { Workflow, WorkflowStep } from '@/types';
 
-export interface Workflow {
-  id: string;
-  name: string;
-  description: string;
-  status: 'draft' | 'active' | 'paused' | 'completed';
-  steps: WorkflowStep[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface WorkflowStep {
-  id: string;
-  name: string;
-  type: 'approval' | 'review' | 'automation' | 'notification';
-  completed: boolean;
-}
-
-/**
- * Workflows API service
- */
-export const workflowsApi = {
+export const workflowsService = {
   // Get all workflows
-  getAll: async (): Promise<Workflow[]> => {
-    console.log('Fetching all workflows');
-    return http.get<Workflow[]>('/api/workflows');
+  async getAll(): Promise<Workflow[]> {
+    return http.get<Workflow[]>('/workflows');
   },
-
+  
+  // Get workflow by ID
+  async getById(id: string): Promise<Workflow> {
+    return http.get<Workflow>(`/workflows/${id}`);
+  },
+  
   // Create workflow
-  create: async (data: any): Promise<Workflow> => {
-    console.log('Creating workflow:', data);
-    return http.post<Workflow>('/api/workflows', data);
+  async create(workflowData: Partial<Workflow>): Promise<Workflow> {
+    return http.post<Workflow>('/workflows', workflowData);
   },
-
+  
   // Update workflow
-  update: async (id: string, data: any): Promise<Workflow> => {
-    console.log('Updating workflow:', id);
-    return http.put<Workflow>(`/api/workflows/${id}`, data);
+  async update(id: string, data: Partial<Workflow>): Promise<Workflow> {
+    return http.patch<Workflow>(`/workflows/${id}`, data);
   },
-
+  
   // Delete workflow
-  delete: async (id: string) => {
-    console.log('Deleting workflow:', id);
-    return http.delete(`/api/workflows/${id}`);
+  async delete(id: string): Promise<void> {
+    await http.delete<void>(`/workflows/${id}`);
   },
-
+  
   // Execute workflow
-  execute: async (id: string, documentId: string) => {
-    console.log('Executing workflow:', id, 'for document:', documentId);
-    return http.post(`/api/workflows/${id}/execute`, { documentId });
+  async execute(id: string, documentId: string): Promise<void> {
+    await http.post<void>(`/workflows/${id}/execute`, { documentId });
   }
 };

@@ -1,232 +1,213 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useIntegrations } from '@/hooks/useIntegrations';
+import { type IntegrationDefinition } from '@/constants/integrations';
 import { 
   Settings, 
-  Search, 
-  Filter,
-  Globe,
+  ExternalLink, 
+  Check, 
+  X, 
+  Key, 
+  Eye, 
+  EyeOff,
+  RefreshCw,
+  Zap,
   Database,
   Cloud,
-  Smartphone,
-  BarChart3,
-  MessageSquare,
-  Mail,
-  Calendar,
-  FileText,
   Shield,
-  Zap
+  CheckCircle2,
+  XCircle,
+  Plus,
+  AlertCircle
 } from 'lucide-react';
-import { Integration } from '@/types';
+import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
+import { cn } from '@/lib/utils';
+import {
+  useIntegrationsQuery,
+  useCreateIntegrationMutation,
+  useUpdateIntegrationMutation,
+  useDeleteIntegrationMutation,
+  useTestIntegrationMutation,
+  useSyncIntegrationMutation,
+} from '@/hooks/queries/useIntegrations';
+import { Integration } from '@/types/integration';
 
-export const Integrations = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+export function Integrations() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
 
-  // Mock integrations data
-  const integrations: Integration[] = [
-    {
-      id: 'google-drive',
-      name: 'Google Drive',
-      description: 'Sync documents with Google Drive for seamless collaboration',
-      icon: 'Cloud',
-      category: 'Storage',
-      enabled: true,
-      settings: { syncFrequency: 'hourly' }
-    },
-    {
-      id: 'slack',
-      name: 'Slack',
-      description: 'Get notifications and share documents in Slack channels',
-      icon: 'MessageSquare',
-      category: 'Communication',
-      enabled: false
-    },
-    {
-      id: 'microsoft-365',
-      name: 'Microsoft 365',
-      description: 'Integrate with Word, Excel, and PowerPoint',
-      icon: 'FileText',
-      category: 'Productivity',
-      enabled: true
-    },
-    {
-      id: 'salesforce',
-      name: 'Salesforce',
-      description: 'Connect customer data with document workflows',
-      icon: 'Database',
-      category: 'CRM',
-      enabled: false
-    },
-    {
-      id: 'gmail',
-      name: 'Gmail',
-      description: 'Send and receive documents via email',
-      icon: 'Mail',
-      category: 'Communication',
-      enabled: true
-    },
-    {
-      id: 'calendar',
-      name: 'Google Calendar',
-      description: 'Schedule document reviews and deadlines',
-      icon: 'Calendar',
-      category: 'Productivity',
-      enabled: false
-    }
-  ];
+  const {
+    data,
+    isLoading,
+    error
+  } = useIntegrationsQuery();
 
-  const categories = [
-    { id: 'all', name: 'All Categories', count: integrations.length },
-    { id: 'Storage', name: 'Storage', count: integrations.filter(i => i.category === 'Storage').length },
-    { id: 'Communication', name: 'Communication', count: integrations.filter(i => i.category === 'Communication').length },
-    { id: 'Productivity', name: 'Productivity', count: integrations.filter(i => i.category === 'Productivity').length },
-    { id: 'CRM', name: 'CRM', count: integrations.filter(i => i.category === 'CRM').length }
-  ];
+  const createIntegration = useCreateIntegrationMutation();
+  const updateIntegration = useUpdateIntegrationMutation();
+  const deleteIntegration = useDeleteIntegrationMutation();
+  const testIntegration = useTestIntegrationMutation();
+  const syncIntegration = useSyncIntegrationMutation();
+
+  const integrations = data?.data.integrations || [];
 
   const filteredIntegrations = integrations.filter(integration => {
-    const matchesSearch = integration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         integration.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || integration.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesSearch = integration.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = selectedType === 'all' || integration.type === selectedType;
+    return matchesSearch && matchesType;
   });
 
-  const getIconComponent = (iconName: string) => {
-    const icons: Record<string, React.ElementType> = {
-      Cloud,
-      Database,
-      MessageSquare,
-      Mail,
-      Calendar,
-      FileText,
-      Shield,
-      Zap,
-      Globe,
-      Smartphone,
-      BarChart3
-    };
-    return icons[iconName] || Settings;
+  const handleCreateIntegration = () => {
+    // TODO: Implement integration creation modal
+    createIntegration.mutate({
+      name: 'New Integration',
+      type: 'storage',
+      status: 'inactive',
+      config: {}
+    });
   };
 
-  const toggleIntegration = (integrationId: string) => {
-    console.log('Toggling integration:', integrationId);
-    // This would typically call an API to enable/disable the integration
+  const handleUpdateStatus = (integration: Integration) => {
+    updateIntegration.mutate({
+      id: integration.id,
+      data: {
+        status: integration.status === 'active' ? 'inactive' : 'active'
+      }
+    });
   };
 
-  const configureIntegration = (integrationId: string) => {
-    console.log('Configuring integration:', integrationId);
-    // This would open a configuration modal or navigate to settings
+  const handleDelete = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this integration?')) {
+      deleteIntegration.mutate(id);
+    }
   };
+
+  const handleTestConnection = (id: string) => {
+    testIntegration.mutate(id);
+  };
+
+  const handleSync = (id: string) => {
+    syncIntegration.mutate(id);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Spinner className="w-8 h-8" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64 text-red-500">
+        <AlertCircle className="w-8 h-8 mr-2" />
+        Failed to load integrations
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Integrations</h1>
-        <p className="text-gray-600">Connect your favorite tools and services</p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Integrations</h2>
+        <Button onClick={handleCreateIntegration}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add Integration
+        </Button>
       </div>
 
-      <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <TabsList>
-            {categories.map((category) => (
-              <TabsTrigger key={category.id} value={category.id} className="flex items-center gap-2">
-                {category.name}
-                <Badge variant="secondary" className="text-xs">
-                  {category.count}
-                </Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search integrations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-64"
-            />
-          </div>
-        </div>
-      </Tabs>
+      <div className="flex items-center gap-4">
+        <Input
+          placeholder="Search integrations..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
 
-      {filteredIntegrations.length === 0 ? (
-        <Card className="text-center p-8">
-          <CardContent>
-            <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Integrations Found</h3>
-            <p className="text-gray-600">Try adjusting your search or category filter.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredIntegrations.map((integration) => {
-            const IconComponent = getIconComponent(integration.icon);
-            return (
-              <Card key={integration.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <IconComponent className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{integration.name}</CardTitle>
-                        <Badge variant="outline" className="text-xs mt-1">
-                          {integration.category}
-                        </Badge>
-                      </div>
+      <Tabs defaultValue="all" onValueChange={setSelectedType}>
+        <TabsList>
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="storage">Storage</TabsTrigger>
+          <TabsTrigger value="crm">CRM</TabsTrigger>
+          <TabsTrigger value="email">Email</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={selectedType} className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredIntegrations.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                No integrations found
+              </div>
+            ) : (
+              filteredIntegrations.map((integration) => (
+                <Card key={integration.id} className="p-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium">{integration.name}</h3>
+                      <Badge
+                        variant={integration.status === 'active' ? 'default' : 'secondary'}
+                      >
+                        {integration.status}
+                      </Badge>
                     </div>
-                    <Switch
-                      checked={integration.enabled}
-                      onCheckedChange={() => toggleIntegration(integration.id)}
-                    />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="mb-4">
-                    {integration.description}
-                  </CardDescription>
-                  
-                  {integration.enabled && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Status</span>
-                        <Badge className="bg-green-100 text-green-800">
-                          Connected
-                        </Badge>
-                      </div>
+
+                    <div className="text-sm text-muted-foreground">
+                      <p>Type: {integration.type}</p>
+                      {integration.lastSync && (
+                        <p>Last sync: {new Date(integration.lastSync).toLocaleString()}</p>
+                      )}
+                      {integration.error && (
+                        <p className="text-red-500">Error: {integration.error}</p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full"
-                        onClick={() => configureIntegration(integration.id)}
+                        onClick={() => handleUpdateStatus(integration)}
                       >
-                        <Settings className="h-4 w-4 mr-2" />
-                        Configure
+                        {integration.status === 'active' ? 'Disable' : 'Enable'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleTestConnection(integration.id)}
+                      >
+                        Test Connection
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSync(integration.id)}
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(integration.id)}
+                      >
+                        Delete
                       </Button>
                     </div>
-                  )}
-                  
-                  {!integration.enabled && (
-                    <Button
-                      className="w-full"
-                      onClick={() => toggleIntegration(integration.id)}
-                    >
-                      Connect
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
+}

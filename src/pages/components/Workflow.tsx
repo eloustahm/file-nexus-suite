@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,41 +18,46 @@ import {
   CheckCircle,
   AlertCircle,
   Settings,
-  Activity
+  Activity,
+  Search,
+  Grid,
+  List,
+  Edit,
+  Trash2,
+  Filter
 } from "lucide-react";
-import { useWorkflowsStore } from "@/store/useWorkflowsStore";
+import { useWorkflows } from "@/hooks/useWorkflows";
 import { useToast } from "@/hooks/use-toast";
+import { SectionLoading } from '@/components/LoadingStates';
+import type { Workflow } from "@/types";
 
 export const Workflow = () => {
-  const { 
-    workflows, 
-    loading, 
+  const {
+    workflows,
+    isLoading,
     error,
-    fetchWorkflows,
-    createWorkflow, 
-    executeWorkflow, 
+    createWorkflow,
+    updateWorkflow,
     deleteWorkflow,
-    clearError
-  } = useWorkflowsStore();
+    executeWorkflow,
+    refetch
+  } = useWorkflows();
   
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [newWorkflow, setNewWorkflow] = useState({
+  const [newWorkflow, setNewWorkflow] = useState<Partial<Workflow>>({
     name: '',
     description: '',
-    trigger: 'manual' as const,
-    steps: []
+    status: 'draft',
+    steps: [],
+    documentIds: [],
+    priority: 'medium'
   });
-
-  // Fetch workflows on component mount
-  useEffect(() => {
-    fetchWorkflows();
-  }, [fetchWorkflows]);
-
-  // Clear errors when component unmounts
-  useEffect(() => {
-    return () => clearError();
-  }, [clearError]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
 
   // Computed statistics from actual workflow data
   const activeWorkflows = workflows.filter(w => w.status === 'active').length;
@@ -61,60 +65,77 @@ export const Workflow = () => {
   const totalExecutions = workflows.reduce((sum, w) => sum + (w.documentIds?.length || 0), 0);
   const successRate = workflows.length > 0 ? Math.round((completedWorkflows / workflows.length) * 100) : 0;
 
-  const handleCreateWorkflow = async () => {
-    if (!newWorkflow.name.trim()) {
-      toast({
-        title: "Name required",
-        description: "Please enter a workflow name.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleCreateWorkflow = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       await createWorkflow(newWorkflow);
-      toast({
-        title: "Workflow created",
-        description: `Workflow "${newWorkflow.name}" has been created successfully.`,
+      setShowCreateModal(false);
+      setNewWorkflow({
+        name: '',
+        description: '',
+        status: 'draft',
+        steps: [],
+        documentIds: [],
+        priority: 'medium'
       });
-      setNewWorkflow({ name: '', description: '', trigger: 'manual', steps: [] });
-      setIsCreateOpen(false);
-    } catch (error) {
+      toast({
+        title: "Success",
+        description: "Workflow created successfully",
+      });
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create workflow.",
+        description: error?.message || "Failed to create workflow",
         variant: "destructive",
       });
     }
   };
 
-  const handleExecuteWorkflow = async (workflowId: string, documentId: string) => {
+  const handleDeleteWorkflow = async (id: string) => {
     try {
-      await executeWorkflow(workflowId, documentId);
+      await deleteWorkflow(id);
+      setShowDeleteConfirm(false);
       toast({
-        title: "Workflow executed",
-        description: "Workflow has been executed successfully.",
+        title: "Success",
+        description: "Workflow deleted successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to execute workflow.",
+        description: error?.message || "Failed to delete workflow",
         variant: "destructive",
       });
     }
   };
 
-  const handleDeleteWorkflow = async (workflowId: string) => {
+  const handleExecuteWorkflow = async (id: string) => {
     try {
-      await deleteWorkflow(workflowId);
+      // For now, we'll use a dummy document ID since we don't have document selection yet
+      await executeWorkflow({ id, documentId: 'dummy-doc-id' });
       toast({
-        title: "Workflow deleted",
-        description: "Workflow has been deleted successfully.",
+        title: "Success",
+        description: "Workflow started successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to delete workflow.",
+        description: error?.message || "Failed to start workflow",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePauseWorkflow = async (id: string) => {
+    try {
+      await updateWorkflow({ id, data: { status: 'paused' } });
+      toast({
+        title: "Success",
+        description: "Workflow paused successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to pause workflow",
         variant: "destructive",
       });
     }
@@ -124,7 +145,7 @@ export const Workflow = () => {
     switch (status) {
       case 'active': return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'paused': return <Pause className="h-4 w-4 text-yellow-500" />;
-      case 'error': return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case 'completed': return <CheckCircle className="h-4 w-4 text-blue-500" />;
       default: return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
@@ -133,92 +154,63 @@ export const Workflow = () => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
       case 'paused': return 'bg-yellow-100 text-yellow-800';
-      case 'error': return 'bg-red-100 text-red-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+  if (isLoading) {
+    return <SectionLoading message="Loading workflows..." />;
   }
 
   return (
     <div className="space-y-6">
+      {error && <div className="text-red-500 mb-4">{error}</div>}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Workflows</h1>
-          <p className="text-gray-600 mt-1">Automate your document processes with custom workflows</p>
+          <p className="text-gray-600 mt-1">
+            Manage and automate your document workflows
+          </p>
         </div>
         
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Workflow
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search workflows..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-64"
+            />
+          </div>
+          <Button variant="outline" size="icon">
+            <Filter className="h-4 w-4" />
+          </Button>
+          <div className="flex border rounded-lg">
+            <Button
+              variant={viewMode === "grid" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("grid")}
+              className="rounded-r-none"
+            >
+              <Grid className="h-4 w-4" />
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create New Workflow</DialogTitle>
-              <DialogDescription>
-                Set up an automated workflow for your documents
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="workflow-name">Workflow Name</Label>
-                <Input
-                  id="workflow-name"
-                  value={newWorkflow.name}
-                  onChange={(e) => setNewWorkflow(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter workflow name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="workflow-description">Description</Label>
-                <Textarea
-                  id="workflow-description"
-                  value={newWorkflow.description}
-                  onChange={(e) => setNewWorkflow(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe what this workflow does"
-                />
-              </div>
-              <div>
-                <Label htmlFor="workflow-trigger">Trigger</Label>
-                <Select value={newWorkflow.trigger} onValueChange={(value: any) => setNewWorkflow(prev => ({ ...prev, trigger: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="manual">Manual Trigger</SelectItem>
-                    <SelectItem value="upload">Document Upload</SelectItem>
-                    <SelectItem value="schedule">Scheduled</SelectItem>
-                    <SelectItem value="approval">Approval Required</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={handleCreateWorkflow} disabled={loading || !newWorkflow.name}>
-                  {loading ? "Creating..." : "Create Workflow"}
-                </Button>
-                <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <p className="text-red-600 text-sm">{error}</p>
+            <Button
+              variant={viewMode === "list" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("list")}
+              className="rounded-l-none"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Workflow
+          </Button>
         </div>
-      )}
+      </div>
 
       {/* Workflow Stats */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -264,95 +256,140 @@ export const Workflow = () => {
       </div>
 
       {/* Workflows List */}
-      <div className="grid gap-6">
-        {workflows.length > 0 ? (
-          workflows.map((workflow) => (
-            <Card key={workflow.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <WorkflowIcon className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        {workflow.name}
-                        <Badge className={getStatusBadgeColor(workflow.status)}>
-                          {getStatusIcon(workflow.status)}
-                          {workflow.status}
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>{workflow.description}</CardDescription>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
+      <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
+        {workflows.map((workflow) => (
+          <Card key={workflow.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <WorkflowIcon className="h-5 w-5 text-blue-500" />
+                  <CardTitle className="text-lg">{workflow.name}</CardTitle>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-6 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      <span>Trigger: {workflow.trigger}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      <span>{workflow.steps?.length || 0} steps</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Activity className="h-4 w-4" />
-                      <span>Last run: {workflow.lastRun || 'Never'}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
+                <Badge className={getStatusBadgeColor(workflow.status)}>
+                  {workflow.status}
+                </Badge>
+              </div>
+              <CardDescription>{workflow.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Last run:</span>
+                  <span className="font-medium">{workflow.lastRun || 'Never'}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Due date:</span>
+                  <span className="font-medium">{workflow.dueDate || 'Not set'}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Documents:</span>
+                  <span className="font-medium">{workflow.documentIds.length}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {workflow.status === 'active' ? (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleExecuteWorkflow(workflow.id, 'sample-doc-id')}
-                      disabled={loading}
+                      onClick={() => handlePauseWorkflow(workflow.id)}
+                    >
+                      <Pause className="h-4 w-4 mr-2" />
+                      Pause
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExecuteWorkflow(workflow.id)}
                     >
                       <Play className="h-4 w-4 mr-2" />
-                      Execute
+                      Start
                     </Button>
-                    <Button variant="outline" size="sm">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Configure
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      View History
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteWorkflow(workflow.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      Delete
-                    </Button>
-                  </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedWorkflow(workflow);
+                      setShowDeleteConfirm(true);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <Card>
-            <CardContent className="text-center py-12">
-              <WorkflowIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No workflows yet</h3>
-              <p className="text-gray-500 mb-4">
-                Create your first workflow to automate document processing
-              </p>
-              <Button onClick={() => setIsCreateOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Workflow
-              </Button>
+              </div>
             </CardContent>
           </Card>
-        )}
+        ))}
       </div>
+
+      {/* Create Workflow Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Workflow</DialogTitle>
+            <DialogDescription>
+              Define a new automated workflow for your documents
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateWorkflow} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Workflow Name</Label>
+              <Input 
+                id="name" 
+                placeholder="Enter workflow name"
+                value={newWorkflow.name}
+                onChange={(e) => setNewWorkflow(prev => ({ ...prev, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Describe what this workflow does"
+                value={newWorkflow.description}
+                onChange={(e) => setNewWorkflow(prev => ({ ...prev, description: e.target.value }))}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowCreateModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Create Workflow</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Workflow</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this workflow? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => selectedWorkflow && handleDeleteWorkflow(selectedWorkflow.id)}
+            >
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

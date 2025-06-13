@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { PublicRoutes } from './PublicRoutes';
+import { PublicRoutes } from '@/routes/PublicRoutes';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 export const PublicRouteWrapper = () => {

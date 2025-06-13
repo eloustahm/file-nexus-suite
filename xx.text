@@ -1,0 +1,89 @@
+I want to migrate all of my existing Zustand stores into React Context + hooks. Right now I have these files (all in TypeScript):
+
+* src/stores/useActivityStore.ts
+* src/stores/useAuthStore.ts
+* src/stores/useChatStore.ts
+* src/stores/useDocumentChatStore.ts
+* src/stores/useDocumentGenerationStore.ts
+* src/stores/useDocumentsStore.ts
+* src/stores/useFoldersStore.ts
+* src/stores/useNotificationsStore.ts
+* src/stores/usePaymentStore.ts
+* src/stores/useSettingsStore.ts
+* src/stores/useTeamChatStore.ts
+* src/stores/useTeamCollaborationStore.ts
+* src/stores/useTeamStore.ts
+* src/stores/useWorkflowsStore.ts
+
+Each file exports a Zustand hook—like useChatStore((state) => {...})—that contains state fields and async actions. I would like to replace each one with:
+
+1. A React Context provider (ActivityContext, AuthContext, ChatContext, etc.) that holds the exact same state fields (with identical default values) and exposes the same methods (with identical signatures and async behavior).
+2. A corresponding Provider component (ActivityProvider, AuthProvider, ChatProvider, etc.) that wraps its children.
+3. A custom hook (useActivity(), useAuth(), useChat(), etc.) that internally calls useContext(...) on the appropriate Context and returns { state, actions } or exposes the same named properties directly.
+4. Example import/usage in a component for each store, showing how you’d swap out:
+   // BEFORE (Zustand):
+   import useChatStore from '@/stores/useChatStore'
+   const { sessions, currentSession, fetchSessions, sendMessage } = useChatStore()
+
+   // AFTER (Context):
+   import { useChat } from '@/context/ChatContext'
+   const { sessions, currentSession, fetchSessions, sendMessage } = useChat()
+5. Folder structure:
+   All new Context files should live under src/context/.
+   All new hooks that simply re‐export useContext should live under src/hooks/.
+
+For each of the fourteen stores listed above, please generate:
+
+A. src/context/<StoreName>Context.tsx
+
+1. Create and export a React Context (<StoreName>Context) with the same state interface and methods as the original Zustand store.
+2. Implement a <StoreName>Provider component that:
+   Sets up the initial default state exactly as the Zustand store did.
+   Uses useState (and/or useEffect or useReducer) to manage local state.
+   Implements every action method (e.g. fetchActivities(), createActivity(), signIn(), signUp(), sendMessage(), fetchDocumentChats(), etc.) by internally calling the same service/API modules (e.g. activityApi.fetchAll(), authApi.login(), chatApi.sendMessage(), etc.) with identical parameters and returns.
+   Properly handles loading and error flags exactly as the original store did (loading=true before an async call, catch sets error, finally sets loading=false).
+3. Wrap children with <StoreName>Context.Provider value={...}.
+
+B. src/hooks/use<StoreName>.ts
+Simply re-export the useContext hook from the corresponding Context file:
+export { use<StoreName> } from '@/context/<StoreName>Context'
+
+C. Provide one “Before/After” usage example for each store:
+// Before (Zustand)
+import useChatStore from '@/stores/useChatStore'
+const ChatPage = () => {
+const { sessions, currentSession, sendMessage, loading, error } = useChatStore()
+// …render UI…
+}
+
+// After (Context)
+import { useChat } from '@/context/ChatContext'
+const ChatPage = () => {
+const { sessions, currentSession, sendMessage, loading, error } = useChat()
+// …render UI…
+}
+
+D. Repeat the same pattern for each of these stores:
+
+* ActivityContext (useActivityStore)
+* AuthContext (useAuthStore)
+* ChatContext (useChatStore)
+* DocumentChatContext (useDocumentChatStore)
+* DocumentGenerationContext (useDocumentGenerationStore)
+* DocumentsContext (useDocumentsStore)
+* FoldersContext (useFoldersStore)
+* NotificationsContext (useNotificationsStore)
+* PaymentContext (usePaymentStore)
+* SettingsContext (useSettingsStore)
+* TeamChatContext (useTeamChatStore)
+* TeamCollaborationContext (useTeamCollaborationStore)
+* TeamContext (useTeamStore)
+* WorkflowsContext (useWorkflowsStore)
+
+E. Deliverables for each store:
+
+1. src/context/<StoreName>Context.tsx with full interface/type definitions, context creation, provider implementation, and all state/action logic.
+2. src/hooks/use<StoreName>.ts exporting the hook.
+3. One code snippet showing “Before (Zustand) / After (Context)” usage in a component.
+
+Make sure each Context file is fully self-contained and compiles without errors, replicating the exact behavior of the original Zustand store.

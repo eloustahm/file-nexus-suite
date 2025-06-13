@@ -1,81 +1,72 @@
-
 import { http } from '@/lib/api';
-import { Template, TemplateField } from '@/types';
+import type { Template, GeneratedDocument, TemplateField, DocumentFormData } from '@/types';
 
-export interface GeneratedDocument {
+// API Response interfaces for transformation
+interface ApiTemplateField {
+  id: string;
+  label: string;
+  type: string;
+  value: string;
+  required: boolean;
+  placeholder?: string;
+  options?: string[];
+}
+
+interface ApiTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  fields: ApiTemplateField[];
+  category?: string;
+}
+
+interface ApiGeneratedDocument {
   id: string;
   title: string;
+  purpose?: string;
+  instructions?: string;
+  templateId?: string;
   content: string;
-  templateId?: string;
-  purpose: string;
-  instructions?: string;
-  status: 'generating' | 'completed' | 'error';
+  status: 'generating' | 'completed' | 'failed';
   createdAt: string;
+  updatedAt: string;
   wordCount?: number;
-  isSelected?: boolean;
-  metadata?: Record<string, any>;
+  isSelected: boolean;
 }
 
-export interface DocumentFormData {
-  title: string;
-  purpose: string;
-  instructions?: string;
-  templateId?: string;
-  formData?: Record<string, any>;
-}
-
-// Export types for convenience
-export type { Template, TemplateField };
-
-/**
- * Document Generation API service
- */
-export const documentGenerationApi = {
-  // Get templates
-  getTemplates: async (): Promise<Template[]> => {
-    console.log('Fetching document templates');
-    return http.get<Template[]>('/api/document-generation/templates');
+export const documentGenerationService = {
+  async getTemplates(): Promise<Template[]> {
+    return http.get<Template[]>('/document-generation/templates');
   },
 
-  // Get generated documents
-  getGeneratedDocuments: async (): Promise<GeneratedDocument[]> => {
-    console.log('Fetching generated documents');
-    return http.get<GeneratedDocument[]>('/api/document-generation/documents');
+  async getGeneratedDocuments(): Promise<GeneratedDocument[]> {
+    return http.get<GeneratedDocument[]>('/document-generation/documents');
   },
 
-  // Generate document
-  generateDocument: async (data: DocumentFormData): Promise<GeneratedDocument> => {
-    console.log('Generating document:', data);
-    return http.post<GeneratedDocument>('/api/document-generation/generate', data);
+  async getDocument(documentId: string): Promise<GeneratedDocument> {
+    return http.get<GeneratedDocument>(`/document-generation/documents/${documentId}`);
   },
 
-  // Regenerate document
-  regenerateDocument: async (documentId: string, data: DocumentFormData): Promise<GeneratedDocument> => {
-    console.log('Regenerating document:', documentId);
-    return http.put<GeneratedDocument>(`/api/document-generation/documents/${documentId}/regenerate`, data);
+  async generateDocument(data: DocumentFormData): Promise<GeneratedDocument> {
+    return http.post<GeneratedDocument>('/document-generation/generate', data);
   },
 
-  // Select document
-  selectDocument: async (documentId: string) => {
-    console.log('Selecting document:', documentId);
-    return http.post(`/api/document-generation/documents/${documentId}/select`);
+  async regenerateDocument(documentId: string, data: DocumentFormData): Promise<GeneratedDocument> {
+    return http.put<GeneratedDocument>(`/document-generation/documents/${documentId}/regenerate`, data);
   },
 
-  // Delete document
-  deleteDocument: async (documentId: string) => {
-    console.log('Deleting generated document:', documentId);
-    return http.delete(`/api/document-generation/documents/${documentId}`);
+  async selectDocument(documentId: string): Promise<void> {
+    await http.patch<void>(`/document-generation/documents/${documentId}/select`);
   },
 
-  // Get document by ID
-  getDocument: async (documentId: string): Promise<GeneratedDocument> => {
-    console.log('Fetching document:', documentId);
-    return http.get<GeneratedDocument>(`/api/document-generation/documents/${documentId}`);
+  async deleteDocument(documentId: string): Promise<void> {
+    await http.delete<void>(`/document-generation/documents/${documentId}`);
   },
 
-  // Download document
-  downloadDocument: async (documentId: string) => {
-    console.log('Downloading document:', documentId);
-    return http.get(`/api/document-generation/documents/${documentId}/download`, { responseType: 'blob' });
+  async downloadDocument(documentId: string): Promise<Blob> {
+    return http.get<Blob>(`/document-generation/documents/${documentId}/download`, {
+      responseType: 'blob'
+    });
   }
 };

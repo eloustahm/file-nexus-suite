@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Mail, CheckCircle, KeyRound } from 'lucide-react';
-import { authApi } from '@/services/api';
+import { authService } from '@/services/auth';
 
 export const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -21,7 +21,7 @@ export const ForgotPasswordPage = () => {
     setError('');
 
     try {
-      await authApi.resetPassword(email);
+      await authService.resetPassword(email);
       setIsSubmitted(true);
     } catch (err: any) {
       setError(err.message || 'Failed to send reset email');

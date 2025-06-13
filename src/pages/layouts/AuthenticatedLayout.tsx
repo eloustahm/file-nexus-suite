@@ -1,10 +1,10 @@
-
+import { useAuth } from '@/hooks/useAuth';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { SidebarMain } from "@/pages/components/Sidebar";
-import { UserMenu } from "@/components/UserMenu";
-import { NotificationsDropdown } from "@/components/NotificationsDropdown";
-import { HeaderSearch } from "@/components/HeaderSearch";
-import { useAuth } from "@/hooks/useAuth";
+import { HeaderSearch } from '@/components/HeaderSearch';
+import { NotificationsDropdown } from '@/components/NotificationsDropdown';
+import { UserMenu } from '@/components/UserMenu';
+import { FullPageLoading } from '@/components/LoadingStates';
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode;
@@ -14,11 +14,7 @@ export const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <FullPageLoading message="Loading your workspace..." />;
   }
 
   if (!user) {

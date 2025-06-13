@@ -1,60 +1,34 @@
-
 import { http } from '@/lib/api';
+import type { Profile } from '@/types';
+import type { Integration } from '@/types/integration';
+import type { PrivacySetting } from '@/constants/privacy';
 
-export interface Profile {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar?: string;
-  timezone: string;
-  language: string;
-  phoneNumber?: string;
-  company?: string;
-  jobTitle?: string;
-  bio?: string;
-}
-
-export interface Integration {
-  id: string;
-  provider: string;
-  name: string;
-  status: 'connected' | 'disconnected' | 'error';
-  lastSync?: string;
-  config: Record<string, any>;
-}
-
-/**
- * Settings API service
- */
-export const settingsApi = {
-  // Get user profile
-  getProfile: async (): Promise<Profile> => {
-    console.log('Fetching user profile');
-    return http.get<Profile>('/api/settings/profile');
+export const settingsService = {
+  async getProfile(): Promise<Profile> {
+    return http.get<Profile>('/settings/profile');
   },
 
-  // Update user profile
-  updateProfile: async (data: Partial<Profile>): Promise<Profile> => {
-    console.log('Updating user profile:', data);
-    return http.put<Profile>('/api/settings/profile', data);
+  async updateProfile(profileData: Partial<Profile>): Promise<Profile> {
+    return http.patch<Profile>('/settings/profile', profileData);
   },
 
-  // Update password
-  updatePassword: async (data: { currentPassword: string; newPassword: string }) => {
-    console.log('Updating user password');
-    return http.put('/api/settings/password', data);
+  async updatePassword(passwordData: { currentPassword: string; newPassword: string }): Promise<void> {
+    await http.patch<void>('/settings/password', passwordData);
   },
 
-  // Get integrations
-  getIntegrations: async (): Promise<Integration[]> => {
-    console.log('Fetching integrations');
-    return http.get<Integration[]>('/api/settings/integrations');
+  async getIntegrations(): Promise<Integration[]> {
+    return http.get<Integration[]>('/settings/integrations');
   },
 
-  // Update integration
-  updateIntegration: async (provider: string, config: any): Promise<Integration> => {
-    console.log('Updating integration:', provider, config);
-    return http.put<Integration>(`/api/settings/integrations/${provider}`, { config });
+  async updateIntegration(provider: string, config: any): Promise<void> {
+    await http.patch<void>(`/settings/integrations/${provider}`, config);
+  },
+
+  async getPrivacySettings(): Promise<PrivacySetting[]> {
+    return http.get<PrivacySetting[]>('/settings/privacy');
+  },
+
+  async updatePrivacySetting(id: string, enabled: boolean): Promise<PrivacySetting> {
+    return http.patch<PrivacySetting>(`/settings/privacy/${id}`, { enabled });
   }
 };

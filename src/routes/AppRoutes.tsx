@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { ProtectedRouteWrapper } from './ProtectedRouteWrapper';
-import { PublicRouteWrapper } from './PublicRouteWrapper';
+import { ProtectedRouteWrapper } from '@/routes/ProtectedRouteWrapper';
+import { PublicRouteWrapper } from '@/routes/PublicRouteWrapper';
 import { NotFound } from '@/pages/NotFound';
 
 export const AppRoutes = () => {

@@ -1,22 +1,64 @@
-
 import { useDocumentsQuery } from '@/hooks/queries/useDocumentsQuery';
-import { useDocumentsUIStore } from '@/store/useDocumentsUIStore';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+
+type ViewMode = 'grid' | 'list';
+type SortBy = 'name' | 'date' | 'size' | 'type';
+type SortOrder = 'asc' | 'desc';
 
 /**
  * Combined hook that provides both UI state and server data for documents
  */
 export const useDocuments = () => {
-  const documentsQuery = useDocumentsQuery();
-  const documentsUI = useDocumentsUIStore();
+  const documentsQuery = useDocumentsQuery({ page: 1, limit: 50 });
+
+  // Search and filtering
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [sortBy, setSortBy] = useState<SortBy>('date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [filterTags, setFilterTags] = useState<string[]>([]);
+  
+  // Modal and dialog UI state
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+
+  const toggleDocumentSelection = (id: string) => {
+    setSelectedDocumentIds(prev => {
+      const isSelected = prev.includes(id);
+      return isSelected
+        ? prev.filter(docId => docId !== id)
+        : [...prev, id];
+    });
+  };
+
+  const setSorting = (newSortBy: SortBy, newSortOrder: SortOrder) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setFilterTags([]);
+    setSelectedDocumentIds([]);
+  };
+
+  const resetGenerationState = () => {
+    setShowGenerateModal(false);
+    setShowRegenerateModal(false);
+    setSelectedTemplate(null);
+  };
 
   // Apply client-side filtering based on UI state
   const filteredDocuments = useMemo(() => {
     let filtered = documentsQuery.documents;
 
     // Apply search filter
-    if (documentsUI.searchQuery) {
-      const query = documentsUI.searchQuery.toLowerCase();
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(doc => 
         doc.name.toLowerCase().includes(query) ||
         doc.type.toLowerCase().includes(query) ||
@@ -25,9 +67,9 @@ export const useDocuments = () => {
     }
 
     // Apply tag filters
-    if (documentsUI.filterTags.length > 0) {
+    if (filterTags.length > 0) {
       filtered = filtered.filter(doc =>
-        documentsUI.filterTags.some(tag => doc.tags.includes(tag))
+        filterTags.some(tag => doc.tags.includes(tag))
       );
     }
 
@@ -35,7 +77,7 @@ export const useDocuments = () => {
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
       
-      switch (documentsUI.sortBy) {
+      switch (sortBy) {
         case 'name':
           aValue = a.name.toLowerCase();
           bValue = b.name.toLowerCase();
@@ -56,7 +98,7 @@ export const useDocuments = () => {
           return 0;
       }
 
-      if (documentsUI.sortOrder === 'asc') {
+      if (sortOrder === 'asc') {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else {
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
@@ -64,7 +106,7 @@ export const useDocuments = () => {
     });
 
     return filtered;
-  }, [documentsQuery.documents, documentsUI.searchQuery, documentsUI.filterTags, documentsUI.sortBy, documentsUI.sortOrder]);
+  }, [documentsQuery.documents, searchQuery, filterTags, sortBy, sortOrder]);
 
   return {
     // Server data with client-side filtering
@@ -77,38 +119,41 @@ export const useDocuments = () => {
     
     // Document actions
     createDocument: documentsQuery.createDocument,
-    uploadDocument: documentsQuery.uploadDocument,
     updateDocument: documentsQuery.updateDocument,
     deleteDocument: documentsQuery.deleteDocument,
-    shareDocument: documentsQuery.shareDocument,
     refetch: documentsQuery.refetch,
     
     // Mutation states
     isCreating: documentsQuery.isCreating,
-    isUploading: documentsQuery.isUploading,
     isUpdating: documentsQuery.isUpdating,
     isDeleting: documentsQuery.isDeleting,
-    isSharing: documentsQuery.isSharing,
     
     // UI state
-    searchQuery: documentsUI.searchQuery,
-    selectedDocumentIds: documentsUI.selectedDocumentIds,
-    viewMode: documentsUI.viewMode,
-    sortBy: documentsUI.sortBy,
-    sortOrder: documentsUI.sortOrder,
-    filterTags: documentsUI.filterTags,
-    showUploadModal: documentsUI.showUploadModal,
-    showDeleteConfirm: documentsUI.showDeleteConfirm,
+    searchQuery,
+    selectedDocumentIds,
+    viewMode,
+    sortBy,
+    sortOrder,
+    filterTags,
+    showUploadModal,
+    showDeleteConfirm,
+    showGenerateModal,
+    showRegenerateModal,
+    selectedTemplate,
     
     // UI actions
-    setSearchQuery: documentsUI.setSearchQuery,
-    setSelectedDocuments: documentsUI.setSelectedDocuments,
-    toggleDocumentSelection: documentsUI.toggleDocumentSelection,
-    setViewMode: documentsUI.setViewMode,
-    setSorting: documentsUI.setSorting,
-    setFilterTags: documentsUI.setFilterTags,
-    setShowUploadModal: documentsUI.setShowUploadModal,
-    setShowDeleteConfirm: documentsUI.setShowDeleteConfirm,
-    clearFilters: documentsUI.clearFilters,
+    setSearchQuery,
+    setSelectedDocuments: setSelectedDocumentIds,
+    toggleDocumentSelection,
+    setViewMode,
+    setSorting,
+    setFilterTags,
+    setShowUploadModal,
+    setShowDeleteConfirm,
+    setShowGenerateModal,
+    setShowRegenerateModal,
+    setSelectedTemplate,
+    clearFilters,
+    resetGenerationState,
   };
 };

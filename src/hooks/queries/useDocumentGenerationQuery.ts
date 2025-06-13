@@ -1,141 +1,137 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { documentGenerationApi } from '@/services/documentGeneration';
+import { documentGenerationService } from '@/services/documentGeneration';
+import type { Template, GeneratedDocument, DocumentFormData } from '@/types';
+import { toast } from 'sonner';
 import { QUERY_KEYS } from '@/constants';
-import { useToast } from '@/hooks/use-toast';
-import type { DocumentFormData } from '@/services/documentGeneration';
 
-/**
- * React Query hooks for document generation API
- */
 export const useDocumentGenerationQuery = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
-  // Get templates
+  // Get templates query
   const templatesQuery = useQuery({
     queryKey: [QUERY_KEYS.DOCUMENT_GENERATION, 'templates'],
-    queryFn: documentGenerationApi.getTemplates,
+    queryFn: documentGenerationService.getTemplates,
+    staleTime: 30 * 60 * 1000, // 30 minutes
   });
 
-  // Get generated documents
-  const generatedDocumentsQuery = useQuery({
+  // Get generated documents query
+  const documentsQuery = useQuery({
     queryKey: [QUERY_KEYS.DOCUMENT_GENERATION, 'documents'],
-    queryFn: documentGenerationApi.getGeneratedDocuments,
+    queryFn: documentGenerationService.getGeneratedDocuments,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  // Get document by ID query
+  const getDocument = (documentId: string) => {
+    return useQuery({
+      queryKey: [QUERY_KEYS.DOCUMENT_GENERATION, 'documents', documentId],
+      queryFn: () => documentGenerationService.getDocument(documentId),
+      staleTime: 2 * 60 * 1000, // 2 minutes
+    });
+  };
 
   // Generate document mutation
   const generateDocumentMutation = useMutation({
-    mutationFn: documentGenerationApi.generateDocument,
-    onSuccess: () => {
+    mutationFn: (data: DocumentFormData) => documentGenerationService.generateDocument(data),
+    onSuccess: (document) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENT_GENERATION, 'documents'] });
-      toast({
-        title: 'Document generated',
-        description: 'Document has been generated successfully',
-      });
+      queryClient.setQueryData(
+        [QUERY_KEYS.DOCUMENT_GENERATION, 'documents', document.id],
+        document
+      );
+      toast.success('Document generation started');
     },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error generating document',
-        description: error.message,
-        variant: 'destructive',
-      });
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to generate document');
     },
   });
 
   // Regenerate document mutation
   const regenerateDocumentMutation = useMutation({
     mutationFn: ({ documentId, data }: { documentId: string; data: DocumentFormData }) =>
-      documentGenerationApi.regenerateDocument(documentId, data),
-    onSuccess: () => {
+      documentGenerationService.regenerateDocument(documentId, data),
+    onSuccess: (document) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENT_GENERATION, 'documents'] });
-      toast({
-        title: 'Document regenerated',
-        description: 'Document has been regenerated successfully',
-      });
+      queryClient.setQueryData(
+        [QUERY_KEYS.DOCUMENT_GENERATION, 'documents', document.id],
+        document
+      );
+      toast.success('Document regeneration started');
     },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error regenerating document',
-        description: error.message,
-        variant: 'destructive',
-      });
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to regenerate document');
     },
   });
 
   // Select document mutation
   const selectDocumentMutation = useMutation({
-    mutationFn: documentGenerationApi.selectDocument,
-    onSuccess: () => {
+    mutationFn: documentGenerationService.selectDocument,
+    onSuccess: (_, documentId) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENT_GENERATION, 'documents'] });
-      toast({
-        title: 'Document selected',
-        description: 'Document has been selected successfully',
-      });
+      queryClient.setQueryData(
+        [QUERY_KEYS.DOCUMENT_GENERATION, 'documents', documentId],
+        (old: GeneratedDocument) => ({ ...old, isSelected: true })
+      );
+      toast.success('Document selected');
     },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error selecting document',
-        description: error.message,
-        variant: 'destructive',
-      });
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to select document');
     },
   });
 
   // Delete document mutation
   const deleteDocumentMutation = useMutation({
-    mutationFn: documentGenerationApi.deleteDocument,
-    onSuccess: () => {
+    mutationFn: documentGenerationService.deleteDocument,
+    onSuccess: (_, documentId) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCUMENT_GENERATION, 'documents'] });
-      toast({
-        title: 'Document deleted',
-        description: 'Document has been deleted successfully',
-      });
+      queryClient.removeQueries({ queryKey: [QUERY_KEYS.DOCUMENT_GENERATION, 'documents', documentId] });
+      toast.success('Document deleted');
     },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error deleting document',
-        description: error.message,
-        variant: 'destructive',
-      });
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to delete document');
+    },
+  });
+
+  // Download document mutation
+  const downloadDocumentMutation = useMutation({
+    mutationFn: documentGenerationService.downloadDocument,
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to download document');
     },
   });
 
   return {
     // Data
     templates: templatesQuery.data || [],
-    generatedDocuments: generatedDocumentsQuery.data || [],
-    
+    documents: documentsQuery.data || [],
+
     // Loading states
-    isLoading: templatesQuery.isLoading || generatedDocumentsQuery.isLoading,
     isLoadingTemplates: templatesQuery.isLoading,
-    isLoadingDocuments: generatedDocumentsQuery.isLoading,
-    
-    // Error states
-    error: templatesQuery.error || generatedDocumentsQuery.error,
+    isLoadingDocuments: documentsQuery.isLoading,
+
+    // Errors
     templatesError: templatesQuery.error,
-    documentsError: generatedDocumentsQuery.error,
-    
-    // Actions
-    generateDocument: generateDocumentMutation.mutate,
-    regenerateDocument: regenerateDocumentMutation.mutate,
-    selectDocument: selectDocumentMutation.mutate,
-    deleteDocument: deleteDocumentMutation.mutate,
-    getDocument: documentGenerationApi.getDocument,
-    downloadDocument: documentGenerationApi.downloadDocument,
-    
-    // Refetch functions
-    refetch: () => {
-      templatesQuery.refetch();
-      generatedDocumentsQuery.refetch();
-    },
+    documentsError: documentsQuery.error,
+
+    // Mutations
+    generateDocument: generateDocumentMutation.mutateAsync,
+    regenerateDocument: regenerateDocumentMutation.mutateAsync,
+    selectDocument: selectDocumentMutation.mutateAsync,
+    deleteDocument: deleteDocumentMutation.mutateAsync,
+    downloadDocument: downloadDocumentMutation.mutateAsync,
+
+    // Loading states
+    isGeneratingDocument: generateDocumentMutation.isPending,
+    isRegeneratingDocument: regenerateDocumentMutation.isPending,
+    isSelectingDocument: selectDocumentMutation.isPending,
+    isDeletingDocument: deleteDocumentMutation.isPending,
+    isDownloadingDocument: downloadDocumentMutation.isPending,
+
+    // Refetch
     refetchTemplates: templatesQuery.refetch,
-    refetchDocuments: generatedDocumentsQuery.refetch,
-    
-    // Mutation states
-    isGenerating: generateDocumentMutation.isPending,
-    isRegenerating: regenerateDocumentMutation.isPending,
-    isSelecting: selectDocumentMutation.isPending,
-    isDeleting: deleteDocumentMutation.isPending,
+    refetchDocuments: documentsQuery.refetch,
+
+    // Get document by ID
+    getDocument,
   };
 };

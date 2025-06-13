@@ -1,2 +1,1 @@
-
-export { LandingPageEnhanced as LandingPage } from './LandingPageEnhanced';
+export { LandingPageEnhanced as LandingPage } from '@/pages/LandingPageEnhanced';

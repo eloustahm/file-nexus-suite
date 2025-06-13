@@ -1,13 +1,34 @@
-
+import { useState } from 'react';
 import { useSettingsQuery } from '@/hooks/queries/useSettingsQuery';
-import { useSettingsUIStore } from '@/store/useSettingsUIStore';
+
+type SettingsSection = 'profile' | 'security' | 'notifications' | 'integrations' | 'billing';
 
 /**
  * Combined hook that provides both UI state and server data for settings
  */
 export const useSettings = () => {
   const settingsQuery = useSettingsQuery();
-  const settingsUI = useSettingsUIStore();
+
+  // Active section/tab
+  const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
+  
+  // Modal and dialog UI state
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false);
+  const [showIntegrationModal, setShowIntegrationModal] = useState<string | null>(null);
+  
+  // Form states
+  const [isEditing, setIsEditing] = useState(false);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
+
+  const reset = () => {
+    setActiveSection('profile');
+    setShowPasswordModal(false);
+    setShowDeleteAccountConfirm(false);
+    setShowIntegrationModal(null);
+    setIsEditing(false);
+    setUnsavedChanges(false);
+  };
 
   return {
     // Server data
@@ -33,20 +54,20 @@ export const useSettings = () => {
     isUpdatingIntegration: settingsQuery.isUpdatingIntegration,
     
     // UI state
-    activeSection: settingsUI.activeSection,
-    showPasswordModal: settingsUI.showPasswordModal,
-    showDeleteAccountConfirm: settingsUI.showDeleteAccountConfirm,
-    showIntegrationModal: settingsUI.showIntegrationModal,
-    isEditing: settingsUI.isEditing,
-    unsavedChanges: settingsUI.unsavedChanges,
+    activeSection,
+    showPasswordModal,
+    showDeleteAccountConfirm,
+    showIntegrationModal,
+    isEditing,
+    unsavedChanges,
     
     // UI actions
-    setActiveSection: settingsUI.setActiveSection,
-    setShowPasswordModal: settingsUI.setShowPasswordModal,
-    setShowDeleteAccountConfirm: settingsUI.setShowDeleteAccountConfirm,
-    setShowIntegrationModal: settingsUI.setShowIntegrationModal,
-    setIsEditing: settingsUI.setIsEditing,
-    setUnsavedChanges: settingsUI.setUnsavedChanges,
-    reset: settingsUI.reset,
+    setActiveSection,
+    setShowPasswordModal,
+    setShowDeleteAccountConfirm,
+    setShowIntegrationModal,
+    setIsEditing,
+    setUnsavedChanges,
+    reset,
   };
 };

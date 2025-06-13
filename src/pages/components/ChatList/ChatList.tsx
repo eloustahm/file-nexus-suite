@@ -1,10 +1,9 @@
-
 import React from 'react';
-import { ChatHistory } from '@/types';
-import { ChatListItem } from './ChatListItem';
+import { ChatSession } from '@/services/chat';
+import { ChatListItem } from '@/pages/components/ChatList/ChatListItem';
 
 interface ChatListProps {
-  chats: ChatHistory[];
+  chats: ChatSession[];
   onResumeChat: (chatId: string) => void;
   formatTimeAgo: (date: Date) => string;
 }
