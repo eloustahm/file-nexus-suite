@@ -3,6 +3,7 @@ import React, { useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useDocuments } from '@/hooks/useDocuments';
+import { toast } from 'sonner';
 
 export const DocumentUpload = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -14,13 +15,14 @@ export const DocumentUpload = () => {
       try {
         const formData = new FormData();
         formData.append('file', file);
-        await uploadDocument(formData);
+        uploadDocument(formData);
         // Reset the input
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
       } catch (error) {
         console.error('Upload failed:', error);
+        toast.error('Failed to upload document');
       }
     }
   };

@@ -1,7 +1,6 @@
+
 import { useChatQuery } from '@/hooks/queries/useChatQuery';
 import { useState } from 'react';
-import { ChatHistory, ChatMessage } from '@/types';
-import { ensureISOString } from '@/lib/dateUtils';
 
 /**
  * Combined hook that provides both UI state and server data for chat
@@ -9,80 +8,18 @@ import { ensureISOString } from '@/lib/dateUtils';
 export const useChat = () => {
   const chatQuery = useChatQuery();
 
-  // Selected session and agent
+  // UI state
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
-  
-  // Message input state
-  const [messageInput, setMessageInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  
-  // Modal and dialog UI state
-  const [showNewChatModal, setShowNewChatModal] = useState(false);
-  const [showDeleteSessionConfirm, setShowDeleteSessionConfirm] = useState<string | null>(null);
+  const [newSessionTitle, setNewSessionTitle] = useState('');
+  const [showNewSessionModal, setShowNewSessionModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
-  // Chat history state
-  const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
-  const [selectedHistory, setSelectedHistory] = useState<string | null>(null);
-
-  const clearInput = () => {
-    setMessageInput('');
+  const clearSession = () => {
+    setSelectedSessionId(null);
+    setSelectedAgentId(null);
     setIsTyping(false);
-  };
-
-  const setSelectedSession = (sessionId: string | null) => {
-    setSelectedSessionId(sessionId);
-    clearInput();
-  };
-
-  const setSelectedAgent = (agentId: string | null) => {
-    setSelectedAgentId(agentId);
-    clearInput();
-  };
-
-  const saveToHistory = (messages: ChatMessage[], selectedDocuments: string[]) => {
-    if (selectedDocuments.length === 0) return;
-    
-    const historyKey = selectedDocuments.sort().join(',');
-    const documentName = selectedDocuments.length === 1 
-      ? selectedDocuments[0] 
-      : `${selectedDocuments.length} Documents`;
-    
-    setChatHistories(prev => {
-      const existingIndex = prev.findIndex(h => h.id === historyKey);
-      const lastMessage = messages.length > 0 ? messages[messages.length - 1].content : '';
-      
-      const newHistory: ChatHistory = {
-        id: historyKey,
-        name: documentName,
-        title: documentName,
-        lastMessage,
-        timestamp: ensureISOString(new Date()),
-        messageCount: messages.length,
-        messages,
-        createdAt: ensureISOString(new Date()),
-        updatedAt: ensureISOString(new Date()),
-        documentName
-      };
-      
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = newHistory;
-        return updated;
-      } else {
-        return [...prev, newHistory];
-      }
-    });
-  };
-
-  const loadChatHistory = (historyId: string) => {
-    const history = chatHistories.find(h => h.id === historyId);
-    if (history) {
-      setSelectedHistory(historyId);
-      const docs = historyId.split(',');
-      return { messages: history.messages, documents: docs };
-    }
-    return null;
   };
 
   return {
@@ -93,43 +30,40 @@ export const useChat = () => {
     // Server state
     isLoadingSessions: chatQuery.isLoadingSessions,
     isLoadingAgents: chatQuery.isLoadingAgents,
-    sessionsError: chatQuery.sessionsError,
-    agentsError: chatQuery.agentsError,
+    sessionsError: chatQuery.sessionsError?.message,
+    agentsError: chatQuery.agentsError?.message,
     
     // Chat actions
     createSession: chatQuery.createSession,
-    sendMessage: chatQuery.sendMessage,
-    deleteSession: chatQuery.deleteSession,
     updateSession: chatQuery.updateSession,
+    deleteSession: chatQuery.deleteSession,
+    sendMessage: chatQuery.sendMessage,
     refetchSessions: chatQuery.refetchSessions,
     refetchAgents: chatQuery.refetchAgents,
+    getSession: chatQuery.getSession,
+    getSessionMessages: chatQuery.getSessionMessages,
     
     // Mutation states
     isCreatingSession: chatQuery.isCreatingSession,
-    isSendingMessage: chatQuery.isSendingMessage,
-    isDeletingSession: chatQuery.isDeletingSession,
     isUpdatingSession: chatQuery.isUpdatingSession,
+    isDeletingSession: chatQuery.isDeletingSession,
+    isSendingMessage: chatQuery.isSendingMessage,
     
     // UI state
+    selectedSessionId,
     selectedAgentId,
     isTyping,
-    messageInput,
-    selectedSessionId,
-    showNewChatModal,
-    showDeleteSessionConfirm,
-    chatHistories,
-    selectedHistory,
+    newSessionTitle,
+    showNewSessionModal,
+    showDeleteConfirm,
     
     // UI actions
-    setSelectedAgent,
+    setSelectedSessionId,
+    setSelectedAgentId,
     setIsTyping,
-    setMessageInput,
-    setSelectedSession,
-    setShowNewChatModal,
-    setShowDeleteSessionConfirm,
-    clearInput,
-    setSelectedHistory,
-    saveToHistory,
-    loadChatHistory,
+    setNewSessionTitle,
+    setShowNewSessionModal,
+    setShowDeleteConfirm,
+    clearSession,
   };
 };

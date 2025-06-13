@@ -1,12 +1,16 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Activity, Users, Folder, ArrowUpRight } from "lucide-react";
+import { FileText, Activity, Users, Folder, ArrowUpRight, Loader2 } from "lucide-react";
+import { useDashboardQuery } from "@/hooks/queries/useDashboardQuery";
+import { formatFileSize } from "@/lib/utils";
 
 export const StatsGrid = () => {
-  const stats = [
+  const { stats, isLoading, error } = useDashboardQuery();
+
+  const statsConfig = [
     {
       title: "Total Documents",
-      value: "1,234",
+      value: stats?.totalDocuments || 0,
       change: "+12%",
       changeType: "positive" as const,
       icon: FileText,
@@ -14,7 +18,7 @@ export const StatsGrid = () => {
     },
     {
       title: "Active Workflows",
-      value: "23",
+      value: stats?.activeWorkflows || 0,
       change: "+5%", 
       changeType: "positive" as const,
       icon: Activity,
@@ -22,7 +26,7 @@ export const StatsGrid = () => {
     },
     {
       title: "Team Members",
-      value: "12",
+      value: stats?.totalMembers || 0,
       change: "+2",
       changeType: "neutral" as const,
       icon: Users,
@@ -30,7 +34,7 @@ export const StatsGrid = () => {
     },
     {
       title: "Storage Used",
-      value: "2.1 GB",
+      value: stats ? formatFileSize(stats.storageUsed) : "0 B",
       change: "+0.5 GB",
       changeType: "neutral" as const,
       icon: Folder,
@@ -46,9 +50,37 @@ export const StatsGrid = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, index) => (
+          <Card key={index} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center h-20">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm col-span-full">
+          <CardContent className="p-6 text-center text-red-600">
+            Error loading dashboard stats
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat, index) => (
+      {statsConfig.map((stat, index) => (
         <Card key={index} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">

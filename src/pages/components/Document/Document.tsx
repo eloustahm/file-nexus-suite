@@ -1,11 +1,11 @@
+
 import { useDocuments } from '@/hooks/useDocuments';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Filter, Grid3X3, List } from "lucide-react";
-import { DocumentUpload } from "@/pages/components/Document/DocumentUpload.tsx";
-import { DocumentGrid } from "@/pages/components/Document/DocumentGrid.tsx";
-import { SectionLoading } from '@/components/LoadingStates';
+import { Search, Filter, Grid3X3, List, Loader2 } from "lucide-react";
+import { DocumentUpload } from "@/pages/components/Document/DocumentUpload";
+import { DocumentGrid } from "@/pages/components/Document/DocumentGrid";
 
 export const Document = () => {
   const { 
@@ -24,7 +24,14 @@ export const Document = () => {
   };
 
   if (isLoading) {
-    return <SectionLoading message="Loading documents..." />;
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading documents...</span>
+        </CardContent>
+      </Card>
+    );
   }
 
   if (error) {

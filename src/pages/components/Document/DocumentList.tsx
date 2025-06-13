@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { useDocuments } from '@/hooks/queries/useDocuments';
+import { useDocuments } from '@/hooks/useDocuments';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,39 +11,27 @@ import { formatDate, formatFileSize } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export function DocumentList() {
-  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
   const {
-    documents,
+    filteredDocuments,
     total,
-    page,
     totalPages,
     isLoading,
-    isCreating,
-    isUpdating,
     isDeleting,
+    isUpdating,
     error,
-    createError,
-    updateError,
-    deleteError,
-    createDocument,
-    updateDocument,
     deleteDocument,
+    shareDocument,
+    searchQuery,
+    setSearchQuery,
   } = useDocuments({
     page: currentPage,
     limit: pageSize,
     sortBy: 'updatedAt',
     sortOrder: 'desc',
   });
-
-  // Filter documents based on search query
-  const filteredDocuments = documents.filter(doc =>
-    doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doc.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doc.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
 
   // Handle document deletion with confirmation
   const handleDelete = async (id: string) => {
@@ -173,7 +162,7 @@ export function DocumentList() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-gray-500">
-              Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, total)} of {total} documents
+              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, total)} of {total} documents
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -198,4 +187,4 @@ export function DocumentList() {
       </CardContent>
     </Card>
   );
-} 
+}
