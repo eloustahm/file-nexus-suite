@@ -1,8 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useChatAgents } from '@/hooks/useChatAgents';
+import { useChatAgents } from '@/hooks/queries/useChatAgents';
 import { useMutation } from '@tanstack/react-query';
 import { chatService } from '@/services/chat';
-import { useChatUI } from '@/hooks/useChatUI';
+import { useChatQuery } from '@/hooks/queries/useChatQuery';
+import { useState } from 'react';
+import type { ChatSession } from '@/types';
 
 interface Message {
   id: string;
@@ -23,7 +25,21 @@ const DOCUMENT_CHAT_QUERY_KEY = 'document-chat';
 export const useDocumentChat = () => {
   const queryClient = useQueryClient();
   const { agents } = useChatAgents();
-  const chatUI = useChatUI();
+  const { createSession, sendMessage: sendChatMessage } = useChatQuery();
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
+  // Create session mutation
+  const createSessionMutation = useMutation({
+    mutationFn: (data: { title: string; agentId?: string }) => chatService.createSession(data),
+    onSuccess: (session) => {
+      setSelectedSessionId(session.id);
+    },
+    onError: (error: any) => {
+      updateChatState({
+        error: error.message || 'Failed to create chat session',
+      });
+    },
+  });
 
   // Get current chat state
   const getChatState = (): DocumentChatState => {
@@ -49,7 +65,7 @@ export const useDocumentChat = () => {
     mutationFn: async (content: string) => {
       const state = getChatState();
       if (!state.selectedAgent) throw new Error('No agent selected');
-      if (!chatUI.selectedSessionId) throw new Error('No session selected');
+      if (!selectedSessionId) throw new Error('No session selected');
 
       // Add user message immediately
       const userMessage: Message = {
@@ -66,7 +82,7 @@ export const useDocumentChat = () => {
       });
 
       try {
-        const response = await chatService.sendMessage(chatUI.selectedSessionId, content);
+        const response = await chatService.sendMessage(selectedSessionId, content);
 
         // Add assistant message
         const assistantMessage: Message = {
@@ -95,7 +111,12 @@ export const useDocumentChat = () => {
   // Actions
   const setSelectedAgent = (agent: any) => {
     updateChatState({ selectedAgent: agent });
-    chatUI.setSelectedAgent(agent.id);
+    
+    // Create a new session with the selected agent
+    createSessionMutation.mutate({ 
+      title: `Chat with ${agent.name}`,
+      agentId: agent.id 
+    });
   };
 
   const clearError = () => {
@@ -105,6 +126,7 @@ export const useDocumentChat = () => {
   return {
     // State
     ...getChatState(),
+    selectedSessionId,
 
     // Actions
     setSelectedAgent,
