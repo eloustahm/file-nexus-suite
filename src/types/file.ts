@@ -15,6 +15,16 @@ export interface File {
   path?: string;
   createdBy?: string;
   url?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface FileType {
+  id: string;
+  label: string;
+  icon: any;
+  color: string;
+  bgColor: string;
+  extensions: string[];
 }
 
 export interface FileQueryParams {

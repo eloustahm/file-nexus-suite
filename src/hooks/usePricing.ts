@@ -1,14 +1,14 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { pricingService } from '@/services/pricing';
-import type { PricingPlan } from '@/constants/pricing';
 
 export const usePricing = () => {
-  const { data: plans, isLoading: isLoadingPlans, error: plansError } = useQuery({
+  const { data: plans = [], isLoading: isLoadingPlans, error: plansError } = useQuery({
     queryKey: ['pricing', 'plans'],
     queryFn: pricingService.getPlans
   });
 
-  const { data: faqs, isLoading: isLoadingFaqs, error: faqsError } = useQuery({
+  const { data: faqs = [], isLoading: isLoadingFaqs, error: faqsError } = useQuery({
     queryKey: ['pricing', 'faqs'],
     queryFn: pricingService.getFaqs
   });
@@ -18,7 +18,7 @@ export const usePricing = () => {
   };
 
   const getPopularPlan = () => {
-    return plans?.find(plan => plan.isPopular);
+    return plans?.find(plan => plan.popular);
   };
 
   const getFaq = (id: string) => {
@@ -34,4 +34,4 @@ export const usePricing = () => {
     getPopularPlan,
     getFaq
   };
-}; 
+};

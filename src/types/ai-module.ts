@@ -8,17 +8,18 @@ export interface AIModule {
   version: string;
   provider: string;
   config: Record<string, any>;
-  features: AIModuleFeature[];
+  features: string[];
   pricing: {
     model: 'free' | 'pay-per-use' | 'subscription';
     cost?: number;
     currency?: string;
   };
-  usage?: {
+  usage: {
     current: number;
     limit: number;
     unit: string;
   };
+  icon?: any;
   lastUsed?: string;
   createdAt: string;
   updatedAt: string;

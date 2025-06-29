@@ -9,10 +9,12 @@ export const PRICING_PLANS: PricingPlan[] = [
     price: 0,
     interval: 'month',
     features: [
-      '5 documents',
-      '3 templates',
-      'Unlimited folders',
-      '250MB storage'
+      { id: '1', name: '5 documents', included: true },
+      { id: '2', name: '3 templates', included: true },
+      { id: '3', name: 'Unlimited folders', included: true },
+      { id: '4', name: '250MB storage', included: true },
+      { id: '5', name: 'Limited AI features', included: false },
+      { id: '6', name: 'No team collaboration', included: false }
     ],
     limitations: [
       'Limited AI features',
@@ -22,6 +24,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     maxMembers: 1,
     maxStorage: 250,
     maxDocuments: 5,
+    buttonVariant: 'outline',
+    buttonText: 'Get Started'
   },
   {
     id: 'pro',
@@ -30,18 +34,20 @@ export const PRICING_PLANS: PricingPlan[] = [
     price: 19,
     interval: 'month',
     features: [
-      '100 documents',
-      '25 templates',
-      'Unlimited folders',
-      '10GB storage',
-      'Advanced AI features',
-      'Team collaboration'
+      { id: '1', name: '100 documents', included: true },
+      { id: '2', name: '25 templates', included: true },
+      { id: '3', name: 'Unlimited folders', included: true },
+      { id: '4', name: '10GB storage', included: true },
+      { id: '5', name: 'Advanced AI features', included: true },
+      { id: '6', name: 'Team collaboration', included: true }
     ],
     limitations: [],
     popular: true,
     maxMembers: 5,
     maxStorage: 10240,
     maxDocuments: 100,
+    buttonVariant: 'default',
+    buttonText: 'Start Free Trial'
   },
   {
     id: 'business',
@@ -50,20 +56,22 @@ export const PRICING_PLANS: PricingPlan[] = [
     price: 49,
     interval: 'month',
     features: [
-      'Unlimited documents',
-      'Unlimited templates',
-      'Unlimited folders',
-      '100GB storage',
-      'Advanced AI features',
-      'Team collaboration',
-      'Priority support'
+      { id: '1', name: 'Unlimited documents', included: true },
+      { id: '2', name: 'Unlimited templates', included: true },
+      { id: '3', name: 'Unlimited folders', included: true },
+      { id: '4', name: '100GB storage', included: true },
+      { id: '5', name: 'Advanced AI features', included: true },
+      { id: '6', name: 'Team collaboration', included: true },
+      { id: '7', name: 'Priority support', included: true }
     ],
     limitations: [],
     popular: false,
     maxMembers: 25,
     maxStorage: 102400,
     maxDocuments: -1,
+    buttonVariant: 'outline',
+    buttonText: 'Contact Sales'
   }
 ];
 
-export type { PricingPlan } from '@/types';
+export type { PricingPlan, PricingFeature, PricingFAQ } from '@/types';

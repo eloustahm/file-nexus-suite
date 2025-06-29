@@ -15,8 +15,8 @@ export const usePayment = () => {
     // Server state
     isLoadingPlans: paymentQuery.isLoadingPlans,
     isLoadingUsage: paymentQuery.isLoadingUsage,
-    plansError: paymentQuery.plansError?.message,
-    usageError: paymentQuery.usageError?.message,
+    plansError: paymentQuery.plansError?.message || '',
+    usageError: paymentQuery.usageError?.message || '',
     
     // Payment actions
     createSubscription: paymentQuery.createSubscription,

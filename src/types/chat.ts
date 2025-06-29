@@ -1,6 +1,7 @@
 export interface ChatSession {
   id: string;
   title: string;
+  name: string; // Add name property for compatibility
   agentId?: string;
   createdAt: string;
   updatedAt: string;
@@ -24,4 +25,4 @@ export interface ChatAgent {
   avatar?: string;
   capabilities: string[];
   isActive: boolean;
-} 
+}

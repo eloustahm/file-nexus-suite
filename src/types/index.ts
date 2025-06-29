@@ -1,4 +1,3 @@
-
 // Export all types from their respective files
 export * from '@/types/activity';
 export * from '@/types/chat';
@@ -189,16 +188,29 @@ export interface ActivityLog {
 export interface PricingPlan {
   id: string;
   name: string;
+  description: string;
   price: number;
   interval: 'month' | 'year';
-  features: string[];
+  features: PricingFeature[];
+  limitations: string[];
   popular: boolean;
-  limits: {
-    documents: number;
-    templates: number;
-    storage: number;
-    folders: number;
-  };
+  maxMembers: number;
+  maxStorage: number;
+  maxDocuments: number;
+  buttonVariant?: 'default' | 'outline' | 'ghost';
+  buttonText?: string;
+}
+
+export interface PricingFeature {
+  id: string;
+  name: string;
+  included: boolean;
+}
+
+export interface PricingFAQ {
+  id: string;
+  question: string;
+  answer: string;
 }
 
 // --- Auth Types ---

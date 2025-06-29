@@ -79,7 +79,7 @@ export const useUpdateFileMutation = () => {
       fileService.updateFile(id, data),
     onSuccess: (response, { id }) => {
       queryClient.invalidateQueries({ queryKey: fileKeys.all });
-      queryClient.setQueryData(fileKeys.detail(id), response.file);
+      queryClient.setQueryData(fileKeys.detail(id), response);
       toast.success('File updated successfully');
     },
     onError: (error: any) => {
@@ -128,7 +128,7 @@ export const useRestoreVersionMutation = () => {
       fileService.restoreVersion(id, versionId),
     onSuccess: (response, { id }) => {
       queryClient.invalidateQueries({ queryKey: fileKeys.all });
-      queryClient.setQueryData(fileKeys.detail(id), response.file);
+      queryClient.setQueryData(fileKeys.detail(id), response);
       toast.success('Version restored successfully');
     },
     onError: (error: any) => {
@@ -171,4 +171,4 @@ export const useFileUtils = (files: File[] = []) => {
     getFilesByTag,
     getFilesByParent,
   };
-}; 
+};
