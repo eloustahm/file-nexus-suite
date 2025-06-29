@@ -1,4 +1,5 @@
-import { useAIModulesQuery, useUpdateAIModuleMutation, useTestAIModuleMutation } from '@/hooks/queries/useAIModules';
+
+import { useAIModulesQuery, useUpdateModuleStatusMutation, useTestModuleMutation } from '@/hooks/queries/useAIModules';
 import type { AIModule } from '@/types/ai-module';
 
 /**
@@ -6,11 +7,11 @@ import type { AIModule } from '@/types/ai-module';
  */
 export const useAIModules = () => {
   // Queries
-  const { data: modules = [], isLoading, error } = useAIModulesQuery();
+  const { modules, isLoading, error } = useAIModulesQuery();
 
   // Mutations
-  const updateModuleMutation = useUpdateAIModuleMutation();
-  const testModuleMutation = useTestAIModuleMutation();
+  const updateModuleMutation = useUpdateModuleStatusMutation();
+  const testModuleMutation = useTestModuleMutation();
 
   const getModule = (id: string) => {
     return modules.find(module => module.id === id);
@@ -29,7 +30,7 @@ export const useAIModules = () => {
   };
 
   const updateModuleStatus = (id: string, status: AIModule['status']) => {
-    updateModuleMutation.mutate({ id, data: { status } });
+    updateModuleMutation.mutate({ id, status });
   };
 
   const testModuleConnection = (id: string) => {
@@ -58,4 +59,4 @@ export const useAIModules = () => {
     updateModuleStatus,
     testModuleConnection,
   };
-}; 
+};

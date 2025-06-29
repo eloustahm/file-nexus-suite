@@ -1,3 +1,4 @@
+
 // Export all types from their respective files
 export * from '@/types/activity';
 export * from '@/types/chat';
@@ -21,6 +22,7 @@ export interface User {
 export interface ChatSession {
   id: string;
   title: string;
+  name?: string; // For backwards compatibility
   documentId?: string;
   agentId?: string;
   messages: ChatMessage[];
@@ -107,6 +109,7 @@ export interface Document {
   content?: string;
   folderId?: string;
   isShared: boolean;
+  status?: 'active' | 'archived' | 'deleted';
 }
 
 export interface Integration {
@@ -127,6 +130,7 @@ export interface Folder {
   documentCount: number;
   createdAt: string;
   updatedAt: string;
+  type?: string;
 }
 
 export interface TeamMember {
@@ -179,6 +183,22 @@ export interface ActivityLog {
   timestamp: string;
   ipAddress?: string;
   userAgent?: string;
+}
+
+// Pricing Plan interface
+export interface PricingPlan {
+  id: string;
+  name: string;
+  price: number;
+  interval: 'month' | 'year';
+  features: string[];
+  popular: boolean;
+  limits: {
+    documents: number;
+    templates: number;
+    storage: number;
+    folders: number;
+  };
 }
 
 // --- Auth Types ---

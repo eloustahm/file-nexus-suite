@@ -14,9 +14,16 @@ export const chatService = {
   },
 
   /**
+   * Get a single chat session
+   */
+  getSession: async (sessionId: string): Promise<ChatSession> => {
+    return http.get<ChatSession>(`/chat/sessions/${sessionId}`);
+  },
+
+  /**
    * Create a new chat session
    */
-  createSession: async (data: { title: string; documentIds?: string[] }): Promise<ChatSession> => {
+  createSession: async (data: { title: string; documentIds?: string[]; agentId?: string }): Promise<ChatSession> => {
     return http.post<ChatSession>('/chat/sessions', data);
   },
 

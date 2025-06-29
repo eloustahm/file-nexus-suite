@@ -13,7 +13,7 @@ export const useAIModulesQuery = () => {
   });
 
   return {
-    modules: modulesQuery.data || [],
+    modules: modulesQuery.data?.modules || [],
     isLoading: modulesQuery.isLoading,
     error: modulesQuery.error,
     refetch: modulesQuery.refetch,
@@ -25,13 +25,27 @@ export const useUpdateModuleStatusMutation = () => {
   
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: AIModuleStatus }) => 
-      aiModuleService.updateModuleStatus(id, status),
+      aiModuleService.updateModule(id, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.AI_MODULES] });
       toast.success('Module status updated successfully');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to update module status');
+    },
+  });
+};
+
+export const useTestModuleMutation = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (id: string) => aiModuleService.testModuleConnection(id),
+    onSuccess: () => {
+      toast.success('Module connection test successful');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Module connection test failed');
     },
   });
 };

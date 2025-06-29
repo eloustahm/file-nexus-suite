@@ -2,6 +2,7 @@ export interface Profile {
   id: string;
   email: string;
   name: string;
+  bio?: string;
   avatar?: string;
   role: string;
   preferences: ProfilePreferences;
@@ -99,4 +100,4 @@ export interface PasswordChange {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
-} 
+}
