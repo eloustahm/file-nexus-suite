@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { teamService } from '@/services/team';
 import type { TeamRoom, ChatMessage } from '@/types/team';
@@ -9,7 +10,7 @@ export const useTeamChatQuery = () => {
   // Query for fetching chat rooms
   const { data: rooms = [], isLoading: isLoadingRooms } = useQuery({
     queryKey: ['teamChatRooms'],
-    queryFn: teamService.getChatRooms,
+    queryFn: teamService.getRooms,
   });
 
   // Query for fetching messages in a room
@@ -17,18 +18,18 @@ export const useTeamChatQuery = () => {
     queryKey: ['teamChatMessages'],
     queryFn: async () => {
       const allMessages: Record<string, ChatMessage[]> = {};
-      for (const room of rooms) {
-        allMessages[room.id] = await teamService.getChatMessages(room.id);
+      for (const room of (rooms || [])) {
+        allMessages[room.id] = await teamService.getRoomMessages(room.id);
       }
       return allMessages;
     },
-    enabled: rooms.length > 0,
+    enabled: (rooms || []).length > 0,
   });
 
   // Mutation for creating a new chat room
   const createRoomMutation = useMutation({
     mutationFn: ({ name, members }: { name: string; members: string[] }) =>
-      teamService.createChatRoom({ name, members }),
+      teamService.createChatRoom({ name, type: 'group', members }),
     onSuccess: (newRoom) => {
       queryClient.setQueryData(['teamChatRooms'], (old: TeamRoom[] = []) => [...old, newRoom]);
       toast.success('Chat room created successfully');
@@ -41,7 +42,7 @@ export const useTeamChatQuery = () => {
   // Mutation for sending a message
   const sendMessageMutation = useMutation({
     mutationFn: ({ roomId, content }: { roomId: string; content: string }) =>
-      teamService.sendChatMessage(roomId, content),
+      teamService.sendRoomMessage(roomId, content),
     onSuccess: (newMessage, { roomId }) => {
       queryClient.setQueryData(['teamChatMessages'], (old: Record<string, ChatMessage[]> = {}) => ({
         ...old,
@@ -55,7 +56,7 @@ export const useTeamChatQuery = () => {
 
   // Mutation for joining a room
   const joinRoomMutation = useMutation({
-    mutationFn: teamService.joinChatRoom,
+    mutationFn: teamService.joinRoom,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teamChatRooms'] });
       toast.success('Joined chat room successfully');

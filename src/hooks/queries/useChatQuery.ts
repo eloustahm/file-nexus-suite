@@ -85,7 +85,7 @@ export const useChatQuery = () => {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: ({ sessionId, content }: { sessionId: string; content: string }) =>
-      chatService.sendMessage(sessionId, content),
+      chatService.sendMessage(sessionId, { message: content }),
     onSuccess: (newMessage, { sessionId }) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHAT_MESSAGES, sessionId] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHAT_SESSIONS] });

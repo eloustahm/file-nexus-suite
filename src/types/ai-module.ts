@@ -1,59 +1,61 @@
-import type { LucideIcon } from 'lucide-react';
 
-export type AIModuleStatus = 'active' | 'inactive' | 'pending';
+export interface AIModule {
+  id: string;
+  name: string;
+  description: string;
+  type: 'nlp' | 'vision' | 'audio' | 'general';
+  status: AIModuleStatus;
+  version: string;
+  provider: string;
+  config: Record<string, any>;
+  features: AIModuleFeature[];
+  pricing: {
+    model: 'free' | 'pay-per-use' | 'subscription';
+    cost?: number;
+    currency?: string;
+  };
+  usage?: {
+    current: number;
+    limit: number;
+    unit: string;
+  };
+  lastUsed?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AIModuleStatus = 'active' | 'inactive' | 'pending' | 'error';
 
 export interface AIModuleFeature {
   id: string;
   name: string;
   description: string;
   enabled: boolean;
-  required: boolean;
-}
-
-export interface AIModuleStats {
-  totalRequests: number;
-  successfulRequests: number;
-  failedRequests: number;
-  averageResponseTime: number;
-  lastUsed: string;
-  usageLimit: number;
-  currentUsage: number;
-}
-
-export interface AIModule {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-  status: AIModuleStatus;
-  icon: LucideIcon;
-  color: string;
-  bgColor: string;
-  features: AIModuleFeature[];
-  stats: AIModuleStats;
-  config: Record<string, any>;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface AIModuleResponse {
-  module: AIModule;
-}
-
-export interface AIModuleListResponse {
-  modules: AIModule[];
-  total: number;
 }
 
 export interface AIModuleUpdateData {
   status?: AIModuleStatus;
   config?: Record<string, any>;
-  features?: Array<{ id: string; enabled: boolean }>;
+  features?: AIModuleFeature[];
 }
 
-export interface AIModuleLog {
-  timestamp: string;
+export interface AIModuleListResponse {
+  modules: AIModule[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AIModuleStats {
+  totalUsage: number;
+  successRate: number;
+  averageResponseTime: number;
+  errorCount: number;
+}
+
+export interface AIModuleTestResult {
+  success: boolean;
   message: string;
-  level: 'info' | 'warning' | 'error';
-  metadata?: Record<string, any>;
-} 
+  responseTime: number;
+  error?: string;
+}

@@ -1,3 +1,4 @@
+
 import { useQueryClient } from '@tanstack/react-query';
 import { useChatAgents } from '@/hooks/queries/useChatAgents';
 import { useMutation } from '@tanstack/react-query';
@@ -82,7 +83,7 @@ export const useDocumentChat = () => {
       });
 
       try {
-        const response = await chatService.sendMessage(selectedSessionId, content);
+        const response = await chatService.sendMessage(selectedSessionId, { message: content });
 
         // Add assistant message
         const assistantMessage: Message = {

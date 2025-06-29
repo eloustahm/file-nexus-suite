@@ -5,82 +5,65 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'free',
     name: 'Free',
+    description: 'Perfect for getting started',
     price: 0,
     interval: 'month',
     features: [
-      '5 documents per month',
+      '5 documents',
       '3 templates',
       'Unlimited folders',
-      '250MB storage',
-      'Basic support'
+      '250MB storage'
+    ],
+    limitations: [
+      'Limited AI features',
+      'No team collaboration'
     ],
     popular: false,
-    limits: {
-      documents: 5,
-      templates: 3,
-      storage: 250 * 1024 * 1024, // 250MB in bytes
-      folders: -1 // unlimited
-    }
+    maxMembers: 1,
+    maxStorage: 250,
+    maxDocuments: 5,
   },
   {
-    id: 'starter',
-    name: 'Starter',
-    price: 9.99,
+    id: 'pro',
+    name: 'Pro',
+    description: 'Best for professionals',
+    price: 19,
     interval: 'month',
     features: [
-      '50 documents per month',
-      '10 templates',
-      'Unlimited folders',
-      '2GB storage',
-      'Email support',
-      'Basic AI features'
-    ],
-    popular: false,
-    limits: {
-      documents: 50,
-      templates: 10,
-      storage: 2 * 1024 * 1024 * 1024, // 2GB in bytes
-      folders: -1
-    }
-  },
-  {
-    id: 'professional',
-    name: 'Professional',
-    price: 29.99,
-    interval: 'month',
-    features: [
-      '200 documents per month',
+      '100 documents',
       '25 templates',
       'Unlimited folders',
       '10GB storage',
-      'Priority support',
       'Advanced AI features',
       'Team collaboration'
     ],
+    limitations: [],
     popular: true,
-    limits: {
-      documents: 200,
-      templates: 25,
-      storage: 10 * 1024 * 1024 * 1024, // 10GB in bytes
-      folders: -1
-    }
+    maxMembers: 5,
+    maxStorage: 10240,
+    maxDocuments: 100,
+  },
+  {
+    id: 'business',
+    name: 'Business',
+    description: 'For growing teams',
+    price: 49,
+    interval: 'month',
+    features: [
+      'Unlimited documents',
+      'Unlimited templates',
+      'Unlimited folders',
+      '100GB storage',
+      'Advanced AI features',
+      'Team collaboration',
+      'Priority support'
+    ],
+    limitations: [],
+    popular: false,
+    maxMembers: 25,
+    maxStorage: 102400,
+    maxDocuments: -1,
   }
 ];
 
-export const PRICING_FAQS = [
-  {
-    id: '1',
-    question: 'Can I upgrade or downgrade my plan anytime?',
-    answer: 'Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.'
-  },
-  {
-    id: '2',
-    question: 'What happens if I exceed my document limit?',
-    answer: 'If you exceed your document limit, you\'ll need to upgrade your plan or wait until the next billing cycle to create new documents.'
-  },
-  {
-    id: '3',
-    question: 'Is there a free trial available?',
-    answer: 'Yes, all paid plans come with a 14-day free trial. No credit card required to start.'
-  }
-];
+export type { PricingPlan } from '@/types';

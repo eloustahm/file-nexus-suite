@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { chatService } from '@/services/chat';
 import type { ChatSession, ChatMessage, Agent } from '@/types';
@@ -22,6 +23,7 @@ export const useDocumentChatQuery = () => {
     mutationFn: (data: { title: string; documentId?: string; agentId?: string }) =>
       chatService.createSession({
         title: data.title,
+        documentIds: data.documentId ? [data.documentId] : undefined,
         agentId: data.agentId
       }),
     onSuccess: (newSession) => {
@@ -32,7 +34,7 @@ export const useDocumentChatQuery = () => {
   // Mutation for sending a message
   const sendMessageMutation = useMutation({
     mutationFn: (data: { sessionId: string; content: string; documentId?: string }) =>
-      chatService.sendMessage(data.sessionId, data.content),
+      chatService.sendMessage(data.sessionId, { message: data.content }),
     onSuccess: (newMessage, { documentId }) => {
       queryClient.setQueryData(['chatMessages'], (old: Record<string, ChatMessage[]> = {}) => ({
         ...old,
