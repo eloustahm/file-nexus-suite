@@ -23,6 +23,7 @@ export interface AIModule {
   lastUsed?: string;
   createdAt: string;
   updatedAt: string;
+  stats?: AIModuleStats;
 }
 
 export type AIModuleStatus = 'active' | 'inactive' | 'pending' | 'error';
@@ -45,6 +46,12 @@ export interface AIModuleListResponse {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface AIModuleResponse {
+  module: AIModule;
+  success: boolean;
+  message: string;
 }
 
 export interface AIModuleStats {

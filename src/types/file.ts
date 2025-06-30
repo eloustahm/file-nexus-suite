@@ -16,6 +16,8 @@ export interface File {
   createdBy?: string;
   url?: string;
   metadata?: Record<string, any>;
+  starred?: boolean;
+  shared?: boolean;
 }
 
 export interface FileType {
@@ -51,6 +53,25 @@ export interface FileUploadResponse {
   file: File;
   success: boolean;
   message: string;
+}
+
+export interface FileListResponse {
+  files: File[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface FileResponse {
+  file: File;
+  success: boolean;
+  message: string;
+}
+
+export interface FileDownloadResponse {
+  url: string;
+  filename: string;
+  size: number;
 }
 
 export interface FileVersion {

@@ -1,3 +1,4 @@
+
 // Export all types from their respective files
 export * from '@/types/activity';
 export * from '@/types/chat';
@@ -21,7 +22,7 @@ export interface User {
 export interface ChatSession {
   id: string;
   title: string;
-  name?: string; // For backwards compatibility
+  name: string; // Add name property for compatibility
   documentId?: string;
   agentId?: string;
   messages: ChatMessage[];
@@ -109,6 +110,9 @@ export interface Document {
   folderId?: string;
   isShared: boolean;
   status?: 'active' | 'archived' | 'deleted';
+  role?: 'owner' | 'editor' | 'viewer';
+  sharedBy?: string;
+  sharedAt?: string;
 }
 
 export interface Integration {
@@ -152,6 +156,10 @@ export interface Workflow {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  status?: 'active' | 'inactive' | 'paused';
+  lastRun?: string;
+  dueDate?: string;
+  documentIds?: string[];
 }
 
 export interface WorkflowStep {
@@ -232,6 +240,7 @@ export interface DocumentFormData {
   purpose: string;
   instructions?: string;
   templateId?: string;
+  documentId?: string;
 }
 
 // --- Document Types ---
@@ -271,6 +280,20 @@ export interface ProfileActivity {
   type: string;
   timestamp: string;
   details: Record<string, unknown>;
+}
+
+// Profile additional types
+export interface ProfileStats {
+  documentsCreated: number;
+  collaborations: number;
+  storageUsed: number;
+  lastLogin: string;
+}
+
+export interface PasswordChange {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 // Re-export ActivityFilter for ActivityFilters usage
