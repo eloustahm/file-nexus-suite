@@ -42,14 +42,11 @@ export const RegenerateModal = ({ documentId, onClose }: RegenerateModalProps) =
     e.preventDefault();
     if (!document || !title.trim() || !purpose.trim()) return;
 
-    await regenerateDocument({
-      documentId: document.id,
-      data: {
-        title: title.trim(),
-        purpose: purpose.trim(),
-        instructions: instructions.trim(),
-        templateId: selectedTemplate || undefined
-      }
+    await regenerateDocument(document.id, {
+      title: title.trim(),
+      purpose: purpose.trim(),
+      instructions: instructions.trim(),
+      templateId: selectedTemplate || undefined
     });
 
     if (!documentsError) {

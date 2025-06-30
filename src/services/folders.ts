@@ -1,25 +1,31 @@
+
 import { http } from '@/lib/api';
-import type { Folder, Document } from '@/types';
+import type { Folder } from '@/types';
+
+export interface CreateFolderData {
+  name: string;
+  description?: string;
+  parentId?: string;
+}
 
 export const foldersService = {
-  async getAll(): Promise<Folder[]> {
+  async getFolders(): Promise<Folder[]> {
     return http.get<Folder[]>('/folders');
   },
 
-  async create(folderData: { name: string; parentId?: string; description?: string }): Promise<Folder> {
-    return http.post<Folder>('/folders', folderData);
+  async getFolder(id: string): Promise<Folder> {
+    return http.get<Folder>(`/folders/${id}`);
   },
 
-  async update(id: string, data: Partial<Folder>): Promise<Folder> {
-    return http.patch<Folder>(`/folders/${id}`, data);
+  async createFolder(data: CreateFolderData): Promise<Folder> {
+    return http.post<Folder>('/folders', data);
   },
 
-  async delete(id: string): Promise<void> {
-    await http.delete<void>(`/folders/${id}`);
+  async updateFolder(id: string, data: Partial<Folder>): Promise<Folder> {
+    return http.put<Folder>(`/folders/${id}`, data);
   },
 
-  async getDocuments(id: string): Promise<Document[]> {
-    const response = await http.get<{ documents: Document[] }>(`/folders/${id}/documents`);
-    return response.documents;
-  }
+  async deleteFolder(id: string): Promise<void> {
+    return http.delete(`/folders/${id}`);
+  },
 };

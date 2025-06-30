@@ -1,36 +1,30 @@
+
 import { http } from '@/lib/api';
-import type { Plan, Subscription, Usage } from '@/types/payment';
+
+export interface Subscription {
+  id: string;
+  planId: string;
+  status: 'active' | 'cancelled' | 'past_due';
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  amount: number;
+  currency: string;
+}
 
 export const paymentService = {
-  // Plans
-  async getPlans(): Promise<Plan[]> {
-    const response = await http.get<{ plans: Plan[] }>('/payment/plans');
-    return response.plans;
+  async getSubscriptions(): Promise<Subscription[]> {
+    return http.get<Subscription[]>('/payments/subscriptions');
   },
 
-  // Subscription
-  async getSubscription(): Promise<Subscription> {
-    const response = await http.get<{ subscription: Subscription }>('/payment/subscription');
-    return response.subscription;
+  async createSubscription(data: { planId: string; paymentMethodId: string }): Promise<Subscription> {
+    return http.post<Subscription>('/payments/subscriptions', data);
   },
 
-  async createSubscription(planId: string): Promise<Subscription> {
-    const response = await http.post<{ subscription: Subscription }>('/payment/subscription', { planId });
-    return response.subscription;
+  async cancelSubscription(subscriptionId: string): Promise<void> {
+    return http.delete(`/payments/subscriptions/${subscriptionId}`);
   },
 
-  async cancelSubscription(): Promise<void> {
-    await http.delete<void>('/payment/subscription');
+  async updatePaymentMethod(data: { paymentMethodId: string }): Promise<void> {
+    return http.put('/payments/payment-method', data);
   },
-
-  async updatePaymentMethod(paymentMethodId: string): Promise<Subscription> {
-    const response = await http.patch<{ subscription: Subscription }>('/payment/subscription/payment-method', { paymentMethodId });
-    return response.subscription;
-  },
-
-  // Usage
-  async getUsage(): Promise<Usage> {
-    const response = await http.get<{ usage: Usage }>('/payment/usage');
-    return response.usage;
-  }
 };

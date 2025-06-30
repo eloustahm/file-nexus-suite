@@ -1,44 +1,37 @@
+
 import { http } from '@/lib/api';
-import type { ActivityLog, ActivityFilter, ActivitySummary, ActivityLogData } from '@/types';
+import type { ActivityLog } from '@/types';
+
+export interface ActivityListResponse {
+  activities: ActivityLog[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ActivityParams {
+  page?: number;
+  limit?: number;
+  filter?: string;
+  type?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
 
 export const activityService = {
-  // Get activities with pagination and filtering
-  async getActivities(params: ActivityFilter): Promise<{ activities: ActivityLog[]; total: number }> {
-    return http.get<{ activities: ActivityLog[]; total: number }>('/activities', { params });
+  async getActivities(params?: ActivityParams): Promise<ActivityListResponse> {
+    return http.get<ActivityListResponse>('/activity', { params });
   },
 
-  // Get activity statistics
-  async getStats(params: { startDate?: string; endDate?: string }): Promise<ActivitySummary> {
-    return http.get<ActivitySummary>('/activities/stats', { params });
-  },
-
-  // Get a single activity by ID
   async getActivity(id: string): Promise<ActivityLog> {
-    return http.get<ActivityLog>(`/activities/${id}`);
+    return http.get<ActivityLog>(`/activity/${id}`);
   },
 
-  // Get document-specific activities
-  async getDocumentActivity(documentId: string): Promise<ActivityLog[]> {
-    return http.get<ActivityLog[]>(`/activities/documents/${documentId}`);
+  async createActivity(data: Omit<ActivityLog, 'id' | 'timestamp'>): Promise<ActivityLog> {
+    return http.post<ActivityLog>('/activity', data);
   },
 
-  // Get user-specific activities
-  async getUserActivity(userId: string): Promise<ActivityLog[]> {
-    return http.get<ActivityLog[]>(`/activities/users/${userId}`);
-  },
-
-  // Create a new activity
-  async createActivity(data: ActivityLogData): Promise<ActivityLog> {
-    return http.post<ActivityLog>('/activities', data);
-  },
-
-  // Delete a specific activity
   async deleteActivity(id: string): Promise<void> {
-    return http.delete<void>(`/activities/${id}`);
+    return http.delete(`/activity/${id}`);
   },
-
-  // Clear activities based on filters
-  async clearActivities(params: { before?: string; type?: string }): Promise<void> {
-    return http.delete<void>('/activities', { params });
-  }
 };

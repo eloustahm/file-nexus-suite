@@ -1,61 +1,43 @@
 
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { profileService } from '@/services/profileService';
 import { toast } from 'sonner';
-
-interface PrivacySettings {
-  profileVisibility: 'public' | 'private' | 'team';
-  showEmail: boolean;
-  showPhone: boolean;
-  dataCollection: boolean;
-  analytics: boolean;
-  marketing: boolean;
-  thirdPartySharing: boolean;
-}
+import type { PrivacySettings } from '@/types/profile';
 
 export const usePrivacySettings = () => {
   const queryClient = useQueryClient();
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data for now
-  const { data: settings } = useQuery({
+  const { data: settings, isLoading } = useQuery({
     queryKey: ['privacySettings'],
-    queryFn: async (): Promise<PrivacySettings> => ({
-      profileVisibility: 'private',
-      showEmail: false,
-      showPhone: false,
-      dataCollection: true,
-      analytics: false,
-      marketing: false,
-      thirdPartySharing: false,
-    }),
+    queryFn: async () => {
+      const profile = await profileService.getProfile();
+      return profile.settings.privacy as PrivacySettings;
+    },
   });
 
   const updateSettingsMutation = useMutation({
-    mutationFn: async (newSettings: Partial<PrivacySettings>) => {
-      setIsLoading(true);
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return { ...settings, ...newSettings };
-    },
+    mutationFn: (newSettings: Partial<PrivacySettings>) => 
+      profileService.updatePrivacySettings(newSettings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['privacySettings'] });
-      toast.success('Privacy settings updated successfully');
-      setIsLoading(false);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast.success('Privacy settings updated');
     },
-    onError: () => {
-      toast.error('Failed to update privacy settings');
-      setIsLoading(false);
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update settings');
     },
   });
 
-  const updateSettings = (newSettings: Partial<PrivacySettings>) => {
-    updateSettingsMutation.mutate(newSettings);
-  };
-
   return {
-    settings: settings || {} as PrivacySettings,
+    settings: settings || {
+      profileVisibility: 'public' as const,
+      showEmail: false,
+      showPhone: false,
+      allowDirectMessages: true,
+      showOnlineStatus: true,
+      shareAnalytics: false,
+    },
     isLoading,
-    updateSettings,
+    updateSettings: updateSettingsMutation.mutate,
   };
 };

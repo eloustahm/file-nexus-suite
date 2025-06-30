@@ -1,46 +1,94 @@
 
 export interface Profile {
   id: string;
-  userId: string;
+  email: string;
   firstName: string;
   lastName: string;
-  email: string;
-  phone?: string;
-  bio?: string;
+  name: string;
+  phone: string;
   avatar?: string;
-  company?: string;
-  position?: string;
+  bio?: string;
   location?: string;
   website?: string;
+  company?: string;
+  jobTitle?: string;
   timezone?: string;
   language?: string;
-  notifications?: {
+  createdAt: string;
+  updatedAt: string;
+  settings: ProfileSettings;
+  preferences: ProfilePreferences;
+  security: SecuritySettings;
+}
+
+export interface ProfileSettings {
+  notifications: {
     email: boolean;
     push: boolean;
-    sms: boolean;
+    desktop: boolean;
   };
-  privacy?: {
-    profileVisibility: 'public' | 'private' | 'team';
+  privacy: {
+    profileVisibility: 'public' | 'private';
     showEmail: boolean;
     showPhone: boolean;
   };
-  createdAt: string;
-  updatedAt: string;
+  appearance: {
+    theme: 'light' | 'dark' | 'system';
+    language: string;
+  };
+}
+
+export interface ProfilePreferences {
+  defaultView: 'list' | 'grid';
+  itemsPerPage: number;
+  autoSave: boolean;
+  showTutorials: boolean;
+}
+
+export interface SecuritySettings {
+  twoFactorEnabled: boolean;
+  sessionTimeout: number;
+  loginNotifications: boolean;
 }
 
 export interface ProfileUpdateData {
   firstName?: string;
   lastName?: string;
-  email?: string;
   phone?: string;
   bio?: string;
-  avatar?: string;
-  company?: string;
-  position?: string;
   location?: string;
   website?: string;
+  company?: string;
+  jobTitle?: string;
   timezone?: string;
   language?: string;
-  notifications?: Partial<Profile['notifications']>;
-  privacy?: Partial<Profile['privacy']>;
+}
+
+export interface ProfileActivity {
+  id: string;
+  type: string;
+  timestamp: string;
+  details: Record<string, unknown>;
+}
+
+export interface ProfileStats {
+  documentsCreated: number;
+  collaborations: number;
+  storageUsed: number;
+  lastLogin: string;
+}
+
+export interface PasswordChange {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface PrivacySettings {
+  profileVisibility: 'public' | 'private';
+  showEmail: boolean;
+  showPhone: boolean;
+  allowDirectMessages: boolean;
+  showOnlineStatus: boolean;
+  shareAnalytics: boolean;
 }

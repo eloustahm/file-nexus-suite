@@ -1,64 +1,79 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { integrationService } from '@/services/integrationService';
-import type { Integration } from '@/types/integration';
+import { integrationService } from '@/services/integration';
 import { toast } from 'sonner';
-import { QUERY_KEYS } from '@/constants/queryKeys';
+import type { Integration } from '@/types';
 
 export const useIntegrationsQuery = () => {
   const queryClient = useQueryClient();
 
-  // Get integrations query
-  const integrationsQuery = useQuery({
-    queryKey: [QUERY_KEYS.INTEGRATIONS],
+  const { data: integrations, isLoading, error, refetch } = useQuery({
+    queryKey: ['integrations'],
     queryFn: integrationService.getIntegrations,
-    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  return {
-    integrations: integrationsQuery.data || [],
-    isLoading: integrationsQuery.isLoading,
-    error: integrationsQuery.error,
-    refetch: integrationsQuery.refetch,
-  };
-};
-
-export const useUpdateIntegrationMutation = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
+  const updateIntegrationMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Integration> }) =>
       integrationService.updateIntegration(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.INTEGRATIONS] });
+      queryClient.invalidateQueries({ queryKey: ['integrations'] });
       toast.success('Integration updated successfully');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to update integration');
     },
   });
-};
 
-export const useTestIntegrationMutation = () => {
-  return useMutation({
-    mutationFn: (id: string) => integrationService.testConnection(id),
-    onSuccess: () => {
-      toast.success('Integration test successful');
+  const testIntegrationMutation = useMutation({
+    mutationFn: (id: string) => integrationService.testIntegration(id),
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success('Integration test successful');
+      } else {
+        toast.error(result.message || 'Integration test failed');
+      }
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Integration test failed');
     },
   });
+
+  const useCreateIntegrationMutation = () => {
+    return useMutation({
+      mutationFn: (data: Omit<Integration, 'id'>) => integrationService.createIntegration(data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['integrations'] });
+        toast.success('Integration created successfully');
+      },
+      onError: (error: Error) => {
+        toast.error(error.message || 'Failed to create integration');
+      },
+    });
+  };
+
+  const useDeleteIntegrationMutation = () => {
+    return useMutation({
+      mutationFn: (id: string) => integrationService.deleteIntegration(id),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['integrations'] });
+        toast.success('Integration deleted successfully');
+      },
+      onError: (error: Error) => {
+        toast.error(error.message || 'Failed to delete integration');
+      },
+    });
+  };
+
+  return {
+    integrations: integrations || [],
+    isLoading,
+    error,
+    refetch,
+    updateIntegrationMutation,
+    testIntegrationMutation,
+    useCreateIntegrationMutation,
+    useDeleteIntegrationMutation,
+  };
 };
 
-export const useSyncIntegrationMutation = () => {
-  return useMutation({
-    mutationFn: (id: string) => integrationService.syncData(id),
-    onSuccess: () => {
-      toast.success('Integration sync completed');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Integration sync failed');
-    },
-  });
-};
+export { useCreateIntegrationMutation, useDeleteIntegrationMutation } from './useIntegrations';

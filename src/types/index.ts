@@ -142,6 +142,7 @@ export interface TeamMember {
   email: string;
   firstName: string;
   lastName: string;
+  name?: string;
   role: 'admin' | 'member' | 'viewer';
   avatar?: string;
   joinedAt: string;
@@ -221,19 +222,6 @@ export interface PricingFAQ {
   answer: string;
 }
 
-// --- Auth Types ---
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-
 // --- Document Generation Types ---
 export interface DocumentFormData {
   title: string;
@@ -265,35 +253,6 @@ export interface DocumentVersion {
   createdAt: string;
   updatedAt: string;
   changes: string;
-}
-
-// --- Activity Types ---
-export interface ActivityLogData {
-  action: string;
-  description: string;
-  type: string;
-  metadata?: Record<string, any>;
-}
-
-export interface ProfileActivity {
-  id: string;
-  type: string;
-  timestamp: string;
-  details: Record<string, unknown>;
-}
-
-// Profile additional types
-export interface ProfileStats {
-  documentsCreated: number;
-  collaborations: number;
-  storageUsed: number;
-  lastLogin: string;
-}
-
-export interface PasswordChange {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
 }
 
 // Re-export ActivityFilter for ActivityFilters usage

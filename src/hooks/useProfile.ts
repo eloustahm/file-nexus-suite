@@ -1,53 +1,46 @@
-import { useProfileQuery, useUpdateProfileMutation } from '@/hooks/queries/useProfileQuery';
-import { useState } from 'react';
 
-/**
- * Combined hook that provides both UI state and server data for user profile
- */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { profileService } from '@/services/profileService';
+import { toast } from 'sonner';
+import type { Profile, ProfileUpdateData, PasswordChange } from '@/types/profile';
+
 export const useProfile = () => {
-  // Queries
-  const { data: profile, isLoading, error } = useProfileQuery();
-  const updateProfileMutation = useUpdateProfileMutation();
+  const queryClient = useQueryClient();
 
-  // UI state
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    name: profile?.name ?? '',
-    email: profile?.email ?? '',
-    bio: profile?.bio ?? '',
-    avatar: profile?.avatar ?? '',
+  const { data: profile, isLoading, error } = useQuery({
+    queryKey: ['profile'],
+    queryFn: profileService.getProfile,
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: ProfileUpdateData) => profileService.updateProfile(data),
+    onSuccess: (updatedProfile) => {
+      queryClient.setQueryData(['profile'], updatedProfile);
+      toast.success('Profile updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update profile');
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    updateProfileMutation.mutate(formData);
-    setIsEditing(false);
-  };
+  const updatePasswordMutation = useMutation({
+    mutationFn: (data: PasswordChange) => profileService.updatePassword(data),
+    onSuccess: () => {
+      toast.success('Password updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update password');
+    },
+  });
 
   return {
-    // Data
-    profile,
-    
-    // Loading states
+    profile: profile || null,
+    displayName: profile?.name || `${profile?.firstName} ${profile?.lastName}` || 'User',
     isLoading,
-    isUpdating: updateProfileMutation.isPending,
-    
-    // Errors
     error: error?.message,
-    updateError: updateProfileMutation.error?.message,
-    
-    // UI state
-    isEditing,
-    formData,
-    
-    // Actions
-    setIsEditing,
-    handleInputChange,
-    handleSubmit,
+    updateProfile: updateProfileMutation.mutate,
+    updatePassword: updatePasswordMutation.mutate,
+    isUpdating: updateProfileMutation.isPending,
+    isUpdatingPassword: updatePasswordMutation.isPending,
   };
-}; 
+};
